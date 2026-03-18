@@ -1,0 +1,39 @@
+{
+  "tickMs": 500,
+  "hungerDrainPerSecond": 0.2,
+  "healthDrainPerSecond": 0.5,
+  "healthRegenPassive": 0.5,
+  "energyRegenPassive": 1.0,
+  "energyCosts": {
+    "moveStep": 1,
+    "moveStepOnPath": 0.5,
+    "harvest": 5,
+    "build": 10,
+    "interact": 5,
+    "craft": 3,
+    "eat": 0
+  },
+  "characterStats": {
+    "maxHealth": 100,
+    "maxHunger": 100,
+    "maxEnergy": 100
+  },
+  "equipmentSlots": [
+    "hands",
+    "head",
+    "body",
+    "legs",
+    "feet"
+  ],
+  "mapGen": {
+    "fillProbability": 0.55,
+    "smoothingPasses": 5,
+    "grassThreshold": 5,
+    "waterThreshold": 4,
+    "gapFillPasses": 10,
+    "lakeProbability": 0.3,
+    "lakeRadiusMin": 2,
+    "lakeRadiusMax": 4,
+    "vegetationDensity": 0.1
+  }
+}

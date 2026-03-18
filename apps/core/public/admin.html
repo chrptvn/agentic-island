@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Genesis — Tile Browser</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: monospace; font-size: 13px; }
+
+  header { background: #16213e; padding: 12px 20px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #333; }
+  header h1 { font-size: 16px; color: #7ec8e3; }
+  #search { background: #0f3460; border: 1px solid #444; color: #eee; padding: 5px 10px; border-radius: 4px; width: 220px; }
+  #search::placeholder { color: #777; }
+  a.back { color: #7ec8e3; text-decoration: none; font-size: 12px; }
+  a.back:hover { text-decoration: underline; }
+
+  #status { font-size: 11px; color: #aaa; }
+
+  main { padding: 16px 20px; }
+
+  .sheet-section { margin-bottom: 32px; }
+  .sheet-section h2 { font-size: 13px; color: #b0c4de; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+
+  .sheet-row { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+
+  canvas.sheet-canvas { cursor: crosshair; image-rendering: pixelated; display: block; border: 1px solid #333; }
+  canvas.sheet-canvas:hover { border-color: #7ec8e3; }
+
+  #tooltip {
+    position: fixed;
+    background: #0f3460;
+    border: 1px solid #7ec8e3;
+    padding: 8px 12px;
+    border-radius: 6px;
+    pointer-events: none;
+    display: none;
+    z-index: 100;
+    max-width: 320px;
+    line-height: 1.6;
+  }
+  #tooltip .snippet { background: #1a1a2e; padding: 4px 8px; border-radius: 3px; font-size: 11px; color: #7ec8e3; white-space: pre; margin-top: 4px; }
+
+  #copied {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #2ecc71; color: #000; padding: 8px 16px; border-radius: 6px;
+    display: none; font-size: 13px; z-index: 200;
+  }
+
+  .registry-section { margin-bottom: 32px; }
+  .registry-section h2 { font-size: 13px; color: #b0c4de; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+
+  #registry-table { border-collapse: collapse; width: 100%; }
+  #registry-table th, #registry-table td { padding: 5px 10px; border-bottom: 1px solid #2a2a3e; text-align: left; }
+  #registry-table th { color: #7ec8e3; font-weight: normal; }
+  #registry-table td canvas { vertical-align: middle; }
+  #registry-table td.id { color: #f0e68c; }
+  #registry-table td.sheet { color: #aaa; font-size: 11px; }
+  #registry-table tr:hover td { background: #16213e; }
+  #registry-table tr.hidden { display: none; }
+
+  .copy-btn {
+    background: #0f3460; border: 1px solid #444; color: #7ec8e3;
+    padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 11px; font-family: monospace;
+  }
+  .copy-btn:hover { background: #1a4a8a; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="/">← World</a>
+  <h1>🎨 Tile Browser</h1>
+  <input id="search" type="text" placeholder="Filter by tile ID…">
+  <span id="status">Loading…</span>
+</header>
+
+<div id="tooltip"></div>
+<div id="copied">✓ Copied!</div>
+
+<main>
+  <div class="registry-section">
+    <h2>Current tile registry</h2>
+    <table id="registry-table">
+      <thead><tr><th>Preview</th><th>ID</th><th>col</th><th>row</th><th>layer</th><th>category</th><th>Sheet</th><th></th></tr></thead>
+      <tbody id="registry-body"></tbody>
+    </table>
+  </div>
+
+  <div id="sheets-container"></div>
+</main>
+
+<script>
+'use strict';
+
+const TILE_SRC = 16;
+const TILE_GAP = 1;
+const TILE_STEP = TILE_SRC + TILE_GAP;
+const ZOOM = 3; // display scale
+
+const tooltip = document.getElementById('tooltip');
+const copiedEl = document.getElementById('copied');
+const searchEl = document.getElementById('search');
+const statusEl = document.getElementById('status');
+
+let sheetImages = {}; // url → HTMLImageElement
+let tilesData = [];   // from /api/tiles
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed: ${src}`));
+    img.src = src;
+  });
+}
+
+function showCopied() {
+  copiedEl.style.display = 'block';
+  setTimeout(() => { copiedEl.style.display = 'none'; }, 1500);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(showCopied).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showCopied();
+  });
+}
+
+function snippetFor(sheetUrl, col, row) {
+  // Remove leading slash for the JSON value
+  const sheetPath = sheetUrl.replace(/^\//, '').replace(/^tiles\//, 'DawnLike/');
+  return `"col": ${col}, "row": ${row}, "sheet": "${sheetPath}"`;
+}
+
+// ── Render a sheet canvas ────────────────────────────────────────────────────
+function renderSheetCanvas(img, sheetUrl) {
+  const cols = Math.floor((img.width  + TILE_GAP) / TILE_STEP);
+  const rows = Math.floor((img.height + TILE_GAP) / TILE_STEP);
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = img.width  * ZOOM;
+  canvas.height = img.height * ZOOM;
+  canvas.className = 'sheet-canvas';
+  canvas.title = sheetUrl;
+
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  // Hover: show coordinates + snippet
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / ZOOM;
+    const py = (e.clientY - rect.top)  / ZOOM;
+    const col = Math.floor(px / TILE_STEP);
+    const row = Math.floor(py / TILE_STEP);
+    if (col < 0 || col >= cols || row < 0 || row >= rows) { tooltip.style.display='none'; return; }
+
+    const snippet = snippetFor(sheetUrl, col, row);
+    tooltip.innerHTML = `
+      <b>col ${col}, row ${row}</b><br>
+      <span style="color:#aaa;font-size:11px">${sheetUrl}</span>
+      <div class="snippet">${snippet}</div>
+      <div style="margin-top:4px;font-size:11px;color:#aaa">Click to copy</div>
+    `;
+    tooltip.style.display = 'block';
+    tooltip.style.left = (e.clientX + 14) + 'px';
+    tooltip.style.top  = (e.clientY + 14) + 'px';
+
+    // Draw hover highlight
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#7ec8e3';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(col * TILE_STEP * ZOOM, row * TILE_STEP * ZOOM, TILE_SRC * ZOOM, TILE_SRC * ZOOM);
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    tooltip.style.display = 'none';
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / ZOOM;
+    const py = (e.clientY - rect.top)  / ZOOM;
+    const col = Math.floor(px / TILE_STEP);
+    const row = Math.floor(py / TILE_STEP);
+    copyText(snippetFor(sheetUrl, col, row));
+  });
+
+  return canvas;
+}
+
+// ── Build registry table ─────────────────────────────────────────────────────
+function buildRegistryTable(tiles) {
+  const tbody = document.getElementById('registry-body');
+  tbody.innerHTML = '';
+
+  for (const t of tiles) {
+    const sheetUrl = t.sheet ? `/${t.sheet}` : '/1_terrain.png';
+    const img = sheetImages[sheetUrl];
+
+    const previewCanvas = document.createElement('canvas');
+    previewCanvas.width = previewCanvas.height = TILE_SRC * 2;
+    previewCanvas.style.imageRendering = 'pixelated';
+    if (img) {
+      const pctx = previewCanvas.getContext('2d');
+      pctx.imageSmoothingEnabled = false;
+      pctx.drawImage(img, t.col * TILE_STEP, t.row * TILE_STEP, TILE_SRC, TILE_SRC, 0, 0, TILE_SRC * 2, TILE_SRC * 2);
+    }
+
+    const snippet = snippetFor(sheetUrl, t.col, t.row);
+
+    const tr = document.createElement('tr');
+    tr.dataset.id = t.id;
+    tr.innerHTML = `
+      <td></td>
+      <td class="id">${t.id}</td>
+      <td>${t.col}</td>
+      <td>${t.row}</td>
+      <td>${t.layer}</td>
+      <td>${t.category}</td>
+      <td class="sheet">${t.sheet ?? '(default)'}</td>
+      <td><button class="copy-btn" data-snippet="${snippet.replace(/"/g, '&quot;')}">copy</button></td>
+    `;
+    tr.querySelector('td').appendChild(previewCanvas);
+    tr.querySelector('.copy-btn').addEventListener('click', (e) => {
+      copyText(e.target.dataset.snippet);
+    });
+    tbody.appendChild(tr);
+  }
+}
+
+// ── Filter registry table ────────────────────────────────────────────────────
+function filterRegistry(query) {
+  const q = query.toLowerCase();
+  for (const tr of document.querySelectorAll('#registry-body tr')) {
+    tr.classList.toggle('hidden', q !== '' && !tr.dataset.id.includes(q));
+  }
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
+async function init() {
+  const [tilesRes, sheetsRes] = await Promise.all([
+    fetch('/api/tiles').then(r => r.json()),
+    fetch('/api/sheets').then(r => r.json()),
+  ]);
+
+  tilesData = tilesRes.tiles;
+  const sheets = sheetsRes.sheets;
+
+  // Load all referenced images: sheets from API + any used by tile registry
+  const allUrls = new Set(sheets.map(s => s.url));
+  for (const t of tilesData) {
+    if (t.sheet) allUrls.add('/' + t.sheet);
+  }
+
+  await Promise.all([...allUrls].map(async url => {
+    try { sheetImages[url] = await loadImage(url); }
+    catch { /* sheet might not be accessible */ }
+  }));
+
+  // Registry table
+  buildRegistryTable(tilesData);
+
+  // Sheet browser sections grouped by group name
+  const groups = {};
+  for (const s of sheets) {
+    (groups[s.group] ??= []).push(s);
+  }
+
+  const container = document.getElementById('sheets-container');
+  for (const [groupName, groupSheets] of Object.entries(groups)) {
+    const section = document.createElement('div');
+    section.className = 'sheet-section';
+    section.innerHTML = `<h2>${groupName}</h2>`;
+    const row = document.createElement('div');
+    row.className = 'sheet-row';
+
+    for (const s of groupSheets) {
+      const img = sheetImages[s.url];
+      if (!img) continue;
+      const cols = Math.floor((img.width  + TILE_GAP) / TILE_STEP);
+      const rows = Math.floor((img.height + TILE_GAP) / TILE_STEP);
+      const wrap = document.createElement('div');
+      wrap.innerHTML = `<div style="color:#888;font-size:11px;margin-bottom:4px">${s.url} <span style="color:#555">(${cols}×${rows} tiles)</span></div>`;
+      wrap.appendChild(renderSheetCanvas(img, s.url));
+      row.appendChild(wrap);
+    }
+
+    section.appendChild(row);
+    container.appendChild(section);
+  }
+
+  statusEl.textContent = `${tilesData.length} tiles · ${sheets.length} sheets`;
+}
+
+searchEl.addEventListener('input', () => filterRegistry(searchEl.value));
+
+init().catch(err => {
+  statusEl.textContent = 'Error: ' + err.message;
+  console.error(err);
+});
+</script>
+</body>
+</html>

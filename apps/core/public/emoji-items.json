@@ -1,0 +1,30 @@
+{
+  "berries": {
+    "col": 0,
+    "row": 0
+  },
+  "wood": {
+    "col": 1,
+    "row": 0
+  },
+  "rocks": {
+    "col": 2,
+    "row": 0
+  },
+  "branches": {
+    "col": 3,
+    "row": 0
+  },
+  "acorns": {
+    "col": 4,
+    "row": 0
+  },
+  "stone_axe": {
+    "col": 5,
+    "row": 0
+  },
+  "_unknown": {
+    "col": 6,
+    "row": 0
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "entities": [
+    {
+      "id": "berries",
+      "tileType": "single",
+      "stats": {
+        "berries": 4
+      },
+      "harvest": {
+        "fullBase": "berries",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "branches",
+      "tileType": "single",
+      "stats": {
+        "branches": 2
+      },
+      "harvest": {
+        "fullBase": "branches",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "acorns",
+      "tileType": "single",
+      "stats": {
+        "acorns": 2
+      },
+      "harvest": {
+        "fullBase": "acorns",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "young_tree",
+      "tileType": "single",
+      "stats": {
+        "health": 40,
+        "maxHealth": 40,
+        "branches": 2,
+        "acorns": 3
+      },
+      "harvest": {
+        "fullBase": "young_tree",
+        "requires": [
+          "chop"
+        ],
+        "damage": 10,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 3,
+            "acorns": 2,
+            "wood": 3
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "old_tree_base",
+      "tileType": "two-tile",
+      "topTileId": "old_tree_top",
+      "stats": {
+        "health": 100,
+        "maxHealth": 100,
+        "branches": 5,
+        "acorns": 8
+      },
+      "harvest": {
+        "fullBase": "old_tree_base",
+        "fullTop": "old_tree_top",
+        "requires": [
+          "chop"
+        ],
+        "damage": 20,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 8,
+            "acorns": 5,
+            "wood": 5
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+    {
+      "id": "young_berry",
+      "tileType": "single",
+      "stats": {
+        "health": 30,
+        "maxHealth": 30,
+        "branches": 2,
+        "berries": 4
+      },
+      "harvest": {
+        "fullBase": "young_berry",
+        "emptyBase": "young_berry_empty",
+        "regrowMs": 300000
+      },
+      "searchTarget": "berries",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "oak_sprout",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "oak_sprout_big",
+        "growthMs": 120000
+      }
+    },
+    {
+      "id": "oak_sprout_big",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "young_tree",
+        "growthMs": 300000
+      }
+    },
+    {
+      "id": "berry_sprout",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "berry_sprout_big",
+        "growthMs": 120000
+      }
+    },
+    {
+      "id": "berry_sprout_big",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "young_berry",
+        "growthMs": 300000
+      }
+    },
+    {
+      "id": "old_berry_base",
+      "tileType": "two-tile",
+      "topTileId": "old_berry_top",
+      "stats": {
+        "health": 80,
+        "maxHealth": 80,
+        "branches": 5,
+        "berries": 10
+      },
+      "harvest": {
+        "fullBase": "old_berry_base",
+        "fullTop": "old_berry_top",
+        "emptyBase": "old_berry_empty_base",
+        "emptyTop": "old_berry_empty_top",
+        "regrowMs": 300000
+      },
+      "searchTarget": "berries",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+    {
+      "id": "rock",
+      "tileType": "single",
+      "stats": {
+        "rocks": 10
+      },
+      "harvest": {
+        "fullBase": "rock",
+        "harvestYield": 5,
+        "regrowMs": 300000
+      },
+      "searchTarget": "rocks",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "wood",
+      "tileType": "single",
+      "stats": {
+        "wood": 1
+      },
+      "harvest": {
+        "fullBase": "wood",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "stone_axe",
+      "tileType": "single",
+      "stats": {
+        "health": 1,
+        "maxHealth": 1,
+        "stone_axe": 1
+      },
+      "harvest": {
+        "fullBase": "stone_axe",
+        "regrowMs": 0
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "campfire_extinct",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {
+        "health": 0,
+        "maxHealth": 100
+      },
+      "harvest": null,
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "build": {
+        "costs": {
+          "wood": 3,
+          "branches": 2
+        }
+      },
+      "repair": {
+        "fuelItem": "wood",
+        "healthPerFuel": 20
+      },
+      "interact": {
+        "costs": {
+          "rocks": 2
+        },
+        "result": "campfire_lit",
+        "minHealth": 20,
+        "preserveHealth": true
+      }
+    },
+    {
+      "id": "campfire_lit",
+      "tileType": "single",
+      "blocks": true,
+      "stats": {
+        "health": 100,
+        "maxHealth": 100
+      },
+      "harvest": null,
+      "searchTarget": null,
+      "energyRegen": 3,
+      "fireDamage": 5,
+      "decay": {
+        "ratePerSecond": 0.2,
+        "fuelItem": "wood",
+        "healthPerFuel": 30,
+        "onEmpty": "campfire_extinct"
+      },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "interact": {
+        "costs": {},
+        "result": "campfire_extinct",
+        "preserveHealth": true
+      }
+    },
+    {
+      "id": "chest",
+      "tileType": "single",
+      "stats": {
+        "health": 20,
+        "maxHealth": 20
+      },
+      "blocks": true,
+      "container": true,
+      "rejectedItems": [
+        "wood"
+      ],
+      "maxItems": 30,
+      "build": {
+        "costs": {
+          "wood": 3,
+          "branches": 2
+        }
+      },
+      "harvest": null,
+      "searchTarget": "chest",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      }
+    },
+    {
+      "id": "log_pile",
+      "tileType": "single",
+      "stats": {},
+      "blocks": true,
+      "container": true,
+      "acceptedItems": [
+        "wood"
+      ],
+      "maxItems": 10,
+      "build": {
+        "costs": {
+          "wood": 3
+        }
+      },
+      "harvest": null,
+      "searchTarget": "log_pile",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      }
+    }
+  ]
+}

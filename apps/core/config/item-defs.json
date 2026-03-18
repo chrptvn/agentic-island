@@ -1,0 +1,63 @@
+{
+  "berries": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 20
+    }
+  },
+  "wood": {
+    "equippable": false,
+    "wearable": null
+  },
+  "rocks": {
+    "equippable": true,
+    "wearable": null,
+    "hideWhenEquipped": true,
+    "capabilities": {
+      "mine": 0.5,
+      "plow": 0.3
+    }
+  },
+  "branches": {
+    "equippable": false,
+    "wearable": null
+  },
+  "acorns": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 10
+    }
+  },
+  "stone_axe": {
+    "equippable": true,
+    "wearable": null,
+    "capabilities": {
+      "chop": 1,
+      "mine": 0.3,
+      "plow": 0.2
+    }
+  },
+  "stone_pickaxe": {
+    "equippable": true,
+    "wearable": null,
+    "capabilities": {
+      "mine": 1
+    }
+  },
+  "stone_knife": {
+    "equippable": true,
+    "wearable": null,
+    "capabilities": {
+      "cut": 1
+    }
+  },
+  "plow": {
+    "equippable": true,
+    "wearable": null,
+    "capabilities": {
+      "plow": 1
+    }
+  }
+}

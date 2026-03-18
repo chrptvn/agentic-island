@@ -1,0 +1,43 @@
+{
+  "recipes": {
+    "stone_axe": {
+      "ingredients": {
+        "branches": 1,
+        "rocks": 1
+      },
+      "output": {
+        "stone_axe": 1
+      },
+      "description": "A crude stone axe — useful for chopping trees"
+    },
+    "stone_knife": {
+      "ingredients": {
+        "rocks": 2
+      },
+      "output": {
+        "stone_knife": 1
+      },
+      "description": "A crude stone knife — useful for cutting"
+    },
+    "stone_pickaxe": {
+      "ingredients": {
+        "branches": 1,
+        "rocks": 3
+      },
+      "output": {
+        "stone_pickaxe": 1
+      },
+      "description": "A crude stone pickaxe — useful for mining rocks"
+    },
+    "plow": {
+      "ingredients": {
+        "branches": 2,
+        "rocks": 1
+      },
+      "output": {
+        "plow": 1
+      },
+      "description": "A simple wooden plow — till soil into dirt paths faster"
+    }
+  }
+}

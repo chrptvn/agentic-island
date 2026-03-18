@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Genesis</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #111; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; padding: 20px; font-family: monospace; color: #aaa; }
+    #status { margin-bottom: 12px; font-size: 13px; letter-spacing: 0.05em; }
+    #status.connected { color: #4caf50; }
+    #status.disconnected { color: #f44; }
+    #meta { margin-top: 10px; font-size: 12px; color: #555; }
+    #display-container { overflow: auto; max-width: 100%; }
+    #display-container canvas { display: block; image-rendering: pixelated; }
+    #controls { margin-bottom: 12px; }
+    #btn-reset { background: #222; color: #aaa; border: 1px solid #444; padding: 6px 14px; font-family: monospace; font-size: 13px; cursor: pointer; border-radius: 3px; }
+    #btn-reset:hover { background: #333; color: #fff; }
+    #btn-reset:disabled { opacity: 0.5; cursor: not-allowed; }
+    #btn-path { background: #222; color: #aaa; border: 1px solid #444; padding: 6px 14px; font-family: monospace; font-size: 13px; cursor: pointer; border-radius: 3px; margin-left: 8px; }
+    #btn-path:hover { background: #333; color: #fff; }
+    #btn-path.active { background: #3a2a00; color: #f0c060; border-color: #7a5a00; }
+    #btn-spawn-gary { background: #222; color: #aaa; border: 1px solid #444; padding: 6px 14px; font-family: monospace; font-size: 13px; cursor: pointer; border-radius: 3px; margin-left: 8px; }
+    #btn-spawn-gary:hover { background: #333; color: #fff; }
+    #btn-spawn-gary:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div id="status" class="disconnected">⬤ disconnected</div>
+  <div id="controls">
+    <button id="btn-reset">↺ Reset World (50×50 + Carl)</button>
+    <button id="btn-path">🛤 Draw Path</button>
+    <button id="btn-spawn-gary">👤 Spawn Gary</button>
+  </div>
+  <div id="display-container"></div>
+  <div id="meta"></div>
+  <script src="client.js"></script>
+  <script>
+    const btnReset = document.getElementById('btn-reset');
+    btnReset.addEventListener('click', async () => {
+      btnReset.disabled = true;
+      btnReset.textContent = '↺ Resetting…';
+      try {
+        const res = await fetch('/api/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ width: 50, height: 50, characterId: 'Carl' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? 'Reset failed');
+        console.log('[reset]', data.message);
+      } catch (e) {
+        console.error('[reset]', e);
+      } finally {
+        btnReset.disabled = false;
+        btnReset.textContent = '↺ Reset World (50×50 + Carl)';
+      }
+    });
+
+    const btnSpawnGary = document.getElementById('btn-spawn-gary');
+    btnSpawnGary.addEventListener('click', async () => {
+      btnSpawnGary.disabled = true;
+      btnSpawnGary.textContent = '👤 Spawning…';
+      try {
+        const res = await fetch('/api/spawn_random', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: 'Gary' }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? 'Spawn failed');
+        console.log('[spawn]', data.message);
+      } catch (e) {
+        alert('Could not spawn Gary: ' + e.message);
+        console.error('[spawn]', e);
+      } finally {
+        btnSpawnGary.disabled = false;
+        btnSpawnGary.textContent = '👤 Spawn Gary';
+      }
+    });
+  </script>
+</body>
+</html>

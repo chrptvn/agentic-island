@@ -1,0 +1,7 @@
+export const DEFAULT_PORT_CORE = 3000;
+export const DEFAULT_PORT_HUB = 4000;
+export const HEARTBEAT_INTERVAL_MS = 30_000;
+export const HEARTBEAT_TIMEOUT_MS = 90_000;
+export const MAX_SPRITE_UPLOAD_BYTES = 10 * 1024 * 1024;
+export const WS_RECONNECT_BASE_MS = 1000;
+export const WS_RECONNECT_MAX_MS = 30_000;

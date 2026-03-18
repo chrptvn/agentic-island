@@ -1,0 +1,274 @@
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CONFIG_PATH = join(__dirname, "../..", "config", "entities.json");
+
+// ── JSON schema types ─────────────────────────────────────────────────────────
+
+export interface EntityDef {
+  id: string;
+  tileType: "single" | "two-tile";
+  topTileId?: string;
+  stats: EntityStats;
+  /** If true, this entity is an inventory item and cannot be placed directly on the map. */
+  item?: boolean;
+  harvest?: HarvestDef;
+  /** Items consumed from inventory when a character builds this entity on the map. */
+  build?: BuildDef;
+  /** What happens when a character interacts with this entity (e.g. light/extinguish fire). */
+  interact?: InteractDef;
+  /** Group name used for search_nearest commands (e.g. "trees", "berries", "rocks"). */
+  searchTarget?: string;
+  /** If true, this entity is a solid obstacle — characters cannot walk through it and must harvest from an adjacent tile. */
+  blocks?: boolean;
+  /** If true, characters can store and retrieve items from this entity using container_put/container_take. */
+  container?: boolean;
+  /** Whitelist: if set, only these item names may be stored in this container. */
+  acceptedItems?: string[];
+  /** Blacklist: if set, these item names are always rejected by this container. */
+  rejectedItems?: string[];
+  /** Maximum total item count (sum of all stack quantities) the container can hold. */
+  maxItems?: number;
+  /** Energy regen rate (per second) granted to any character standing on an adjacent tile. Replaces passive regen. */
+  energyRegen?: number;
+  spawn?: {
+    /** Relative spawn weight; higher = more frequent. */
+    weight: number;
+    /** If true, entity requires a "deep inner" cell (room for canopy above). */
+    requiresDeep: boolean;
+  };
+  /** Gradual health decay over time, refuelled by adding items. */
+  decay?: DecayDef;
+  /** Static repair config: entity health can be restored with items even while idle (no decay). */
+  repair?: RepairDef;
+  /** Damage per second dealt to any character standing on this tile. */
+  fireDamage?: number;
+  /** Staged growth: after growthMs ms this entity automatically becomes nextStage. */
+  growthStages?: GrowthStagesDef;
+}
+
+/** Recipe cost to build an entity onto the map from an adjacent cell. */
+export interface BuildDef {
+  /** Items consumed from the character's inventory. */
+  costs: Record<string, number>;
+}
+
+/** Interaction that replaces this entity with another, optionally consuming inventory items. */
+export interface InteractDef {
+  /** Items consumed from the character's inventory. Empty object = free interaction. */
+  costs: Record<string, number>;
+  /** Tile ID of the entity to place at this cell after the interaction. */
+  result: string;
+  /** Minimum health the entity must have for the interaction to be allowed. */
+  minHealth?: number;
+  /** If true, carry the current entity's health over to the resulting entity's stats. */
+  preserveHealth?: boolean;
+}
+
+/** Gradual health decay: entity loses health over time, replenished by adding fuel items. */
+export interface DecayDef {
+  /** Health lost per second. */
+  ratePerSecond: number;
+  /** Item name consumed from a character's inventory to replenish health. */
+  fuelItem: string;
+  /** Health restored per 1 unit of fuelItem. */
+  healthPerFuel: number;
+  /** Tile ID to replace this entity with when health reaches 0. null = remove entirely. */
+  onEmpty: string | null;
+}
+
+/** Static repair config: entity can be refuelled while idle (no decay timer). */
+export interface RepairDef {
+  /** Item consumed from a character's inventory to restore health. */
+  fuelItem: string;
+  /** Health restored per 1 unit of fuelItem. */
+  healthPerFuel: number;
+}
+
+/** Staged growth config: entity automatically advances to the next tile after a delay. */
+export interface GrowthStagesDef {
+  /** Tile ID this entity becomes when it finishes growing. */
+  nextStage: string;
+  /** Milliseconds until the entity advances to nextStage. */
+  growthMs: number;
+}
+
+interface EntitiesConfig {
+  entities: EntityDef[];
+}
+
+export interface EntityStats {
+  health: number;
+  maxHealth: number;
+  [resource: string]: number;
+}
+
+export interface HarvestDef {
+  emptyBase?: string;
+  emptyTop?: string;
+  fullBase: string;
+  fullTop?: string;
+  regrowMs?: number;
+  /** Capability tags required on the character's equipped (hands) item. Omit = no restriction. */
+  requires?: string[];
+  /** Base number of resources to yield per drain-mode harvest action.
+   *  Actual yield = Math.max(1, Math.round(harvestYield × toolCapabilityLevel)).
+   *  Omit to drain all available resources in one action (legacy behaviour). */
+  harvestYield?: number;
+  /** Health damage dealt per harvest command. Omit = one-shot resource drain (legacy behavior). */
+  damage?: number;
+  /** Resources added to entity stats on each successful damage hit (before any collection). */
+  dropPerHit?: Record<string, number>;
+  /** What happens when entity health reaches 0 (only used when damage is set). */
+  onDeath?: {
+    /** Tile ID of an entity to place at the same map cell after death. */
+    spawnEntity?: string;
+    /** Items immediately added to the character's inventory on death. */
+    drops?: Record<string, number>;
+    /**
+     * When true, the entity is NOT destroyed at health=0.
+     * It remains on the map so the player can harvest pending resources.
+     * Entity is removed only when resources are fully drained.
+     */
+    keepForPickup?: boolean;
+  };
+}
+
+// ── Load config ───────────────────────────────────────────────────────────────
+
+function loadConfig(): EntitiesConfig {
+  return JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+}
+
+function buildDerivedExports(defs: EntityDef[]) {
+  const ENTITY_DEFAULTS: Record<string, EntityStats> = Object.fromEntries(defs.map((e) => [e.id, e.stats]));
+
+  const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tileType === "single").map((e) => e.id);
+
+  const TWO_TILE_TREE_PAIRS: [string, string][] = defs
+    .filter((e): e is EntityDef & { tileType: "two-tile"; topTileId: string } => e.tileType === "two-tile" && e.topTileId !== undefined)
+    .map((e) => [e.id, e.topTileId]);
+
+  const HARVEST_DEFS: Record<string, HarvestDef> = Object.fromEntries(
+    defs.filter((e) => e.harvest !== undefined).map((e) => [e.id, e.harvest!])
+  );
+
+  const BUILD_DEFS: Record<string, BuildDef> = Object.fromEntries(
+    defs.filter((e) => e.build !== undefined).map((e) => [e.id, e.build!])
+  );
+
+  const INTERACT_DEFS: Record<string, InteractDef> = Object.fromEntries(
+    defs.filter((e) => e.interact !== undefined).map((e) => [e.id, e.interact!])
+  );
+
+  const SEARCH_TARGET_MAP: Map<string, Set<string>> = new Map();
+  for (const e of defs) {
+    if (!e.searchTarget) continue;
+    const group = SEARCH_TARGET_MAP.get(e.searchTarget) ?? new Set<string>();
+    group.add(e.id);
+    SEARCH_TARGET_MAP.set(e.searchTarget, group);
+  }
+
+  const BLOCKING_IDS: Set<string> = new Set(defs.filter((e) => e.blocks === true).map((e) => e.id));
+
+  const ENTITY_DEF_BY_ID: Map<string, EntityDef> = new Map(defs.map((e) => [e.id, e]));
+
+  const DECAY_DEFS: Record<string, DecayDef> = Object.fromEntries(
+    defs.filter((e) => e.decay !== undefined).map((e) => [e.id, e.decay!])
+  );
+
+  const REPAIR_DEFS: Record<string, RepairDef> = Object.fromEntries(
+    defs.filter((e) => e.repair !== undefined).map((e) => [e.id, e.repair!])
+  );
+
+  /** Set of tile IDs that are inventory items — they cannot be placed on the map. */
+  const ITEM_IDS: Set<string> = new Set(defs.filter((e) => e.item === true).map((e) => e.id));
+
+  const GROWTH_DEFS: Record<string, GrowthStagesDef> = Object.fromEntries(
+    defs.filter((e) => e.growthStages !== undefined).map((e) => [e.id, e.growthStages!])
+  );
+
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS };
+}
+
+/** Full entity definitions as loaded from config/entities.json. */
+export const ENTITY_DEFS: EntityDef[] = [...loadConfig().entities];
+
+/** Returns all harvestable resource amounts from an EntityStats object.
+ * Keys starting with "max" (e.g. maxHealth, maxRocks) are excluded as they represent caps, not resources. */
+export function getResources(stats: EntityStats): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const [k, v] of Object.entries(stats)) {
+    if (k !== "health" && !k.startsWith("max") && typeof v === "number" && v > 0) result[k] = v;
+  }
+  return result;
+}
+
+let _derived = buildDerivedExports(ENTITY_DEFS);
+
+/** Default stats keyed by layer-2 tile ID (the "root" tile of each entity). */
+export let ENTITY_DEFAULTS: Record<string, EntityStats> = _derived.ENTITY_DEFAULTS;
+
+/** Single-tile entity IDs (layer 2 only, no canopy). */
+export let SINGLE_TILE_IDS: string[] = _derived.SINGLE_TILE_IDS;
+
+/**
+ * 2-tile tree pairs: [baseTileId, topTileId].
+ * Base goes at (x, y) layer 2; top goes at (x, y-1) layer 3.
+ */
+export let TWO_TILE_TREE_PAIRS: [string, string][] = _derived.TWO_TILE_TREE_PAIRS;
+
+/** Set of entity tile IDs that are inventory items and cannot be placed on the map. */
+export let ITEM_IDS: Set<string> = _derived.ITEM_IDS;
+
+export let HARVEST_DEFS: Record<string, HarvestDef> = _derived.HARVEST_DEFS;
+
+export let BUILD_DEFS: Record<string, BuildDef> = _derived.BUILD_DEFS;
+
+export let INTERACT_DEFS: Record<string, InteractDef> = _derived.INTERACT_DEFS;
+
+/** Decay definitions keyed by entity tile ID. */
+export let DECAY_DEFS: Record<string, DecayDef> = _derived.DECAY_DEFS;
+
+/** Repair definitions (static refuel, no decay timer) keyed by entity tile ID. */
+export let REPAIR_DEFS: Record<string, RepairDef> = _derived.REPAIR_DEFS;
+
+/** Growth stage definitions keyed by entity tile ID. */
+export let GROWTH_DEFS: Record<string, GrowthStagesDef> = _derived.GROWTH_DEFS;
+
+/** Set of entity tile IDs that are solid obstacles — never walkable, harvest requires adjacency. */
+export let BLOCKING_IDS: Set<string> = _derived.BLOCKING_IDS;
+
+/** Maps entity id → full EntityDef for O(1) lookup (e.g. in tick aura checks). */
+export let ENTITY_DEF_BY_ID: Map<string, EntityDef> = _derived.ENTITY_DEF_BY_ID;
+
+/**
+ * Maps each searchTarget group name to the set of tile IDs belonging to that group.
+ * e.g. "trees" → Set { "young_tree", "old_tree_base" }
+ */
+export let SEARCH_TARGET_MAP: Map<string, Set<string>> = _derived.SEARCH_TARGET_MAP;
+
+export function reloadEntities(): void {
+  const defs = loadConfig().entities;
+  ENTITY_DEFS.length = 0;
+  ENTITY_DEFS.push(...defs);
+  _derived = buildDerivedExports(defs);
+  ENTITY_DEFAULTS   = _derived.ENTITY_DEFAULTS;
+  SINGLE_TILE_IDS   = _derived.SINGLE_TILE_IDS;
+  TWO_TILE_TREE_PAIRS = _derived.TWO_TILE_TREE_PAIRS;
+  HARVEST_DEFS      = _derived.HARVEST_DEFS;
+  BUILD_DEFS        = _derived.BUILD_DEFS;
+  INTERACT_DEFS     = _derived.INTERACT_DEFS;
+  DECAY_DEFS        = _derived.DECAY_DEFS;
+  REPAIR_DEFS       = _derived.REPAIR_DEFS;
+  BLOCKING_IDS      = _derived.BLOCKING_IDS;
+  ENTITY_DEF_BY_ID  = _derived.ENTITY_DEF_BY_ID;
+  SEARCH_TARGET_MAP = _derived.SEARCH_TARGET_MAP;
+  ITEM_IDS          = _derived.ITEM_IDS;
+  GROWTH_DEFS       = _derived.GROWTH_DEFS;
+}
+
+export function CONFIG_PATH_ENTITIES() { return CONFIG_PATH; }
+
