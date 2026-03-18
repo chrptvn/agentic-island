@@ -1,0 +1,32 @@
+import type Database from "better-sqlite3";
+
+export function initDb(db: Database.Database): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS api_keys (
+      id TEXT PRIMARY KEY,
+      key_hash TEXT NOT NULL UNIQUE,
+      label TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      last_seen_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS worlds (
+      id TEXT PRIMARY KEY,
+      api_key_id TEXT NOT NULL REFERENCES api_keys(id),
+      name TEXT NOT NULL,
+      description TEXT,
+      config_snapshot TEXT,
+      player_count INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'offline',
+      last_heartbeat_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS world_views (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      world_id TEXT REFERENCES worlds(id),
+      viewed_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+}

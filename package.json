@@ -9,11 +9,15 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "test:smoke": "tsx scripts/smoke-test.ts"
   },
   "devDependencies": {
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0",
     "turbo": "^2.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "ws": "^8.19.0"
   },
   "packageManager": "pnpm@10.6.5",
   "engines": {
