@@ -7,7 +7,7 @@ import {
   loadEntityStats, saveEntityStat, deleteEntityStat, saveEntityStatsBatch, clearEntityStats,
   loadCharacters, saveCharacter, deleteCharacter, runTransaction,
 } from "../persistence/db.js";
-import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES } from "./tile-registry.js";
+import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
 import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ITEM_IDS, GROWTH_DEFS, getResources, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
@@ -122,11 +122,17 @@ export class World extends EventEmitter {
   getTileRegistry(): Record<string, object> {
     const registry: Record<string, object> = {};
     for (const [id, def] of TILE_BY_ID) {
+      const sheet = def.sheet ?? TILE_SHEET;
+      const sheetOverride = SHEET_OVERRIDES[sheet] ?? {};
+      const tileSize = sheetOverride.tileSize ?? TILE_SIZE;
+      const gap = sheetOverride.tileGap ?? TILE_GAP;
       registry[id] = {
         id: def.id,
         col: def.col,
         row: def.row,
-        sheet: def.sheet,
+        sheet,
+        tileSize,
+        gap,
         category: def.category,
         layer: def.layer,
         frames: def.frames?.length,
