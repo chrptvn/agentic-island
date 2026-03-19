@@ -12,7 +12,7 @@ export interface TileDefinition {
   col: number;
   row: number;
   description: string;
-  category: "terrain" | "water_transition" | "vegetation" | "item" | "structure";
+  category: "terrain" | "water_transition" | "vegetation" | "item" | "structure" | "character";
   /** Rendering layer: 0=base terrain, 1=water overlay, 2=entity base, 3=entity canopy */
   layer: 0 | 1 | 2 | 3;
   /** Additional frames for animated tiles. If present, the tile cycles through these frames. */

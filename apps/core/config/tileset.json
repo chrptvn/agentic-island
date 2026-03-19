@@ -569,6 +569,16 @@
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
       "description": "Plow tool — equip in hands to till soil faster"
+    },
+    {
+      "id": "human",
+      "col": 0,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "frames": [{ "col": 0, "row": 0 }, { "col": 1, "row": 0 }],
+      "description": "Human character — 2-frame walk animation"
     }
   ]
 }
