@@ -20,6 +20,14 @@
       "description": "Outdoor grass tile"
     },
     {
+      "id": "water",
+      "col": 0,
+      "row": 0,
+      "layer": 0,
+      "category": "terrain",
+      "description": "Base water terrain — solid water fill used as layer-0 terrain"
+    },
+    {
       "id": "water_blob",
       "col": 0,
       "row": 0,
