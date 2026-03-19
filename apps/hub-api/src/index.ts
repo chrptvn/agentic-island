@@ -10,6 +10,7 @@ import { readFile, stat } from "node:fs/promises";
 import health from "./routes/health.js";
 import keys from "./routes/keys.js";
 import worlds from "./routes/worlds.js";
+import admin from "./routes/admin.js";
 import { handleCoreConnection } from "./ws/core-handler.js";
 import { handleViewerConnection } from "./ws/viewer-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
@@ -22,8 +23,8 @@ app.use(
   "*",
   cors({
     origin: "*",
-    allowMethods: ["GET", "POST", "OPTIONS"],
-    allowHeaders: ["Content-Type"],
+    allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
     maxAge: 3600,
   }),
 );
@@ -34,6 +35,7 @@ app.post("/api/keys", rateLimit({ windowMs: 60_000, maxRequests: 5 }));
 app.route("/api/health", health);
 app.route("/api/keys", keys);
 app.route("/api/worlds", worlds);
+app.route("/api/admin", admin);
 
 // Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
 app.get("/sprites/:worldId/*", async (c) => {

@@ -10,6 +10,11 @@
 #   hub-api  → http://localhost:4000
 #   hub-web  → http://localhost:5173 (Vite, proxies /api + /ws to hub-api)
 #   core     → http://localhost:3000
+#
+# Environment variables:
+#   HUB_API_KEY   API key for the core to authenticate with hub-api
+#   ADMIN_KEY     Master admin key for island-cli admin commands
+#   WORLD_NAME    Name of the world (used by core)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
