@@ -3,8 +3,9 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { IncomingMessage, ServerResponse } from "http";
 import { z } from "zod";
-import { registerGenericPersonaTools, registerFeedEntityTools, registerSpawnPositionsTools } from "./tools/character-tools.js";
-import { registerSpawnableTilesTools } from "./tools/tile-tools.js";
+import { registerGenericPersonaTools, registerAdminCharacterTools, registerFeedEntityTools, registerSpawnPositionsTools } from "./tools/character-tools.js";
+import { registerMapReadTools, registerMapAdminTools } from "./tools/map-tools.js";
+import { registerSpawnableTilesTools, registerTileQueryTools, registerTileEditTools, registerPathTools } from "./tools/tile-tools.js";
 import { registerFilterTools } from "./tools/filter-tools.js";
 import { registerJournalTools } from "./tools/journal-tools.js";
 import { registerSayTools } from "./tools/say-tools.js";
@@ -24,7 +25,7 @@ interface AlertCooldowns {
 
 // ─── Session ─────────────────────────────────────────────────────────────────
 
-interface PersonaSession {
+interface McpSession {
   server:       McpServer;
   transport:    StreamableHTTPServerTransport;
   characterId:  string | null;
@@ -34,11 +35,11 @@ interface PersonaSession {
 }
 
 /** Active sessions keyed by Mcp-Session-Id. */
-const personaSessions = new Map<string, PersonaSession>();
+const mcpSessions = new Map<string, McpSession>();
 
 // ─── World push helpers ───────────────────────────────────────────────────────
 
-function attachWorldListener(session: PersonaSession): void {
+function attachWorldListener(session: McpSession): void {
   if (session.worldListener) return; // already attached
   const id = session.characterId;
   if (!id) return;
@@ -80,7 +81,7 @@ function attachWorldListener(session: PersonaSession): void {
   session.worldListener = listener;
 }
 
-function detachWorldListener(session: PersonaSession): void {
+function detachWorldListener(session: McpSession): void {
   if (session.worldListener) {
     World.getInstance().off("map:updated", session.worldListener);
     session.worldListener = null;
@@ -89,13 +90,13 @@ function detachWorldListener(session: PersonaSession): void {
 
 // ─── Session factory ──────────────────────────────────────────────────────────
 
-function makeSession(): PersonaSession {
-  const server = new McpServer({ name: "genesis-persona", version: "1.0.0" });
+function makeSession(): McpSession {
+  const server = new McpServer({ name: "genesis", version: "1.0.0" });
 
   // ── set_character: bind this session to a character and activate push ─────
   server.tool(
     "set_character",
-    "Bind this persona session to a character by ID. Once bound, the server will push live environment updates whenever the world changes. The agent receives a `genesis://character/{id}/surroundings` resource notification and can read it to get current position, stats, and nearby entities without polling.",
+    "Bind this session to a character by ID. Once bound, the server will push live environment updates whenever the world changes. The agent receives a `genesis://character/{id}/surroundings` resource notification and can read it to get current position, stats, and nearby entities without polling.",
     { character_id: z.string().min(1).describe("The character's unique id to bind this session to") },
     async ({ character_id }) => {
       const world = World.getInstance();
@@ -143,27 +144,37 @@ function makeSession(): PersonaSession {
     }
   );
 
+  // ── Game tools (character actions, inventory, crafting) ─────────────────────
   registerGenericPersonaTools(server);
   registerFeedEntityTools(server);
-  registerSpawnableTilesTools(server);
   registerSpawnPositionsTools(server);
   registerFilterTools(server);
   registerJournalTools(server);
   registerSayTools(server);
   registerPlantTools(server);
+
+  // ── World tools (map, tiles, character admin) ─────────────────────────────
+  registerMapReadTools(server);
+  registerMapAdminTools(server);
+  registerTileQueryTools(server);
+  registerTileEditTools(server);
+  registerSpawnableTilesTools(server);
+  registerAdminCharacterTools(server);
+  registerPathTools(server);
+
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
-    onsessioninitialized: (id) => { personaSessions.set(id, session); },
+    onsessioninitialized: (id) => { mcpSessions.set(id, session); },
   });
 
   // Clean up session and world listener when transport closes.
   transport.onclose = () => {
-    if (transport.sessionId) personaSessions.delete(transport.sessionId);
+    if (transport.sessionId) mcpSessions.delete(transport.sessionId);
     detachWorldListener(session);
   };
 
   server.connect(transport);
-  const session: PersonaSession = {
+  const session: McpSession = {
     server,
     transport,
     characterId: null,
@@ -175,12 +186,12 @@ function makeSession(): PersonaSession {
 }
 
 /**
- * Route an incoming HTTP request to the correct persona session.
+ * Route an incoming HTTP request to the correct MCP session.
  * - No Mcp-Session-Id + initialize  → create new session
  * - Valid Mcp-Session-Id            → resume existing session
  * - Anything else                   → 400 / 404
  */
-export async function handlePersonaRequest(
+export async function handleMcpRequest(
   req: IncomingMessage,
   res: ServerResponse,
   body: unknown,
@@ -188,7 +199,7 @@ export async function handlePersonaRequest(
   const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
   if (sessionId) {
-    const session = personaSessions.get(sessionId);
+    const session = mcpSessions.get(sessionId);
     if (!session) {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Session not found" }));

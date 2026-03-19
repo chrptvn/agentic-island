@@ -11,9 +11,9 @@ Detailed technical documentation for the Agentic Island platform.
  │  │                    Core  (@agentic-island/core)             │       │
  │  │                                                             │       │
  │  │  ┌──────────┐  ┌─────────────┐  ┌────────────────────┐    │       │
- │  │  │  World   │  │  MCP Servers│  │   Hub Connector    │    │       │
- │  │  │  Engine  │  │  (persona / │  │   (WebSocket out)  │────┼───┐   │
- │  │  │          │  │   admin)    │  │                    │    │   │   │
+ │  │  │  World   │  │  MCP Server │  │   Hub Connector    │    │       │
+ │  │  │  Engine  │  │  (unified)  │  │   (WebSocket out)  │────┼───┐   │
+ │  │  │          │  │             │  │                    │    │   │   │
  │  │  └────┬─────┘  └──────┬──────┘  └────────────────────┘    │   │   │
  │  │       │               │                                    │   │   │
  │  │  ┌────┴───────────────┴────┐                               │   │   │
@@ -23,7 +23,7 @@ Detailed technical documentation for the Agentic Island platform.
  │                                                                    │   │
  │  AI Agents (Claude, Copilot, etc.)                                │   │
  │       │  MCP over HTTP                                            │   │
- │       └──► POST /mcp/persona                                      │   │
+ │       └──► POST /mcp                                              │   │
  │                                                                    │   │
  └────────────────────────────────────────────────────────────────────┘   │
                                                                           │
@@ -78,8 +78,7 @@ The Core is the game engine that simulates the world. It runs on the host's mach
 | Hub connector | `src/hub-connector/connector.ts` | Outbound WebSocket to Hub with reconnection |
 | Sprite uploader | `src/hub-connector/sprite-uploader.ts` | Base64-encodes and sends sprite sheets to Hub |
 | State streamer | `src/hub-connector/state-streamer.ts` | Periodically sends world state snapshots to Hub |
-| MCP persona server | `src/mcp/persona-server.ts` | Session-based HTTP MCP server for AI agents |
-| MCP admin server | `src/mcp/admin-server.ts` | HTTP MCP server for admin/debug operations |
+| MCP server | `src/mcp/mcp-server.ts` | Unified session-based HTTP MCP server for AI agents |
 | Persistence | `src/persistence/db.ts` | SQLite storage for world state, overrides, characters |
 | HTTP server | `src/server/http.ts` | Express-like HTTP server + local web UI |
 
@@ -297,7 +296,7 @@ End-to-end flow from Core startup to a viewer rendering the world:
    └─► Loads config (world.json, entities.json, etc.)
    └─► Generates map via cellular automata
    └─► Starts 500ms game tick loop
-   └─► Opens MCP servers (persona + admin on HTTP)
+   └─► Opens MCP server on HTTP
 
 2. Core connects to Hub
    └─► WebSocket to /ws/core
@@ -333,7 +332,7 @@ End-to-end flow from Core startup to a viewer rendering the world:
    └─► requestAnimationFrame loop for smooth rendering
 
 8. AI agent interacts
-   └─► MCP client POSTs to Core's /mcp/persona
+   └─► MCP client POSTs to Core's /mcp
    └─► Spawns character, moves, harvests, crafts, builds
    └─► World state changes propagate through steps 3→6→7
 ```
@@ -493,11 +492,11 @@ Map tile IDs to sprite sheet positions (supports the DawnLike sprite format):
 
 ## MCP Integration
 
-Core exposes two MCP servers for AI agent interaction:
+Core exposes a single unified MCP server at `/mcp` for AI agent interaction.
 
-### Persona Server (`/mcp/persona`)
+### MCP Server (`/mcp`)
 
-Session-based MCP server for AI agents to control individual characters.
+Session-based MCP server providing both character control and world management tools.
 
 **Transport:** Streamable HTTP with `Mcp-Session-Id` header for session routing.
 
@@ -509,7 +508,7 @@ Session-based MCP server for AI agents to control individual characters.
 4. Server pushes live surroundings data when world state changes
 5. Server sends alerts when character's energy or hunger is low
 
-**Available tools (30+):**
+**Available tools (40+):**
 
 | Category | Tools |
 |----------|-------|
@@ -525,10 +524,8 @@ Session-based MCP server for AI agents to control individual characters.
 | Social | `say` (speech bubble) |
 | Knowledge | `write_journal`, `read_journal` |
 | World info | `get_map`, `get_tile`, `list_tiles`, `list_target_filters` |
-
-### Admin Server (`/mcp/admin`)
-
-HTTP MCP server for administrative and debug operations. Includes map manipulation, entity spawning, and world inspection tools.
+| World editing | `set_tile`, `set_tiles`, `clear_tile`, `set_path`, `regenerate_map` |
+| Entities | `list_spawnable_tiles`, `list_spawn_positions`, `feed_entity` |
 
 ## Security
 

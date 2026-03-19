@@ -6,8 +6,7 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { World } from "../world/world.js";
 import { TILES, TILE_SIZE, TILE_GAP, TILE_SHEET, SHEET_OVERRIDES } from "../world/tile-registry.js";
 import { allItemDefs } from "../world/item-registry.js";
-import { makeAdminServer, type AdminServerHandle } from "../mcp/admin-server.js";
-import { handlePersonaRequest } from "../mcp/persona-server.js";
+import { handleMcpRequest } from "../mcp/mcp-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = join(__dirname, "../..", "public");
@@ -54,22 +53,14 @@ function jsonErr(res: ServerResponse, status: number, message: string) {
 async function handleRequest(
   req: IncomingMessage,
   res: ServerResponse,
-  adminHandle: AdminServerHandle,
 ) {
   const url = req.url ?? "/";
   const method = req.method ?? "GET";
 
-  // MCP admin endpoint
-  if (url === "/mcp/admin" || url.startsWith("/mcp/admin?") || url.startsWith("/mcp/admin/")) {
+  // MCP endpoint — session-per-client, routes by Mcp-Session-Id header
+  if (url === "/mcp" || url.startsWith("/mcp?") || url.startsWith("/mcp/")) {
     const body = method === "POST" ? await readBody(req).catch(() => undefined) : undefined;
-    await adminHandle.transport.handleRequest(req, res, body);
-    return;
-  }
-
-  // MCP persona endpoint — session-per-client, routes by Mcp-Session-Id header
-  if (url === "/mcp/persona" || url.startsWith("/mcp/persona?") || url.startsWith("/mcp/persona/")) {
-    const body = method === "POST" ? await readBody(req).catch(() => undefined) : undefined;
-    await handlePersonaRequest(req, res, body);
+    await handleMcpRequest(req, res, body);
     return;
   }
 
@@ -388,8 +379,6 @@ async function handleRequest(
   let filePath: string;
   if (url.startsWith("/tiles/")) {
     filePath = join(TILE_DIR, url.slice("/tiles/".length));
-  } else if (url === "/admin") {
-    filePath = join(PUBLIC_DIR, "admin.html");
   } else {
     filePath = join(PUBLIC_DIR, url === "/" ? "/index.html" : url);
   }
@@ -414,10 +403,9 @@ function mapPayload(world: World) {
 
 export function startHttpServer(initialPort = 3000): void {
   const world = World.getInstance();
-  const adminHandle = makeAdminServer();
 
   const httpServer = createServer((req, res) =>
-    handleRequest(req, res, adminHandle).catch((err) => {
+    handleRequest(req, res).catch((err) => {
       process.stderr.write(`HTTP handler error: ${err}\n`);
       if (!res.headersSent) {
         res.writeHead(500);
@@ -460,7 +448,6 @@ export function startHttpServer(initialPort = 3000): void {
     const addr = httpServer.address();
     const bound = typeof addr === "object" && addr ? addr.port : initialPort;
     process.stderr.write(`Genesis web UI running at http://localhost:${bound}\n`);
-    process.stderr.write(`Genesis MCP admin  : http://localhost:${bound}/mcp/admin\n`);
-    process.stderr.write(`Genesis MCP persona: http://localhost:${bound}/mcp/persona\n`);
+    process.stderr.write(`Genesis MCP server : http://localhost:${bound}/mcp\n`);
   });
 }

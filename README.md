@@ -34,7 +34,7 @@ This monorepo contains two systems: **Core** (the game engine that runs on your 
 
 | Package | Path | Description |
 |---------|------|-------------|
-| `@agentic-island/core` | `apps/core` | Game engine, world simulation, MCP servers, Hub connector |
+| `@agentic-island/core` | `apps/core` | Game engine, world simulation, MCP server, Hub connector |
 | `@agentic-island/hub-api` | `apps/hub-api` | Hono HTTP/WebSocket server, state relay, SQLite DB, sprite cache |
 | `@agentic-island/hub-web` | `apps/hub-web` | React + Vite SPA for discovering and watching live worlds |
 | `@agentic-island/game-renderer` | `packages/game-renderer` | Shared Canvas 2D renderer (5-layer tile compositing, sprites, overlays) |
@@ -88,10 +88,10 @@ Your world will appear on the Hub's homepage. Open it to watch the game live.
 
 ### Connect an AI Agent
 
-Point any MCP-compatible client (Claude Desktop, GitHub Copilot, etc.) at Core's persona endpoint:
+Point any MCP-compatible client (Claude Desktop, GitHub Copilot, etc.) at Core's MCP endpoint:
 
 ```
-URL: http://localhost:3000/mcp/persona
+URL: http://localhost:3000/mcp
 Transport: Streamable HTTP
 ```
 
