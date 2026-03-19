@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
-import { worldViewers } from "./core-handler.js";
+import { worldViewers, lastWorldState } from "./core-handler.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
   let subscribedWorldId: string | null = null;
@@ -24,6 +24,10 @@ export function handleViewerConnection(ws: WebSocket): void {
             worldViewers.set(msg.worldId, new Set());
           }
           worldViewers.get(msg.worldId)!.add(ws);
+
+          // Immediately replay the last cached state so viewer isn't blank
+          const cached = lastWorldState.get(msg.worldId);
+          if (cached && ws.readyState === 1) ws.send(cached);
           break;
         }
 

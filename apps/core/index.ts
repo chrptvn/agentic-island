@@ -32,6 +32,8 @@ if (HUB_API_KEY) {
 
   connector.onConnected = (id) => {
     console.log(`[core] Connected to Hub — world ID: ${id}`);
+    // Push initial state immediately so viewers see the world on first connect
+    streamer.handleWorldUpdate(world);
   };
   connector.onDisconnected = () => {
     console.log("[core] Disconnected from Hub, will reconnect...");
@@ -60,6 +62,12 @@ if (HUB_API_KEY) {
   world.on("map:updated", () => {
     streamer.handleWorldUpdate(world);
   });
+
+  // Periodic state push so idle worlds still reach viewers
+  const stateInterval = setInterval(() => {
+    if (connector.isConnected) streamer.handleWorldUpdate(world);
+  }, 2_000);
+  if (stateInterval.unref) stateInterval.unref();
 
   // Connect with sprites and config
   connector.connect(sprites, getWorldConfig() as unknown as Record<string, unknown>);

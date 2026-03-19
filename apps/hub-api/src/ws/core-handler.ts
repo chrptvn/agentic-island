@@ -19,6 +19,9 @@ const connectedCores = new Map<string, ConnectedCore>();
 // worldId → set of viewer WebSockets (shared with viewer-handler)
 export const worldViewers = new Map<string, Set<WebSocket>>();
 
+// Cache the last state payload per world so new viewers get an immediate snapshot
+export const lastWorldState = new Map<string, string>();
+
 export function handleCoreConnection(ws: WebSocket): void {
   let core: ConnectedCore | null = null;
 
@@ -98,14 +101,16 @@ export function handleCoreConnection(ws: WebSocket): void {
 
         case "state_update": {
           if (!core) return;
+          const relay = JSON.stringify({
+            type: "world_state",
+            worldId: core.worldId,
+            state: msg.state,
+            spriteBaseUrl: `/sprites/${core.worldId}/`,
+          });
+          // Cache so late-joining viewers get an immediate snapshot
+          lastWorldState.set(core.worldId, relay);
           const viewers = worldViewers.get(core.worldId);
           if (viewers) {
-            const relay = JSON.stringify({
-              type: "world_state",
-              worldId: core.worldId,
-              state: msg.state,
-              spriteBaseUrl: `/sprites/${core.worldId}/`,
-            });
             for (const viewer of viewers) {
               if (viewer.readyState === 1) viewer.send(relay);
             }
@@ -138,6 +143,7 @@ export function handleCoreConnection(ws: WebSocket): void {
         "UPDATE worlds SET status = 'offline', updated_at = datetime('now') WHERE id = ?",
       ).run(core.worldId);
       connectedCores.delete(core.worldId);
+      lastWorldState.delete(core.worldId);
 
       const viewers = worldViewers.get(core.worldId);
       if (viewers) {
