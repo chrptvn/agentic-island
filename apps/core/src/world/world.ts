@@ -107,6 +107,86 @@ export class World extends EventEmitter {
     return { ...base, entities, characters };
   }
 
+  // ── Hub-connector getters ──────────────────────────────────────────────────
+
+  getMap() {
+    const json = this.map.toJSON(this.overrides);
+    return {
+      width: json.width,
+      height: json.height,
+      seed: json.seed,
+      terrain: json.grid,
+    };
+  }
+
+  getTileRegistry(): Record<string, object> {
+    const registry: Record<string, object> = {};
+    for (const [id, def] of TILE_BY_ID) {
+      registry[id] = {
+        id: def.id,
+        col: def.col,
+        row: def.row,
+        sheet: def.sheet,
+        category: def.category,
+        layer: def.layer,
+        frames: def.frames?.length,
+        fps: def.fps,
+      };
+    }
+    return registry;
+  }
+
+  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats }> {
+    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats }> = [];
+    for (const [key, stats] of this.entityStats) {
+      const [x, y] = key.split(",").map(Number);
+      const layers = this.overrides.get(key);
+      // Entity base tiles are on layer 3 (index 3 in the overrides array)
+      const tileId = layers?.[3];
+      if (tileId && tileId !== "") {
+        result.push({ x, y, tileId, stats });
+      }
+    }
+    return result;
+  }
+
+  getCharacters(): Array<object> {
+    const result: Array<object> = [];
+    for (const [, c] of this.characters) {
+      result.push({
+        id: c.id,
+        x: c.x,
+        y: c.y,
+        stats: {
+          health: Math.floor(c.stats.health),
+          hunger: Math.floor(c.stats.hunger),
+          energy: Math.floor(c.stats.energy),
+          maxHealth: c.stats.maxHealth,
+          maxHunger: c.stats.maxHunger,
+          maxEnergy: c.stats.maxEnergy,
+        },
+        inventory: c.stats.inventory ?? [],
+        equipment: c.stats.equipment ?? {},
+        goal: c.stats.goal ?? "",
+      });
+    }
+    return result;
+  }
+
+  getOverrides(): Array<{ x: number; y: number; layer: number; tileId: string }> {
+    const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
+    for (const [key, layers] of this.overrides) {
+      const [x, y] = key.split(",").map(Number);
+      for (let layer = 0; layer < layers.length; layer++) {
+        const tileId = layers[layer];
+        if (tileId && tileId !== "") {
+          result.push({ x, y, layer, tileId });
+        }
+      }
+    }
+    return result;
+  }
+
   /**
    * Returns a snapshot of the character's surroundings within `radius` tiles.
    * Includes terrain type, path tiles, and entity IDs for nearby cells.
