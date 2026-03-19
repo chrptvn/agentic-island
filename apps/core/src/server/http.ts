@@ -66,6 +66,21 @@ async function handleRequest(
 
 
   // JSON API
+  if (url === "/api/status" && method === "GET") {
+    const world = World.getInstance();
+    const map = world.getMap();
+    const characters = [...world.characters.entries()].map(([id, c]) => ({
+      id, x: c.x, y: c.y, action: c.action,
+    }));
+    jsonOk(res, {
+      worldName: process.env.WORLD_NAME ?? "My Island",
+      map: { width: map.width, height: map.height, seed: map.seed },
+      characterCount: characters.length,
+      characters,
+    });
+    return;
+  }
+
   if (url === "/api/tiles" && method === "GET") {
     jsonOk(res, { sheet: TILE_SHEET, tileSize: TILE_SIZE, tileGap: TILE_GAP, sheets: SHEET_OVERRIDES, tiles: TILES, itemDefs: Object.fromEntries(allItemDefs()) });
     return;
