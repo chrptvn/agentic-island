@@ -35,15 +35,19 @@ app.route("/api/health", health);
 app.route("/api/keys", keys);
 app.route("/api/worlds", worlds);
 
-// Serve cached sprites
-app.get("/sprites/:worldId/:filename", async (c) => {
-  const { worldId, filename } = c.req.param();
-  const filePath = join(getSpriteCacheDir(), worldId, filename);
+// Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
+app.get("/sprites/:worldId/*", async (c) => {
+  const worldId = c.req.param("worldId");
+  const filePath = join(
+    getSpriteCacheDir(),
+    worldId,
+    c.req.path.slice(`/sprites/${worldId}/`.length),
+  );
 
   try {
     await stat(filePath);
     const buf = await readFile(filePath);
-    const ext = filename.split(".").pop()?.toLowerCase();
+    const ext = filePath.split(".").pop()?.toLowerCase();
     const mime =
       ext === "png"
         ? "image/png"

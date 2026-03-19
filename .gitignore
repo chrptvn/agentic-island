@@ -33,3 +33,4 @@ sprite-cache/
 
 # Logs
 *.log
+.world-id
