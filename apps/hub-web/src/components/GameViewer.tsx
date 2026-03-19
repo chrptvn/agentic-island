@@ -19,6 +19,9 @@ export function GameViewer({
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
 
+  // Stable flag: becomes true once tileRegistry is available, never goes back
+  const hasTileRegistry = !!state?.tileRegistry;
+
   // Initialize renderer
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -38,16 +41,12 @@ export function GameViewer({
     };
   }, []);
 
-  // Load sprites when spriteBaseUrl changes
+  // Load sprites once when both spriteBaseUrl and tileRegistry are first available
   useEffect(() => {
     if (!rendererRef.current || !spriteBaseUrl || !state?.tileRegistry) return;
     if (spritesLoadedRef.current) return;
 
-    // Discover unique sheets from the tile registry
-    const sheets: Record<
-      string,
-      { url: string; tileSize?: number; gap?: number }
-    > = {};
+    const sheets: Record<string, { url: string; tileSize?: number; gap?: number }> = {};
     for (const tile of Object.values(state.tileRegistry)) {
       if (tile.sheet && !sheets[tile.sheet]) {
         sheets[tile.sheet] = {
@@ -60,11 +59,11 @@ export function GameViewer({
 
     rendererRef.current
       .loadSpritesFromUrls(sheets)
-      .then(() => {
-        spritesLoadedRef.current = true;
-      })
+      .then(() => { spritesLoadedRef.current = true; })
       .catch(console.error);
-  }, [spriteBaseUrl, state?.tileRegistry]);
+  // hasTileRegistry is a boolean that flips once (false→true), spriteBaseUrl is stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spriteBaseUrl, hasTileRegistry]);
 
   // Update state
   useEffect(() => {
