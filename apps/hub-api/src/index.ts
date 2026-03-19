@@ -4,7 +4,7 @@ import { serve } from "@hono/node-server";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
 import type { Server } from "node:http";
-import { join } from "node:path";
+import { join, extname } from "node:path";
 import { readFile, stat } from "node:fs/promises";
 
 import health from "./routes/health.js";
@@ -61,6 +61,65 @@ app.get("/sprites/:worldId/*", async (c) => {
     return c.json({ error: "Sprite not found" }, 404);
   }
 });
+
+// ── Static file serving (production: serve hub-web/dist) ────────────
+const WEB_DIST = join(import.meta.dirname, "../../hub-web/dist");
+let servingStatic = false;
+
+try {
+  const s = await stat(WEB_DIST);
+  if (s.isDirectory()) servingStatic = true;
+} catch { /* dist not built — skip static serving */ }
+
+if (servingStatic) {
+  const MIME_MAP: Record<string, string> = {
+    ".html": "text/html",
+    ".js": "application/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".ico": "image/x-icon",
+    ".woff": "font/woff",
+    ".woff2": "font/woff2",
+  };
+
+  // Serve static assets from dist
+  app.get("*", async (c, next) => {
+    const urlPath = new URL(c.req.url).pathname;
+
+    // Skip API and sprite routes
+    if (urlPath.startsWith("/api/") || urlPath.startsWith("/sprites/")) {
+      return next();
+    }
+
+    // Try exact file match first
+    const filePath = join(WEB_DIST, urlPath);
+    try {
+      const s = await stat(filePath);
+      if (s.isFile()) {
+        const buf = await readFile(filePath);
+        const mime = MIME_MAP[extname(filePath)] ?? "application/octet-stream";
+        return new Response(buf, {
+          headers: { "Content-Type": mime, "Cache-Control": "public, max-age=3600" },
+        });
+      }
+    } catch { /* not found, fall through */ }
+
+    // SPA fallback: serve index.html for any unmatched route
+    try {
+      const indexBuf = await readFile(join(WEB_DIST, "index.html"));
+      return new Response(indexBuf, {
+        headers: { "Content-Type": "text/html" },
+      });
+    } catch {
+      return next();
+    }
+  });
+
+  console.log(`[hub-api] Serving static files from ${WEB_DIST}`);
+}
 
 const PORT = parseInt(process.env.HUB_PORT ?? "4000", 10);
 

@@ -104,6 +104,11 @@ export class GameRenderer {
 
   /** Render a single frame. Can be called manually or by the loop. */
   render(): void {
+    // Skip render entirely when there's nothing to draw — this preserves
+    // the last painted frame on the canvas (important during React StrictMode
+    // remount where sprites are being reloaded from cache).
+    if (!this.state || this.sprites.sheetCount === 0) return;
+
     const now = performance.now();
     this.animState = tickAnimation(this.animState, now);
 
@@ -116,11 +121,6 @@ export class GameRenderer {
 
     // Clear
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    if (!this.state) {
-      ctx.restore();
-      return;
-    }
 
     const { map, tileRegistry, overrides, entities, characters } = this.state;
 

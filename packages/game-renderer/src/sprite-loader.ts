@@ -100,6 +100,11 @@ export class SpriteCache {
     return this.sheets.has(name);
   }
 
+  /** Number of loaded sheets. */
+  get sheetCount(): number {
+    return this.sheets.size;
+  }
+
   /** Clear all cached sheets. */
   clear(): void {
     this.sheets.clear();
