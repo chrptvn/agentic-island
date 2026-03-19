@@ -14,6 +14,7 @@ import { handleCoreConnection } from "./ws/core-handler.js";
 import { handleViewerConnection } from "./ws/viewer-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
+import db from "./db/index.js";
 
 const app = new Hono();
 
@@ -67,6 +68,17 @@ const server = serve(
 );
 
 const wss = new WebSocketServer({ server: server as Server });
+
+// Mark worlds with a stale heartbeat as offline (missed 2+ heartbeat intervals)
+const staleThresholdMs = 90_000;
+const cleanupInterval = setInterval(() => {
+  db.prepare(
+    `UPDATE worlds SET status = 'offline', updated_at = datetime('now')
+     WHERE status = 'online'
+       AND last_heartbeat_at < datetime('now', ? || ' seconds')`,
+  ).run(`-${Math.floor(staleThresholdMs / 1000)}`);
+}, 30_000);
+if (cleanupInterval.unref) cleanupInterval.unref();
 
 wss.on("connection", (ws: WebSocket, req) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);

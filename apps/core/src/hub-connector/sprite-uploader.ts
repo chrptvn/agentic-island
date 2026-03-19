@@ -20,8 +20,29 @@ const MIME_MAP: Record<string, string> = {
 export async function packageSprites(
   spriteDir: string,
 ): Promise<SpritePayload[]> {
-  const filePaths = await collectImageFiles(spriteDir, spriteDir);
-  return packageSpriteFiles(filePaths);
+  const relPaths = await collectImageFiles(spriteDir, spriteDir);
+  const payloads: SpritePayload[] = [];
+
+  for (const relativePath of relPaths) {
+    const filePath = join(spriteDir, relativePath);
+    const ext = extname(filePath).toLowerCase();
+    const mime = MIME_MAP[ext];
+    if (!mime) {
+      console.warn(
+        `[sprite-uploader] Skipping unsupported file: ${filePath}`,
+      );
+      continue;
+    }
+
+    const buf = await readFile(filePath);
+    payloads.push({
+      filename: relativePath,
+      mimeType: mime,
+      data: buf.toString("base64"),
+    });
+  }
+
+  return payloads;
 }
 
 /**
@@ -78,7 +99,7 @@ export function validatePayloadSize(
 
 async function collectImageFiles(
   dir: string,
-  _baseDir: string,
+  baseDir: string,
 ): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
   const results: string[] = [];
@@ -86,9 +107,10 @@ async function collectImageFiles(
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
     if (entry.isDirectory()) {
-      results.push(...(await collectImageFiles(fullPath, _baseDir)));
+      results.push(...(await collectImageFiles(fullPath, baseDir)));
     } else if (SUPPORTED_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
-      results.push(fullPath);
+      // Return path relative to baseDir so subdirectory structure is preserved
+      results.push(fullPath.slice(baseDir.length).replace(/^[/\\]/, ""));
     }
   }
 

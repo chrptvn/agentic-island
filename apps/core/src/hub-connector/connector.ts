@@ -145,6 +145,8 @@ export class HubConnector {
         case "handshake_ack":
           if (msg.status === "ok") {
             this.worldId = msg.worldId;
+            // Persist assigned ID so reconnects reuse the same world entry
+            this.options.worldId = msg.worldId;
             this.connected = true;
             this.reconnectDelay = WS_RECONNECT_BASE_MS;
             this.startHeartbeat();

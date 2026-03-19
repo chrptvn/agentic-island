@@ -1,5 +1,5 @@
 import { mkdir, writeFile, rm } from "node:fs/promises";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import type { SpriteAsset } from "@agentic-island/shared";
 
 const CACHE_DIR = process.env.SPRITE_CACHE_DIR ?? "sprite-cache";
@@ -13,8 +13,11 @@ export async function saveSprites(
 
   await Promise.all(
     sprites.map(async (sprite) => {
+      const dest = join(dir, sprite.filename);
+      // Create subdirectories if the filename contains path separators
+      await mkdir(dirname(dest), { recursive: true });
       const buf = Buffer.from(sprite.data, "base64");
-      await writeFile(join(dir, sprite.filename), buf);
+      await writeFile(dest, buf);
     }),
   );
 }
