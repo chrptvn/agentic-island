@@ -1,6 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { GameRenderer } from "@agentic-island/game-renderer";
 import type { WorldState } from "@agentic-island/shared";
+import { Tooltip, type TooltipData } from "./Tooltip.js";
 
 const TILE_SIZE = 16;
 const SCALE_FACTOR = 2;
@@ -15,6 +16,11 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
+  const stateRef = useRef<WorldState | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+
+  // Keep a ref to state so mouse handlers don't need to be re-created on every update
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   // Derive canvas pixel dimensions from map size (fallback before first state)
   const canvasW = state?.map ? state.map.width * PX_PER_TILE : 960;
@@ -22,6 +28,29 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   // Stable flag: becomes true once tileRegistry is available, never goes back
   const hasTileRegistry = !!state?.tileRegistry;
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    const s = stateRef.current;
+    if (!canvas || !s) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const tileX = Math.floor((e.clientX - rect.left) * scaleX / PX_PER_TILE);
+    const tileY = Math.floor((e.clientY - rect.top) * scaleY / PX_PER_TILE);
+
+    const character = s.characters.find((c) => c.x === tileX && c.y === tileY) ?? null;
+    const entity = s.entities.find((en) => en.x === tileX && en.y === tileY) ?? null;
+
+    if (character || entity) {
+      setTooltip({ mouseX: e.clientX, mouseY: e.clientY, character, entity });
+    } else {
+      setTooltip(null);
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => setTooltip(null), []);
 
   // Initialize renderer
   useEffect(() => {
@@ -74,17 +103,23 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   }, [state]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={canvasW}
-      height={canvasH}
-      style={{
-        display: "block",
-        maxWidth: "100%",
-        imageRendering: "pixelated",
-        background: "#000",
-        borderRadius: "0.5rem",
-      }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        width={canvasW}
+        height={canvasH}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          display: "block",
+          maxWidth: "100%",
+          imageRendering: "pixelated",
+          background: "#000",
+          borderRadius: "0.5rem",
+          cursor: "crosshair",
+        }}
+      />
+      <Tooltip data={tooltip} />
+    </>
   );
 }
