@@ -11,6 +11,7 @@ interface ConnectedCore {
   ws: WebSocket;
   worldId: string;
   apiKeyId: string;
+  worldName: string;
   lastPing: number;
 }
 
@@ -87,7 +88,7 @@ export function handleCoreConnection(ws: WebSocket): void {
             await saveSprites(worldId, msg.sprites);
           }
 
-          core = { ws, worldId, apiKeyId: keyRow.id, lastPing: Date.now() };
+          core = { ws, worldId, apiKeyId: keyRow.id, worldName: msg.world.name, lastPing: Date.now() };
           connectedCores.set(worldId, core);
 
           const ack: HubToCoreMessage = {
@@ -104,6 +105,7 @@ export function handleCoreConnection(ws: WebSocket): void {
           const relay = JSON.stringify({
             type: "world_state",
             worldId: core.worldId,
+            worldName: core.worldName,
             state: msg.state,
             spriteBaseUrl: `/sprites/${core.worldId}/`,
           });

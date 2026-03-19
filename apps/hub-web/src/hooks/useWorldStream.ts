@@ -4,6 +4,7 @@ import type { WorldState, HubToViewerMessage } from "@agentic-island/shared";
 export interface WorldStream {
   state: WorldState | null;
   spriteBaseUrl: string | null;
+  worldName: string | null;
   connected: boolean;
   error: string | null;
 }
@@ -14,6 +15,7 @@ const WS_RECONNECT_MAX = 30_000;
 export function useWorldStream(worldId: string | undefined): WorldStream {
   const [state, setState] = useState<WorldState | null>(null);
   const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
+  const [worldName, setWorldName] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
@@ -42,6 +44,7 @@ export function useWorldStream(worldId: string | undefined): WorldStream {
           case "world_state":
             setState(msg.state);
             setSpriteBaseUrl(msg.spriteBaseUrl);
+            setWorldName(msg.worldName);
             break;
           case "world_offline":
             setError("World went offline");
@@ -89,5 +92,5 @@ export function useWorldStream(worldId: string | undefined): WorldStream {
     };
   }, [connect]);
 
-  return { state, spriteBaseUrl, connected, error };
+  return { state, spriteBaseUrl, worldName, connected, error };
 }

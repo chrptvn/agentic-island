@@ -18,6 +18,7 @@ export interface ViewerUnsubscribeMessage {
 export interface ViewerWorldStateMessage {
   type: "world_state";
   worldId: string;
+  worldName: string;
   state: WorldState;
   spriteBaseUrl: string;
 }

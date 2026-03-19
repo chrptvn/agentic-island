@@ -4,14 +4,14 @@ import { GameViewer } from "../components/GameViewer.js";
 
 export function WorldView() {
   const { id } = useParams<{ id: string }>();
-  const { state, spriteBaseUrl, connected, error } = useWorldStream(id);
+  const { state, spriteBaseUrl, worldName, connected, error } = useWorldStream(id);
 
   return (
     <div>
       <Link to="/" style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
         ← Back to worlds
       </Link>
-      <h1 style={{ margin: "0.75rem 0" }}>🏝️ World Viewer</h1>
+      <h1 style={{ margin: "0.75rem 0" }}>{worldName ?? "🏝️ World Viewer"}</h1>
 
       <div
         style={{
@@ -57,8 +57,6 @@ export function WorldView() {
         <GameViewer
           state={state}
           spriteBaseUrl={spriteBaseUrl}
-          width={1280}
-          height={720}
         />
       )}
     </div>

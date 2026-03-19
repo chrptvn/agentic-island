@@ -2,22 +2,23 @@ import { useRef, useEffect } from "react";
 import { GameRenderer } from "@agentic-island/game-renderer";
 import type { WorldState } from "@agentic-island/shared";
 
+const TILE_SIZE = 16;
+const SCALE_FACTOR = 2;
+const PX_PER_TILE = TILE_SIZE * SCALE_FACTOR; // 32px
+
 interface GameViewerProps {
   state: WorldState | null;
   spriteBaseUrl: string | null;
-  width?: number;
-  height?: number;
 }
 
-export function GameViewer({
-  state,
-  spriteBaseUrl,
-  width = 800,
-  height = 600,
-}: GameViewerProps) {
+export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
+
+  // Derive canvas pixel dimensions from map size (fallback before first state)
+  const canvasW = state?.map ? state.map.width * PX_PER_TILE : 960;
+  const canvasH = state?.map ? state.map.height * PX_PER_TILE : 640;
 
   // Stable flag: becomes true once tileRegistry is available, never goes back
   const hasTileRegistry = !!state?.tileRegistry;
@@ -28,8 +29,8 @@ export function GameViewer({
 
     const renderer = new GameRenderer({
       canvas: canvasRef.current,
-      tileSize: 16,
-      scaleFactor: 2,
+      tileSize: TILE_SIZE,
+      scaleFactor: SCALE_FACTOR,
     });
     rendererRef.current = renderer;
     renderer.start();
@@ -75,11 +76,11 @@ export function GameViewer({
   return (
     <canvas
       ref={canvasRef}
-      width={width}
-      height={height}
+      width={canvasW}
+      height={canvasH}
       style={{
-        width: "100%",
-        maxWidth: `${width}px`,
+        display: "block",
+        maxWidth: "100%",
         imageRendering: "pixelated",
         background: "#000",
         borderRadius: "0.5rem",
