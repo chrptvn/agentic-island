@@ -14,7 +14,7 @@ import {
   createAnimationState,
   type AnimationState,
 } from "./animation.js";
-import { drawHealthBar, drawSpeechBubble, drawNameLabel } from "./overlays.js";
+import { drawSpeechBubble } from "./overlays.js";
 
 const DEFAULT_TILE_SIZE = 16;
 const DEFAULT_SCALE_FACTOR = 2;
@@ -225,21 +225,6 @@ export class GameRenderer {
 
       const cx = screenCol * tileSize + viewport.offsetX + tileSize / 2;
       const cy = screenRow * tileSize + viewport.offsetY;
-
-      // Health bar
-      if (char.stats.health < char.stats.maxHealth) {
-        drawHealthBar(
-          ctx,
-          char.stats.health,
-          char.stats.maxHealth,
-          cx,
-          cy,
-          tileSize * 0.8,
-        );
-      }
-
-      // Name label below sprite
-      drawNameLabel(ctx, char.id, cx, cy + tileSize + 1);
 
       // TODO: speech bubble rendering (requires speech state tracking)
     }
