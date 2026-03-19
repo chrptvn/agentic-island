@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-startHttpServer(parseInt(process.env.GENESIS_PORT ?? "3000", 10));
+startHttpServer(parseInt(process.env.CORE_PORT ?? "3000", 10));
 
 const world = World.getInstance();
 world.watchConfigs();

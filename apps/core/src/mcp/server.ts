@@ -10,7 +10,7 @@ import { registerPlantTools } from "./tools/plant-tools.js";
 
 export async function startServer(): Promise<void> {
   const server = new McpServer({
-    name: "genesis",
+    name: "agentic-island",
     version: "1.0.0",
   });
 
@@ -30,5 +30,5 @@ export async function startServer(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  process.stderr.write("Genesis MCP server running on stdio\n");
+  process.stderr.write("Agentic Island MCP server running on stdio\n");
 }

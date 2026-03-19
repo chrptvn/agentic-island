@@ -6,7 +6,7 @@ import { allItemDefs } from "../../world/item-registry.js";
 import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, INTERACT_DEFS, GROWTH_DEFS } from "../../world/entity-registry.js";
 import { RECIPES } from "../../world/craft-registry.js";
 
-const BASE_URL = `http://localhost:${process.env.GENESIS_PORT ?? 3000}`;
+const BASE_URL = `http://localhost:${process.env.CORE_PORT ?? 3000}`;
 
 async function apiPost(path: string, body: unknown): Promise<unknown> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -280,7 +280,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         pushNotifications: {
           description: "The persona server can push live world updates to the agent without polling.",
           setup: "Call set_character(character_id) once at session start to bind the session to a character.",
-          resource: "genesis://character/{id}/surroundings — subscribe to this resource URI to receive push notifications whenever the world changes (movement, stats, nearby entities). The resource contains position, stats, inventory, current action, path length, and a 3-tile-radius grid of nearby cells.",
+          resource: "agentic-island://character/{id}/surroundings — subscribe to this resource URI to receive push notifications whenever the world changes (movement, stats, nearby entities). The resource contains position, stats, inventory, current action, path length, and a 3-tile-radius grid of nearby cells.",
           alerts: [
             "Energy below 20: warning pushed with recovery tip (max once per 10 s)",
             "Hunger below 20: warning pushed with eating tip (max once per 10 s)",

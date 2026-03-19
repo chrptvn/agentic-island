@@ -53,7 +53,7 @@ function attachWorldListener(session: McpSession): void {
     session.lastSnapshot = snapshotStr;
 
     // Push resource-updated notification
-    const uri = `genesis://character/${encodeURIComponent(id)}/surroundings`;
+    const uri = `agentic-island://character/${encodeURIComponent(id)}/surroundings`;
     session.server.server.sendResourceUpdated({ uri }).catch(() => {/* session may be gone */});
 
     // Push alert log messages for critical stats
@@ -91,12 +91,12 @@ function detachWorldListener(session: McpSession): void {
 // ─── Session factory ──────────────────────────────────────────────────────────
 
 function makeSession(): McpSession {
-  const server = new McpServer({ name: "genesis", version: "1.0.0" });
+  const server = new McpServer({ name: "agentic-island", version: "1.0.0" });
 
   // ── set_character: bind this session to a character and activate push ─────
   server.tool(
     "set_character",
-    "Bind this session to a character by ID. Once bound, the server will push live environment updates whenever the world changes. The agent receives a `genesis://character/{id}/surroundings` resource notification and can read it to get current position, stats, and nearby entities without polling.",
+    "Bind this session to a character by ID. Once bound, the server will push live environment updates whenever the world changes. The agent receives a `agentic-island://character/{id}/surroundings` resource notification and can read it to get current position, stats, and nearby entities without polling.",
     { character_id: z.string().min(1).describe("The character's unique id to bind this session to") },
     async ({ character_id }) => {
       const world = World.getInstance();
@@ -111,7 +111,7 @@ function makeSession(): McpSession {
       return {
         content: [{
           type: "text",
-          text: `Session bound to "${character_id}". Push notifications active.\nSubscribe to: genesis://character/${encodeURIComponent(character_id)}/surroundings`,
+          text: `Session bound to "${character_id}". Push notifications active.\nSubscribe to: agentic-island://character/${encodeURIComponent(character_id)}/surroundings`,
         }],
       };
     }
@@ -120,7 +120,7 @@ function makeSession(): McpSession {
   // ── Surroundings resource template ────────────────────────────────────────
   server.resource(
     "character-surroundings",
-    new ResourceTemplate("genesis://character/{id}/surroundings", { list: undefined }),
+    new ResourceTemplate("agentic-island://character/{id}/surroundings", { list: undefined }),
     { description: "Live snapshot of a character's position, stats, inventory, and nearby tiles/entities within a 3-tile radius. Subscribe to this resource to receive push notifications whenever the world changes." },
     async (uri, { id }) => {
       const characterId = decodeURIComponent(id as string);

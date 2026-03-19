@@ -2,10 +2,10 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { World } from "../../world/world.js";
 
-const GENESIS_PORT = parseInt(process.env.GENESIS_PORT ?? "3000", 10);
+const CORE_PORT = parseInt(process.env.CORE_PORT ?? "3000", 10);
 
 async function postApi(path: string, body: unknown): Promise<unknown> {
-  const res = await fetch(`http://localhost:${GENESIS_PORT}${path}`, {
+  const res = await fetch(`http://localhost:${CORE_PORT}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),

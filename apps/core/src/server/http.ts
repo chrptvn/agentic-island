@@ -435,10 +435,10 @@ export function startHttpServer(initialPort = 3000): void {
 
   httpServer.on("error", (err: NodeJS.ErrnoException) => {
     if (err.code === "EADDRINUSE") {
-      process.stderr.write(`Genesis web UI: port ${initialPort} already in use — skipping HTTP server (MCP will proxy to existing instance).\n`);
+      process.stderr.write(`Agentic Island: port ${initialPort} already in use — skipping HTTP server (MCP will proxy to existing instance).\n`);
       httpServer.removeAllListeners();
     } else {
-      process.stderr.write(`Genesis web UI error: ${err.message}\n`);
+      process.stderr.write(`Agentic Island error: ${err.message}\n`);
     }
   });
 
@@ -447,7 +447,7 @@ export function startHttpServer(initialPort = 3000): void {
   httpServer.listen(initialPort, () => {
     const addr = httpServer.address();
     const bound = typeof addr === "object" && addr ? addr.port : initialPort;
-    process.stderr.write(`Genesis web UI running at http://localhost:${bound}\n`);
-    process.stderr.write(`Genesis MCP server : http://localhost:${bound}/mcp\n`);
+    process.stderr.write(`Agentic Island running at http://localhost:${bound}\n`);
+    process.stderr.write(`Agentic Island MCP server : http://localhost:${bound}/mcp\n`);
   });
 }

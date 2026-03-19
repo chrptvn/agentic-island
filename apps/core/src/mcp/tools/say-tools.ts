@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-const BASE_URL = `http://localhost:${process.env.GENESIS_PORT ?? 3000}`;
+const BASE_URL = `http://localhost:${process.env.CORE_PORT ?? 3000}`;
 
 export function registerSayTools(server: McpServer): void {
   server.tool(

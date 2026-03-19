@@ -17,7 +17,7 @@ Detailed technical documentation for the Agentic Island platform.
  │  │  └────┬─────┘  └──────┬──────┘  └────────────────────┘    │   │   │
  │  │       │               │                                    │   │   │
  │  │  ┌────┴───────────────┴────┐                               │   │   │
- │  │  │   SQLite (genesis.db)   │                               │   │   │
+ │  │  │   SQLite (agentic-island.db)   │                               │   │   │
  │  │  └─────────────────────────┘                               │   │   │
  │  └─────────────────────────────────────────────────────────────┘   │   │
  │                                                                    │   │
@@ -86,7 +86,7 @@ The Core is the game engine that simulates the world. It runs on the host's mach
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GENESIS_PORT` | `3000` | HTTP server port |
+| `CORE_PORT` | `3000` | HTTP server port |
 | `MCP_TRANSPORT` | — | Set to `stdio` for legacy MCP transport |
 | `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/core`) |
 | `HUB_API_KEY` | — | API key for Hub authentication |
@@ -388,7 +388,7 @@ CREATE TABLE world_views (
 
 ## Core Database Schema
 
-Core uses a separate SQLite database (`genesis.db`) for local game state persistence.
+Core uses a separate SQLite database (`agentic-island.db`) for local game state persistence.
 
 ```sql
 CREATE TABLE world_state     (key TEXT PRIMARY KEY, value TEXT NOT NULL);
