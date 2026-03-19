@@ -43,13 +43,13 @@ if (HUB_API_KEY) {
   };
 
   // Package sprites from DawnLike + public
-  const spriteDirs = [
-    join(__dirname, "DawnLike"),
-    join(__dirname, "public"),
-  ];
-
+  // DawnLike sprites are served at /tiles/ so they need that prefix to match
+  // the sheet names used in tileset.json (e.g. "tiles/Items/Food.png")
   const sprites = (
-    await Promise.all(spriteDirs.map((dir) => packageSprites(dir).catch(() => [])))
+    await Promise.all([
+      packageSprites(join(__dirname, "DawnLike"), "tiles/").catch(() => []),
+      packageSprites(join(__dirname, "public")).catch(() => []),
+    ])
   ).flat();
 
   // Wire state streaming

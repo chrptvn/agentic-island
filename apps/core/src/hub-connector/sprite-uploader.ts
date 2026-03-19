@@ -19,6 +19,8 @@ const MIME_MAP: Record<string, string> = {
  */
 export async function packageSprites(
   spriteDir: string,
+  /** Optional path prefix prepended to all filenames (e.g. "tiles/" for DawnLike). */
+  prefix = "",
 ): Promise<SpritePayload[]> {
   const relPaths = await collectImageFiles(spriteDir, spriteDir);
   const payloads: SpritePayload[] = [];
@@ -36,7 +38,7 @@ export async function packageSprites(
 
     const buf = await readFile(filePath);
     payloads.push({
-      filename: relativePath,
+      filename: prefix ? `${prefix}${relativePath}` : relativePath,
       mimeType: mime,
       data: buf.toString("base64"),
     });
