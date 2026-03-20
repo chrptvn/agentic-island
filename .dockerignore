@@ -1,0 +1,27 @@
+# Build artifacts
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+apps/*/dist
+packages/*/dist
+**/*.tsbuildinfo
+.turbo
+
+# Git history
+.git
+
+# Databases (generated at runtime)
+*.db
+*.db-shm
+*.db-wal
+
+# Environment files
+.env
+.env.local
+.env*.local
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+*.swp
