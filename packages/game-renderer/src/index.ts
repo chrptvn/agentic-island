@@ -1,4 +1,6 @@
 export { GameRenderer, type RendererOptions } from "./renderer.js";
+export { Camera, type CameraOptions } from "./camera.js";
+export { InputHandler, type InputHandlerOptions } from "./input.js";
 export { SpriteCache, type SpriteSheet } from "./sprite-loader.js";
 export {
   drawTile,

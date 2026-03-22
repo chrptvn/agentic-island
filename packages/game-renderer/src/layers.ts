@@ -41,6 +41,9 @@ export interface Viewport {
  * Looks up the tile definition in the registry, finds the correct sprite
  * sheet, and blits the correct sub-rectangle (accounting for gap, col, row,
  * animation frames, and optional step).
+ *
+ * `destW` / `destH` are the output-pixel dimensions of the drawn tile.
+ * They may vary by ±1 px per tile to eliminate sub-pixel seams.
  */
 export function drawTile(
   ctx: CanvasRenderingContext2D,
@@ -49,7 +52,8 @@ export function drawTile(
   sprites: SpriteCache,
   canvasX: number,
   canvasY: number,
-  tileSize: number,
+  destW: number,
+  destH: number,
   frame: number = 0,
 ): void {
   const def: TileDef | undefined = registry[tileId];
@@ -77,8 +81,8 @@ export function drawTile(
     srcTileSize,
     canvasX,
     canvasY,
-    tileSize,
-    tileSize,
+    destW,
+    destH,
   );
 }
 
@@ -87,6 +91,11 @@ export function drawTile(
  *
  * Composites layers bottom-to-top: terrain → ground cover → paths →
  * entity base → entity canopy.
+ *
+ * `tileSize` is the **effective output tile size** (base × scale), possibly
+ * fractional.  Positions are snapped to integer pixels and per-tile
+ * dimensions are computed to fill exactly to the next tile, eliminating
+ * sub-pixel seams.
  */
 export function renderLayers(
   ctx: CanvasRenderingContext2D,
@@ -115,18 +124,26 @@ export function renderLayers(
   // Render layers 0-4 in order
   for (let layer = 0; layer <= 4; layer++) {
     for (let r = 0; r < rows; r++) {
+      // Integer Y position for this row and the next (gap-free)
+      const cy = Math.round(r * tileSize + offsetY);
+      const ny = Math.round((r + 1) * tileSize + offsetY);
+      const dh = ny - cy;
+
       for (let c = 0; c < cols; c++) {
         const worldCol = startCol + c;
         const worldRow = startRow + r;
-        const cx = c * tileSize + offsetX;
-        const cy = r * tileSize + offsetY;
+
+        // Integer X position for this column and the next (gap-free)
+        const cx = Math.round(c * tileSize + offsetX);
+        const nx = Math.round((c + 1) * tileSize + offsetX);
+        const dw = nx - cx;
 
         // Check for override on this layer
         const overrideKey = `${layer},${worldCol},${worldRow}`;
         const overrideTile = overrideMap.get(overrideKey);
 
         if (overrideTile) {
-          drawTile(ctx, overrideTile, registry, sprites, cx, cy, tileSize, frame);
+          drawTile(ctx, overrideTile, registry, sprites, cx, cy, dw, dh, frame);
           continue;
         }
 
@@ -134,13 +151,13 @@ export function renderLayers(
           // Base terrain from the grid
           const tileId = terrain[worldRow]?.[worldCol];
           if (tileId) {
-            drawTile(ctx, tileId, registry, sprites, cx, cy, tileSize, frame);
+            drawTile(ctx, tileId, registry, sprites, cx, cy, dw, dh, frame);
           }
         } else if (layer === 3) {
           // Entity base layer
           const ent = entityMap.get(`${worldCol},${worldRow}`);
           if (ent) {
-            drawTile(ctx, ent.tileId, registry, sprites, cx, cy, tileSize, frame);
+            drawTile(ctx, ent.tileId, registry, sprites, cx, cy, dw, dh, frame);
           }
         } else if (layer === 4) {
           // Entity canopy: look up the entity def's topTileId via registry

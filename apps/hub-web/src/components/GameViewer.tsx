@@ -5,7 +5,6 @@ import { Tooltip, type TooltipData } from "./Tooltip.js";
 
 const TILE_SIZE = 16;
 const SCALE_FACTOR = 2;
-const PX_PER_TILE = TILE_SIZE * SCALE_FACTOR; // 32px
 
 interface GameViewerProps {
   state: WorldState | null;
@@ -13,6 +12,7 @@ interface GameViewerProps {
 }
 
 export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
@@ -22,23 +22,19 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   // Keep a ref to state so mouse handlers don't need to be re-created on every update
   useEffect(() => { stateRef.current = state; }, [state]);
 
-  // Derive canvas pixel dimensions from map size (fallback before first state)
-  const canvasW = state?.map ? state.map.width * PX_PER_TILE : 960;
-  const canvasH = state?.map ? state.map.height * PX_PER_TILE : 640;
-
   // Stable flag: becomes true once tileRegistry is available, never goes back
   const hasTileRegistry = !!state?.tileRegistry;
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
+    const renderer = rendererRef.current;
     const s = stateRef.current;
-    if (!canvas || !s) return;
+    if (!canvas || !renderer || !s) return;
 
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const tileX = Math.floor((e.clientX - rect.left) * scaleX / PX_PER_TILE);
-    const tileY = Math.floor((e.clientY - rect.top) * scaleY / PX_PER_TILE);
+    const screenX = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const screenY = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const { tileX, tileY } = renderer.screenToTile(screenX, screenY);
 
     const character = s.characters.find((c) => c.x === tileX && c.y === tileY) ?? null;
     const entity = s.entities.find((en) => en.x === tileX && en.y === tileY) ?? null;
@@ -52,19 +48,38 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   const handleMouseLeave = useCallback(() => setTooltip(null), []);
 
-  // Initialize renderer
+  // Initialize renderer + ResizeObserver
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !wrapperRef.current) return;
+
+    const canvas = canvasRef.current;
+    const wrapper = wrapperRef.current;
 
     const renderer = new GameRenderer({
-      canvas: canvasRef.current,
+      canvas,
       tileSize: TILE_SIZE,
       scaleFactor: SCALE_FACTOR,
     });
     rendererRef.current = renderer;
+
+    // Size canvas to container
+    const resizeCanvas = () => {
+      const { width, height } = wrapper.getBoundingClientRect();
+      const w = Math.round(width * devicePixelRatio);
+      const h = Math.round(height * devicePixelRatio);
+      if (canvas.width !== w || canvas.height !== h) {
+        renderer.resize(w, h);
+      }
+    };
+    resizeCanvas();
+
+    const ro = new ResizeObserver(resizeCanvas);
+    ro.observe(wrapper);
+
     renderer.start();
 
     return () => {
+      ro.disconnect();
       renderer.destroy();
       rendererRef.current = null;
       spritesLoadedRef.current = false;
@@ -102,24 +117,69 @@ export function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     }
   }, [state]);
 
+  const handleZoomIn = useCallback(() => rendererRef.current?.zoomIn(), []);
+  const handleZoomOut = useCallback(() => rendererRef.current?.zoomOut(), []);
+  const handleResetCamera = useCallback(() => rendererRef.current?.resetCamera(), []);
+
   return (
-    <>
+    <div ref={wrapperRef} style={{ position: "relative", width: "100%", height: "100%", minHeight: 400 }}>
       <canvas
         ref={canvasRef}
-        width={canvasW}
-        height={canvasH}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
           display: "block",
-          maxWidth: "100%",
+          width: "100%",
+          height: "100%",
           imageRendering: "pixelated",
           background: "#000",
           borderRadius: "0.5rem",
-          cursor: "crosshair",
+          touchAction: "none",
         }}
       />
+
+      {/* Zoom controls */}
+      <div style={{
+        position: "absolute",
+        bottom: 12,
+        right: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 4,
+      }}>
+        <ZoomButton label="+" onClick={handleZoomIn} title="Zoom in" />
+        <ZoomButton label="−" onClick={handleZoomOut} title="Zoom out" />
+        <ZoomButton label="⟲" onClick={handleResetCamera} title="Reset view" />
+      </div>
+
       <Tooltip data={tooltip} />
-    </>
+    </div>
+  );
+}
+
+function ZoomButton({ label, onClick, title }: { label: string; onClick: () => void; title: string }) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      style={{
+        width: 32,
+        height: 32,
+        fontSize: 18,
+        lineHeight: 1,
+        border: "none",
+        borderRadius: 6,
+        background: "rgba(0,0,0,0.55)",
+        color: "#fff",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+      }}
+    >
+      {label}
+    </button>
   );
 }

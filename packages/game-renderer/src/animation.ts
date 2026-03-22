@@ -44,6 +44,9 @@ export function getCharacterFrame(
  *
  * The character is drawn using the "human" tile from the registry with the
  * given animation frame.
+ *
+ * `tileSize` is the effective output tile size (base × scale), possibly
+ * fractional.  Positions are snapped to integer pixels.
  */
 export function drawCharacter(
   ctx: CanvasRenderingContext2D,
@@ -69,10 +72,11 @@ export function drawCharacter(
     return;
   }
 
-  const cx = screenCol * tileSize + offsetX;
-  const cy = screenRow * tileSize + offsetY;
+  const cx = Math.round(screenCol * tileSize + offsetX);
+  const cy = Math.round(screenRow * tileSize + offsetY);
+  const size = Math.round(tileSize);
 
-  drawTile(ctx, CHARACTER_TILE_ID, registry, sprites, cx, cy, tileSize, animFrame);
+  drawTile(ctx, CHARACTER_TILE_ID, registry, sprites, cx, cy, size, size, animFrame);
 }
 
 /**

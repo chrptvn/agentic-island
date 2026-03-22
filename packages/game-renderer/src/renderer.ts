@@ -1,8 +1,8 @@
 /**
  * Main renderer orchestrator.
  *
- * Owns the render loop, sprite cache, and composites all layers plus overlays
- * onto a single <canvas>.
+ * Owns the render loop, sprite cache, camera, input handling, and composites
+ * all layers plus overlays onto a single <canvas>.
  */
 
 import type { WorldState, TileRegistry, CharacterState } from "@agentic-island/shared";
@@ -15,9 +15,12 @@ import {
   type AnimationState,
 } from "./animation.js";
 import { drawSpeechBubble } from "./overlays.js";
+import { Camera, type CameraOptions } from "./camera.js";
+import { InputHandler } from "./input.js";
 
 const DEFAULT_TILE_SIZE = 16;
 const DEFAULT_SCALE_FACTOR = 2;
+const ZOOM_STEP = 1.25;
 
 export interface RendererOptions {
   canvas: HTMLCanvasElement;
@@ -25,6 +28,8 @@ export interface RendererOptions {
   tileSize?: number;
   /** Integer scale factor for pixel-perfect rendering (default: 2) */
   scaleFactor?: number;
+  /** Camera configuration (zoom limits, initial zoom). */
+  camera?: CameraOptions;
 }
 
 export class GameRenderer {
@@ -38,6 +43,10 @@ export class GameRenderer {
   private running = false;
   private rafId = 0;
 
+  readonly camera: Camera;
+  private input: InputHandler;
+  private mapSizeSet = false;
+
   constructor(options: RendererOptions) {
     this.canvas = options.canvas;
 
@@ -49,6 +58,10 @@ export class GameRenderer {
     this.tileSize = options.tileSize ?? DEFAULT_TILE_SIZE;
     this.scaleFactor = options.scaleFactor ?? DEFAULT_SCALE_FACTOR;
     this.animState = createAnimationState();
+
+    this.camera = new Camera({ ...options.camera, scaleFactor: this.scaleFactor });
+    this.input = new InputHandler({ camera: this.camera });
+    this.input.attach(this.canvas);
 
     // Pixel-perfect rendering
     this.ctx.imageSmoothingEnabled = false;
@@ -83,6 +96,13 @@ export class GameRenderer {
   /** Update the world state (called on each WebSocket message). */
   setState(state: WorldState): void {
     this.state = state;
+
+    // Initialize camera position on first state with a map
+    if (!this.mapSizeSet && state.map) {
+      this.camera.setMapSize(state.map.width, state.map.height, this.tileSize);
+      this.camera.reset(this.canvas.width, this.canvas.height);
+      this.mapSizeSet = true;
+    }
   }
 
   /** Start the render loop. */
@@ -113,8 +133,9 @@ export class GameRenderer {
     this.animState = tickAnimation(this.animState, now);
 
     const ctx = this.ctx;
-    const scale = this.scaleFactor;
-    const ts = this.tileSize * scale;
+    const baseTileSize = this.tileSize;
+    const scale = this.camera.scale;
+    const effectiveTile = baseTileSize * scale;
 
     ctx.save();
     ctx.imageSmoothingEnabled = false;
@@ -124,22 +145,15 @@ export class GameRenderer {
 
     const { map, tileRegistry, overrides, entities, characters } = this.state;
 
-    // Compute viewport (centered on the map for now)
-    const viewCols = Math.ceil(this.canvas.width / ts);
-    const viewRows = Math.ceil(this.canvas.height / ts);
-    const viewport: Viewport = {
-      startCol: 0,
-      startRow: 0,
-      cols: Math.min(viewCols, map.width),
-      rows: Math.min(viewRows, map.height),
-      offsetX: 0,
-      offsetY: 0,
-    };
+    // Compute viewport in output-pixel space (offsets already scaled & rounded)
+    const viewport = this.camera.toViewport(
+      this.canvas.width,
+      this.canvas.height,
+      baseTileSize,
+    );
 
-    // Scale context for pixel-perfect tiles
-    ctx.scale(scale, scale);
-
-    const baseTileSize = this.tileSize;
+    // No ctx.scale() — rendering is done in output pixel space to avoid
+    // sub-pixel seams between tiles.
 
     // Prepare layer data
     const layerData: LayerData = {
@@ -148,14 +162,15 @@ export class GameRenderer {
       entities,
     };
 
-    // Render tile layers
+    // Render tile layers (effectiveTile may be fractional; renderLayers
+    // rounds per-tile positions to integers internally)
     renderLayers(
       ctx,
       layerData,
       tileRegistry,
       this.sprites,
       viewport,
-      baseTileSize,
+      effectiveTile,
       this.animState.frame,
     );
 
@@ -167,16 +182,15 @@ export class GameRenderer {
         tileRegistry,
         this.sprites,
         viewport,
-        baseTileSize,
+        effectiveTile,
         this.animState.frame,
       );
     }
 
-    // Reset scale for overlays (they use screen-space pixels)
     ctx.restore();
 
     // Draw overlays at screen scale
-    this.drawOverlays(characters, entities, tileRegistry, viewport, ts);
+    this.drawOverlays(characters, entities, tileRegistry, viewport, effectiveTile);
   }
 
   /** Resize the canvas. */
@@ -184,13 +198,59 @@ export class GameRenderer {
     this.canvas.width = width;
     this.canvas.height = height;
     this.ctx.imageSmoothingEnabled = false;
+
+    if (!this.mapSizeSet && this.state?.map) {
+      // First resize with a known map — initialize camera
+      this.camera.setMapSize(this.state.map.width, this.state.map.height, this.tileSize);
+      this.camera.reset(width, height);
+      this.mapSizeSet = true;
+    } else if (this.mapSizeSet) {
+      // Subsequent resizes — recalculate bounds (dynamic minZoom may change)
+      this.camera.reset(width, height);
+    }
   }
 
   /** Clean up resources. */
   destroy(): void {
     this.stop();
+    this.input.detach();
     this.sprites.clear();
     this.state = null;
+  }
+
+  // ── Public camera controls ─────────────────────────────────────────
+
+  /** Zoom in by one step, centered on the canvas. */
+  zoomIn(): void {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    this.camera.zoomAt(ZOOM_STEP, w / 2, h / 2, w, h);
+  }
+
+  /** Zoom out by one step, centered on the canvas. */
+  zoomOut(): void {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    this.camera.zoomAt(1 / ZOOM_STEP, w / 2, h / 2, w, h);
+  }
+
+  /** Reset camera to show the full map. */
+  resetCamera(): void {
+    this.camera.reset(this.canvas.width, this.canvas.height);
+  }
+
+  /**
+   * Convert a screen-space point (relative to canvas bounding rect) to
+   * integer tile coordinates. Useful for hit-testing from the host UI.
+   */
+  screenToTile(screenX: number, screenY: number): { tileX: number; tileY: number } {
+    return this.camera.screenToTile(
+      screenX,
+      screenY,
+      this.canvas.width,
+      this.canvas.height,
+      this.tileSize,
+    );
   }
 
   // ── Private ─────────────────────────────────────────────────────────
@@ -223,8 +283,8 @@ export class GameRenderer {
         continue;
       }
 
-      const cx = screenCol * tileSize + viewport.offsetX + tileSize / 2;
-      const cy = screenRow * tileSize + viewport.offsetY;
+      const cx = Math.round(screenCol * tileSize + viewport.offsetX) + Math.round(tileSize / 2);
+      const cy = Math.round(screenRow * tileSize + viewport.offsetY);
 
       // TODO: speech bubble rendering (requires speech state tracking)
     }
