@@ -19,7 +19,7 @@ const MIME_MAP: Record<string, string> = {
  */
 export async function packageSprites(
   spriteDir: string,
-  /** Optional path prefix prepended to all filenames (e.g. "tiles/" for DawnLike). */
+  /** Optional path prefix prepended to all filenames. */
   prefix = "",
 ): Promise<SpritePayload[]> {
   const relPaths = await collectImageFiles(spriteDir, spriteDir);

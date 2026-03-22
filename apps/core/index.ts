@@ -6,7 +6,6 @@ import { StateStreamer } from "./src/hub-connector/state-streamer.js";
 import { getWorldConfig } from "./src/world/world-config.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync, writeFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,25 +21,15 @@ if (HUB_API_KEY) {
   const worldName = process.env.WORLD_NAME ?? "My Island";
   const worldDescription = process.env.WORLD_DESCRIPTION ?? "";
 
-  // Persist assigned worldId across restarts so reconnects reuse the same entry
-  const worldIdFile = join(__dirname, ".world-id");
-  let worldId = process.env.WORLD_ID;
-  if (!worldId) {
-    try { worldId = readFileSync(worldIdFile, "utf8").trim(); } catch { /* first run */ }
-  }
-
   const connector = new HubConnector({
     hubUrl,
     apiKey: HUB_API_KEY,
     worldName,
-    worldId,
     worldDescription,
   });
 
   connector.onConnected = (id) => {
     console.log(`[core] Connected to Hub — world ID: ${id}`);
-    // Persist the assigned worldId so restarts reuse the same world entry
-    try { writeFileSync(worldIdFile, id, "utf8"); } catch { /* non-fatal */ }
     // Push initial state immediately so viewers see the world on first connect
     streamer.handleWorldUpdate(world);
   };
@@ -51,15 +40,8 @@ if (HUB_API_KEY) {
     console.error("[core] Hub connector error:", err.message);
   };
 
-  // Package sprites from DawnLike + public
-  // DawnLike sprites are served at /tiles/ so they need that prefix to match
-  // the sheet names used in tileset.json (e.g. "tiles/Items/Food.png")
-  const sprites = (
-    await Promise.all([
-      packageSprites(join(__dirname, "DawnLike"), "tiles/").catch(() => []),
-      packageSprites(join(__dirname, "public")).catch(() => []),
-    ])
-  ).flat();
+  // Package all sprites from the unified sprites/ directory
+  const sprites = await packageSprites(join(__dirname, "sprites")).catch(() => []);
 
   // Wire state streaming
   const streamer = new StateStreamer({ minIntervalMs: 500 });

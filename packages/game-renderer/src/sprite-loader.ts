@@ -1,8 +1,8 @@
 /**
- * Sprite sheet loading and caching for DawnLike-format tile sheets.
+ * Sprite sheet loading and caching.
  *
  * Each sheet is a grid of tiles with a fixed tile size and optional gap
- * between tiles (common in DawnLike sprite sheets).
+ * between tiles.
  */
 
 export interface SpriteSheet {

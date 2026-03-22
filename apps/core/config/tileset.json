@@ -3,7 +3,7 @@
   "tileSize": 16,
   "tileGap": 1,
   "sheets": {
-    "tiles/Items/Food.png": {
+    "food.png": {
       "tileGap": 0
     },
     "roguelikeChar_transparent.png": {
@@ -305,7 +305,7 @@
       "layer": 2,
       "category": "item",
       "description": "Dropped berries",
-      "sheet": "tiles/Items/Food.png",
+      "sheet": "food.png",
       "item": true
     },
     {

@@ -438,70 +438,8 @@ function initTooltip() {
   }
 }
 
-// ─── Draw-path mode ───────────────────────────────────────────────────────────
-function initDrawMode() {
-  let drawMode  = false;
-  let isDrawing = false;
-  let drawAction = 'add';
-  const visited = new Set();
-
-  const btn = document.getElementById('btn-path');
-
-  btn.addEventListener('click', () => {
-    drawMode = !drawMode;
-    btn.classList.toggle('active', drawMode);
-    canvas.style.cursor = drawMode ? 'crosshair' : '';
-  });
-
-  function cellFromEvent(e) {
-    const rect   = canvas.getBoundingClientRect();
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-    return {
-      cx: Math.floor((e.clientX - rect.left) * scaleX / TILE_SRC_SIZE),
-      cy: Math.floor((e.clientY - rect.top)  * scaleY / TILE_SRC_SIZE),
-    };
-  }
-
-  function isPathCell(cx, cy) {
-    const tileId = (lastMapData?.overlays?.[`${cx},${cy}`] ?? [])[0] ?? '';
-    return tileId.startsWith('path_');
-  }
-
-  async function applyPath(cx, cy) {
-    const key = `${cx},${cy}`;
-    if (visited.has(key)) return;
-    visited.add(key);
-    try {
-      await fetch('/api/path', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ x: cx, y: cy, action: drawAction }),
-      });
-    } catch (err) {
-      console.error('[path draw]', err);
-    }
-  }
-
-  canvas.addEventListener('mousedown', (e) => {
-    if (!drawMode || e.button !== 0) return;
-    e.preventDefault();
-    const { cx, cy } = cellFromEvent(e);
-    drawAction = isPathCell(cx, cy) ? 'remove' : 'add';
-    isDrawing  = true;
-    visited.clear();
-    applyPath(cx, cy);
-  });
-
-  canvas.addEventListener('mousemove', (e) => {
-    if (!isDrawing) return;
-    const { cx, cy } = cellFromEvent(e);
-    applyPath(cx, cy);
-  });
-
-  canvas.addEventListener('mouseup',    () => { isDrawing = false; });
-  canvas.addEventListener('mouseleave', () => { isDrawing = false; });
-}
+// ─── Draw-path mode (disabled — buttons removed) ────────────────────────────
+function initDrawMode() {}
 
 
 function startCharacterAnimation() {

@@ -9,8 +9,8 @@ import { allItemDefs } from "../world/item-registry.js";
 import { handleMcpRequest } from "../mcp/mcp-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PUBLIC_DIR = join(__dirname, "../..", "public");
-const TILE_DIR   = join(__dirname, "../..", "DawnLike");
+const PUBLIC_DIR  = join(__dirname, "../..", "public");
+const SPRITE_DIR  = join(__dirname, "../..", "sprites");
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -87,11 +87,9 @@ async function handleRequest(
   }
 
   if (url === "/api/sheets" && method === "GET") {
-    const [publicPngs, dawnlikeItems] = await Promise.all([
-      readdir(PUBLIC_DIR).then(files => files.filter(f => f.endsWith(".png")).map(f => ({ url: `/${f}`, group: "public" }))),
-      readdir(join(TILE_DIR, "Items")).then(files => files.filter(f => f.endsWith(".png")).map(f => ({ url: `/tiles/Items/${f}`, group: "DawnLike/Items" }))),
-    ]);
-    jsonOk(res, { sheets: [...publicPngs, ...dawnlikeItems] });
+    const sprites = await readdir(SPRITE_DIR)
+      .then(files => files.filter(f => f.endsWith(".png")).map(f => ({ url: `/${f}`, group: "sprites" })));
+    jsonOk(res, { sheets: sprites });
     return;
   }
 
@@ -391,22 +389,23 @@ async function handleRequest(
   }
 
 
-  let filePath: string;
-  if (url.startsWith("/tiles/")) {
-    filePath = join(TILE_DIR, url.slice("/tiles/".length));
-  } else {
-    filePath = join(PUBLIC_DIR, url === "/" ? "/index.html" : url);
+  // Static file serving: try sprites/ first, then public/
+  const requestedFile = url === "/" ? "/index.html" : url;
+  const spritePath = join(SPRITE_DIR, requestedFile);
+  const publicPath = join(PUBLIC_DIR, requestedFile);
+
+  for (const filePath of [spritePath, publicPath]) {
+    try {
+      const data = await readFile(filePath);
+      const mime = MIME[extname(filePath)] ?? "application/octet-stream";
+      res.writeHead(200, { "Content-Type": mime });
+      res.end(data);
+      return;
+    } catch { /* try next */ }
   }
 
-  try {
-    const data = await readFile(filePath);
-    const mime = MIME[extname(filePath)] ?? "application/octet-stream";
-    res.writeHead(200, { "Content-Type": mime });
-    res.end(data);
-  } catch {
-    res.writeHead(404);
-    res.end("Not found");
-  }
+  res.writeHead(404);
+  res.end("Not found");
 }
 
 function mapPayload(world: World) {
