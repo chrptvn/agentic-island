@@ -11,7 +11,7 @@ import health from "./routes/health.js";
 import keys from "./routes/keys.js";
 import worlds from "./routes/worlds.js";
 import admin from "./routes/admin.js";
-import { handleCoreConnection } from "./ws/core-handler.js";
+import { handleWorldConnection } from "./ws/world-handler.js";
 import { handleViewerConnection } from "./ws/viewer-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
@@ -123,7 +123,7 @@ if (servingStatic) {
   console.log(`[hub-api] Serving static files from ${WEB_DIST}`);
 }
 
-const PORT = parseInt(process.env.HUB_PORT ?? "4000", 10);
+const PORT = parseInt(process.env.HUB_PORT ?? "3001", 10);
 
 const server = serve(
   { fetch: app.fetch, port: PORT },
@@ -148,11 +148,11 @@ if (cleanupInterval.unref) cleanupInterval.unref();
 wss.on("connection", (ws: WebSocket, req) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
 
-  if (url.pathname === "/ws/core") {
-    handleCoreConnection(ws);
+  if (url.pathname === "/ws/world") {
+    handleWorldConnection(ws);
   } else if (url.pathname === "/ws/viewer") {
     handleViewerConnection(ws);
   } else {
-    ws.close(4000, "Unknown WebSocket path. Use /ws/core or /ws/viewer");
+    ws.close(4000, "Unknown WebSocket path. Use /ws/world or /ws/viewer");
   }
 });

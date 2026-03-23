@@ -1,0 +1,96 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import type { WorldState, HubToViewerMessage } from '@agentic-island/shared';
+
+export interface WorldStream {
+  state: WorldState | null;
+  spriteBaseUrl: string | null;
+  worldName: string | null;
+  connected: boolean;
+  error: string | null;
+}
+
+const WS_RECONNECT_BASE = 1_000;
+const WS_RECONNECT_MAX = 30_000;
+
+export function useWorldStream(worldId: string | undefined): WorldStream {
+  const [state, setState] = useState<WorldState | null>(null);
+  const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
+  const [worldName, setWorldName] = useState<string | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!worldId) return;
+
+    let dead = false;
+    let ws: WebSocket | null = null;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let delay = WS_RECONNECT_BASE;
+
+    function connect() {
+      if (dead) return;
+
+      const protocol =
+        window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(
+        `${protocol}//${window.location.host}/ws/viewer`,
+      );
+
+      ws.onopen = () => {
+        setConnected(true);
+        setError(null);
+        delay = WS_RECONNECT_BASE;
+        ws!.send(JSON.stringify({ type: 'subscribe', worldId }));
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const msg: HubToViewerMessage = JSON.parse(event.data as string);
+          switch (msg.type) {
+            case 'world_state':
+              setState(msg.state);
+              setSpriteBaseUrl(msg.spriteBaseUrl);
+              setWorldName(msg.worldName);
+              break;
+            case 'world_offline':
+              setError('World went offline');
+              setState(null);
+              break;
+            case 'error':
+              setError(msg.message);
+              break;
+          }
+        } catch {
+          /* ignore parse errors */
+        }
+      };
+
+      ws.onclose = () => {
+        setConnected(false);
+        ws = null;
+        if (!dead) {
+          timer = setTimeout(() => {
+            delay = Math.min(delay * 2, WS_RECONNECT_MAX);
+            connect();
+          }, delay);
+        }
+      };
+
+      ws.onerror = () => {
+        setError('Connection failed');
+      };
+    }
+
+    connect();
+
+    return () => {
+      dead = true;
+      if (timer) clearTimeout(timer);
+      if (ws) ws.close();
+    };
+  }, [worldId]);
+
+  return { state, spriteBaseUrl, worldName, connected, error };
+}

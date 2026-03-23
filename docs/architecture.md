@@ -8,7 +8,7 @@ Detailed technical documentation for the Agentic Island platform.
  ┌─ Your Machine ──────────────────────────────────────────────────────────┐
  │                                                                         │
  │  ┌─────────────────────────────────────────────────────────────┐       │
- │  │                    Core  (@agentic-island/core)             │       │
+ │  │                    World (@agentic-island/world)             │       │
  │  │                                                             │       │
  │  │  ┌──────────┐  ┌─────────────┐  ┌────────────────────┐    │       │
  │  │  │  World   │  │  MCP Server │  │   Hub Connector    │    │       │
@@ -35,7 +35,7 @@ Detailed technical documentation for the Agentic Island platform.
  │  │                                                          │◄─┼──────┘
  │  │  ┌──────────┐  ┌───────────────┐  ┌──────────────────┐  │  │
  │  │  │  Hono    │  │  WS Relay     │  │  Sprite Cache    │  │  │
- │  │  │  REST    │  │  Core↔Viewer  │  │  (filesystem)    │  │  │
+ │  │  │  REST    │  │  World↔Viewer │  │  (filesystem)    │  │  │
  │  │  │  Routes  │  │               │  │                  │  │  │
  │  │  └────┬─────┘  └───────┬───────┘  └──────────────────┘  │  │
  │  │       │                │                                  │  │
@@ -57,11 +57,11 @@ Detailed technical documentation for the Agentic Island platform.
 
 ## Packages
 
-### `@agentic-island/core` — Game Engine
+### `@agentic-island/world` — Game Engine
 
-**Path:** `apps/core`
+**Path:** `apps/world`
 
-The Core is the game engine that simulates the world. It runs on the host's machine and exposes MCP endpoints for AI agents to control characters.
+The World is the game engine that simulates the world. It runs on the host's machine and exposes MCP endpoints for AI agents to control characters.
 
 **Key modules:**
 
@@ -86,9 +86,9 @@ The Core is the game engine that simulates the world. It runs on the host's mach
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CORE_PORT` | `3000` | HTTP server port |
+| `WORLD_PORT` | `3002` | HTTP server port |
 | `MCP_TRANSPORT` | — | Set to `stdio` for legacy MCP transport |
-| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/core`) |
+| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/world`) |
 | `HUB_API_KEY` | — | API key for Hub authentication |
 
 ---
@@ -97,7 +97,7 @@ The Core is the game engine that simulates the world. It runs on the host's mach
 
 **Path:** `apps/hub-api`
 
-The Hub is the public-facing server. It accepts connections from Core instances, stores world metadata in SQLite, caches sprites on disk, and relays live state to viewer clients over WebSocket.
+The Hub is the public-facing server. It accepts connections from World instances, stores world metadata in SQLite, caches sprites on disk, and relays live state to viewer clients over WebSocket.
 
 **REST endpoints:**
 
@@ -113,7 +113,7 @@ The Hub is the public-facing server. It accepts connections from Core instances,
 
 | Path | Purpose |
 |------|---------|
-| `/ws/core` | Core game engines connect here |
+| `/ws/world` | World game engines connect here |
 | `/ws/viewer` | Browser viewer clients connect here |
 
 **Environment variables:**
@@ -211,14 +211,14 @@ Zero-dependency package exporting TypeScript types, WebSocket protocol message d
 | `types/character.ts` | `CharacterState`, `CharacterStats`, `InventoryItem`, `EquipmentSlots` |
 | `types/entity.ts` | `EntityDef`, `EntityInstance`, `EntityStats` |
 | `types/hub.ts` | `WorldMeta`, `SpriteAsset` |
-| `protocol/core-hub.ts` | `CoreToHubMessage`, `HubToCoreMessage` |
+| `protocol/world-hub.ts` | `WorldToHubMessage`, `HubToWorldMessage` |
 | `protocol/hub-viewer.ts` | `ViewerToHubMessage`, `HubToViewerMessage` |
 | `constants.ts` | Ports, timeouts, limits |
 
 **Constants:**
 
 ```typescript
-DEFAULT_PORT_CORE = 3000
+DEFAULT_PORT_WORLD = 3002
 DEFAULT_PORT_HUB  = 4000
 HEARTBEAT_INTERVAL_MS  = 30_000   // 30s between pings
 HEARTBEAT_TIMEOUT_MS   = 90_000   // 90s before disconnect
@@ -229,11 +229,11 @@ WS_RECONNECT_MAX_MS   = 30_000   // max backoff
 
 ## WebSocket Protocol
 
-### Core ↔ Hub
+### World ↔ Hub
 
 All messages are JSON-encoded strings over a single WebSocket connection.
 
-**Core → Hub messages:**
+**World → Hub messages:**
 
 | Type | When | Payload |
 |------|------|---------|
@@ -241,7 +241,7 @@ All messages are JSON-encoded strings over a single WebSocket connection.
 | `state_update` | Periodically | `state` (full `WorldState` snapshot) |
 | `ping` | Every 30s | `timestamp` |
 
-**Hub → Core messages:**
+**Hub → World messages:**
 
 | Type | When | Payload |
 |------|------|---------|
@@ -252,7 +252,7 @@ All messages are JSON-encoded strings over a single WebSocket connection.
 **Handshake sequence:**
 
 ```
-Core                                Hub
+World                               Hub
   │                                  │
   │──── handshake ──────────────────►│  apiKey + world metadata + sprites
   │                                  │  Hub validates key (SHA-256 lookup)
@@ -282,31 +282,31 @@ Viewers connect via WebSocket and subscribe to a specific world.
 
 | Type | When | Payload |
 |------|------|---------|
-| `world_state` | On each Core state_update | `worldId`, `state` (WorldState), `spriteBaseUrl` |
-| `world_offline` | Core disconnects | `worldId` |
+| `world_state` | On each World state_update | `worldId`, `state` (WorldState), `spriteBaseUrl` |
+| `world_offline` | World disconnects | `worldId` |
 | `world_list` | On request | `worlds[]` (WorldMeta array) |
 | `error` | On failure | `code`, `message` |
 
 ## Data Flow
 
-End-to-end flow from Core startup to a viewer rendering the world:
+End-to-end flow from World startup to a viewer rendering the world:
 
 ```
-1. Core starts
+1. World starts
    └─► Loads config (world.json, entities.json, etc.)
    └─► Generates map via cellular automata
    └─► Starts 500ms game tick loop
    └─► Opens MCP server on HTTP
 
-2. Core connects to Hub
-   └─► WebSocket to /ws/core
+2. World connects to Hub
+   └─► WebSocket to /ws/world
    └─► Sends "handshake" with API key, world metadata, base64 sprites
    └─► Hub validates API key (SHA-256 hash lookup in SQLite)
    └─► Hub upserts world record (status: "online")
    └─► Hub saves sprite PNGs to disk cache
    └─► Hub replies "handshake_ack" with worldId
 
-3. Core streams state
+3. World streams state
    └─► Periodically serializes full WorldState (map, entities, characters, overrides)
    └─► Sends "state_update" to Hub
    └─► Sends "ping" every 30s for heartbeat
@@ -322,7 +322,7 @@ End-to-end flow from Core startup to a viewer rendering the world:
    └─► Hub adds viewer to worldViewers set
 
 6. Hub relays state to viewer
-   └─► On next "state_update" from Core, Hub broadcasts
+   └─► On next "state_update" from World, Hub broadcasts
        { type: "world_state", state, spriteBaseUrl } to all subscribed viewers
 
 7. Viewer renders
@@ -332,7 +332,7 @@ End-to-end flow from Core startup to a viewer rendering the world:
    └─► requestAnimationFrame loop for smooth rendering
 
 8. AI agent interacts
-   └─► MCP client POSTs to Core's /mcp
+   └─► MCP client POSTs to World's /mcp
    └─► Spawns character, moves, harvests, crafts, builds
    └─► World state changes propagate through steps 3→6→7
 ```
@@ -343,7 +343,7 @@ Hub API uses SQLite (WAL mode) with three tables.
 
 ### `api_keys`
 
-Stores hashed API keys for Core authentication.
+Stores hashed API keys for World authentication.
 
 ```sql
 CREATE TABLE api_keys (
@@ -386,9 +386,9 @@ CREATE TABLE world_views (
 );
 ```
 
-## Core Database Schema
+## World Database Schema
 
-Core uses a separate SQLite database (`agentic-island.db`) for local game state persistence.
+World uses a separate SQLite database (`agentic-island.db`) for local game state persistence.
 
 ```sql
 CREATE TABLE world_state     (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -402,7 +402,7 @@ CREATE TABLE journal         (id INTEGER PRIMARY KEY AUTOINCREMENT, character_id
 
 ### Creating a Custom World
 
-All world behavior is controlled by JSON files in `apps/core/config/`. Edit these to create entirely different game experiences.
+All world behavior is controlled by JSON files in `apps/world/config/`. Edit these to create entirely different game experiences.
 
 #### 1. World Balance (`world.json`)
 
@@ -488,11 +488,11 @@ Map tile IDs to sprite sheet positions (supports the DawnLike sprite format):
 }
 ```
 
-**Hot reload:** All config files are watched — save changes and they take effect immediately without restarting Core.
+**Hot reload:** All config files are watched — save changes and they take effect immediately without restarting World.
 
 ## MCP Integration
 
-Core exposes a single unified MCP server at `/mcp` for AI agent interaction.
+World exposes a single unified MCP server at `/mcp` for AI agent interaction.
 
 ### MCP Server (`/mcp`)
 
@@ -534,7 +534,7 @@ Session-based MCP server providing both character control and world management t
 - Keys are generated via `POST /api/keys` on the Hub
 - Format: `ai_<32-character-hex>` (UUID without dashes, prefixed)
 - Only the SHA-256 hash is stored in the database — raw key is shown once at creation
-- Core sends the raw key during WebSocket handshake; Hub verifies by hashing and looking up
+- World sends the raw key during WebSocket handshake; Hub verifies by hashing and looking up
 
 ### Rate Limiting
 
@@ -555,7 +555,7 @@ Session-based MCP server providing both character control and world management t
 
 ### WebSocket Security
 
-- Core connections require valid API key in the handshake message
+- World connections require valid API key in the handshake message
 - Invalid keys result in immediate `error` message and connection close
 - Viewers don't require authentication (read-only access to world state)
-- Hub tracks `last_heartbeat_at` and marks worlds offline when Core disconnects
+- Hub tracks `last_heartbeat_at` and marks worlds offline when World disconnects

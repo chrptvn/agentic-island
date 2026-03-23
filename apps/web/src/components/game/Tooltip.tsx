@@ -1,0 +1,115 @@
+'use client';
+
+import { createPortal } from 'react-dom';
+import type { CharacterState, EntityInstance } from '@agentic-island/shared';
+
+const ENTITY_LABELS: Record<string, string> = {
+  young_tree: 'Oak Tree',
+  old_tree_base: 'Oak Tree',
+  young_berry: 'Berry Tree',
+  old_berry_base: 'Berry Tree',
+  young_berry_empty: 'Berry Tree',
+  old_berry_empty_base: 'Berry Tree',
+  rock: 'Rock',
+  log_pile: 'Log Pile',
+  campfire_lit: 'Campfire 🔥',
+  campfire_extinct: 'Campfire',
+  chest: 'Chest',
+};
+
+export interface TooltipData {
+  mouseX: number;
+  mouseY: number;
+  character: CharacterState | null;
+  entity: EntityInstance | null;
+}
+
+function StatBar({
+  label,
+  value,
+  max,
+  color,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: string;
+}) {
+  const pct = Math.round((value / max) * 100);
+  return (
+    <div className="flex items-center gap-2">
+      <span className="w-14 text-right text-text-muted">{label}</span>
+      <div className="h-2 flex-1 rounded-full bg-elevated">
+        <div
+          className={`h-full rounded-full ${color}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="w-10 text-right">
+        {Math.round(value)}/{max}
+      </span>
+    </div>
+  );
+}
+
+function CharacterBox({ character }: { character: CharacterState }) {
+  const { stats } = character;
+  return (
+    <div className="space-y-1">
+      <p className="font-bold text-accent-cyan">{character.id}</p>
+      {character.goal && (
+        <p className="text-text-muted">&quot;{character.goal}&quot;</p>
+      )}
+      <StatBar
+        label="❤️ HP"
+        value={stats.health}
+        max={stats.maxHealth}
+        color="bg-accent-red"
+      />
+      <StatBar
+        label="🍖 Food"
+        value={stats.hunger}
+        max={stats.maxHunger}
+        color="bg-accent-gold"
+      />
+      <StatBar
+        label="⚡ NRG"
+        value={stats.energy}
+        max={stats.maxEnergy}
+        color="bg-accent-emerald"
+      />
+    </div>
+  );
+}
+
+function EntityBox({ entity }: { entity: EntityInstance }) {
+  const name = ENTITY_LABELS[entity.tileId] ?? entity.tileId;
+  const hp = entity.stats?.health;
+  const maxHp = entity.stats?.maxHealth;
+  return (
+    <div className="space-y-1">
+      <p className="font-bold text-accent-gold">{name}</p>
+      {hp !== undefined && maxHp !== undefined && (
+        <StatBar label="❤️ HP" value={hp} max={maxHp} color="bg-accent-red" />
+      )}
+    </div>
+  );
+}
+
+export default function Tooltip({ data }: { data: TooltipData | null }) {
+  if (!data || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className="pointer-events-none fixed z-50 min-w-[180px] max-w-xs rounded-lg border border-border-default bg-surface/90 p-3 font-mono text-xs text-text-primary shadow-lg backdrop-blur-sm"
+      style={{ left: data.mouseX + 12, top: data.mouseY + 12 }}
+    >
+      {data.character && <CharacterBox character={data.character} />}
+      {data.character && data.entity && (
+        <hr className="my-2 border-border-muted" />
+      )}
+      {data.entity && <EntityBox entity={data.entity} />}
+    </div>,
+    document.body,
+  );
+}

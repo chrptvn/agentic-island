@@ -30,7 +30,7 @@ core map info              Map dimensions and seed
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HUB_URL` | `http://localhost:4000` | Hub API base URL |
+| `HUB_URL` | `http://localhost:3001` | Hub API base URL |
 | `ADMIN_KEY` | _(required for admin commands)_ | Admin authentication key |
 | `CORE_URL` | `http://localhost:3000` | Core server base URL |
 

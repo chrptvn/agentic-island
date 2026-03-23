@@ -2,19 +2,19 @@
 # scripts/dev.sh — Start all Agentic Island services for local development.
 #
 # Usage:
-#   ./scripts/dev.sh            # hub-api + hub-web + core
-#   ./scripts/dev.sh --no-core  # hub-api + hub-web only
+#   ./scripts/dev.sh             # hub-api + web + world
+#   ./scripts/dev.sh --no-world  # hub-api + web only
 #
 # Requires: pnpm
 # Services:
-#   hub-api  → http://localhost:4000
-#   hub-web  → http://localhost:5173 (Vite, proxies /api + /ws to hub-api)
-#   core     → http://localhost:3000
+#   hub-api  → http://localhost:3001
+#   web      → http://localhost:3000 (Next.js, proxies /api + /ws to hub-api)
+#   world    → http://localhost:3002
 #
 # Environment variables:
-#   HUB_API_KEY   API key for the core to authenticate with hub-api
+#   HUB_API_KEY   API key for the world to authenticate with hub-api
 #   ADMIN_KEY     Master admin key for island-cli admin commands
-#   WORLD_NAME    Name of the world (used by core)
+#   WORLD_NAME    Name of the world (used by world)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -55,16 +55,16 @@ pnpm --filter @agentic-island/hub-api run dev 2>&1 | prefix "$GREEN" "hub-api" &
 PIDS+=($!)
 sleep 1
 
-# ── Start hub-web (Vite) ────────────────────────────────────────────
-echo -e "${BLUE}Starting hub-web…${NC}"
-pnpm --filter @agentic-island/hub-web run dev 2>&1 | prefix "$BLUE" "hub-web" &
+# ── Start web (Next.js) ─────────────────────────────────────────────
+echo -e "${BLUE}Starting web…${NC}"
+pnpm --filter @agentic-island/web run dev 2>&1 | prefix "$BLUE" "web" &
 PIDS+=($!)
 
-# ── Start core (unless --no-core) ────────────────────────────────────
-if [[ "${1:-}" != "--no-core" ]]; then
+# ── Start world (unless --no-world) ─────────────────────────────────
+if [[ "${1:-}" != "--no-world" ]]; then
   sleep 1
-  echo -e "${RED}Starting core…${NC}"
-  pnpm --filter @agentic-island/core run dev 2>&1 | prefix "$RED" "core" &
+  echo -e "${RED}Starting world…${NC}"
+  WORLD_PORT=3002 pnpm --filter @agentic-island/world run dev 2>&1 | prefix "$RED" "world" &
   PIDS+=($!)
 fi
 

@@ -5,7 +5,7 @@ export function initDb(db: Database.Database): void {
     CREATE TABLE IF NOT EXISTS api_keys (
       id TEXT PRIMARY KEY,
       key_hash TEXT NOT NULL UNIQUE,
-      label TEXT,
+      email TEXT NOT NULL UNIQUE,
       created_at TEXT DEFAULT (datetime('now')),
       last_seen_at TEXT
     );

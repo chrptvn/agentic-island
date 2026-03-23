@@ -1,0 +1,68 @@
+'use client';
+
+import { use } from 'react';
+import Link from 'next/link';
+import Container from '@/components/ui/Container';
+import Card from '@/components/ui/Card';
+import { useWorldStream } from '@/hooks/useWorldStream';
+import GameViewer from '@/components/game/GameViewer';
+
+export default function WorldViewerPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = use(params);
+  const { state, spriteBaseUrl, worldName, connected, error } =
+    useWorldStream(id);
+
+  return (
+    <Container className="py-8">
+      {/* Header */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <Link
+            href="/worlds"
+            className="text-sm text-text-muted transition-colors hover:text-accent-cyan"
+          >
+            ← Back to Worlds
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold text-text-heading">
+            {worldName ?? id}
+          </h1>
+        </div>
+
+        <span className="flex items-center gap-2 text-sm">
+          <span
+            className={`inline-block h-2.5 w-2.5 rounded-full ${
+              connected ? 'bg-accent-emerald' : 'bg-accent-red'
+            }`}
+          />
+          <span
+            className={connected ? 'text-accent-emerald' : 'text-accent-red'}
+          >
+            {connected ? 'Connected' : 'Disconnected'}
+          </span>
+        </span>
+      </div>
+
+      {/* Error / offline state */}
+      {error && !connected && (
+        <Card className="py-16 text-center">
+          <p className="text-4xl">😴</p>
+          <p className="mt-4 text-lg font-semibold text-text-heading">
+            World Unavailable
+          </p>
+          <p className="mt-1 text-sm text-text-muted">{error}</p>
+        </Card>
+      )}
+
+      {/* Game canvas */}
+      {(connected || state) && (
+        <div className="overflow-x-auto">
+          <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
+        </div>
+      )}
+    </Container>
+  );
+}

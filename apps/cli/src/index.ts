@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { registerKeysCommand } from "./commands/keys.js";
 import { registerWorldsCommand } from "./commands/worlds.js";
-import { registerCoreCommand } from "./commands/core/index.js";
+import { registerWorldCommand } from "./commands/world/index.js";
 
 const program = new Command();
 
@@ -13,6 +13,6 @@ program
 
 registerKeysCommand(program);
 registerWorldsCommand(program);
-registerCoreCommand(program);
+registerWorldCommand(program);
 
 program.parse(process.argv);

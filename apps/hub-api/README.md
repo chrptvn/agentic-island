@@ -13,7 +13,7 @@ src/
 │   ├── worlds.ts         GET /api/worlds, GET /api/worlds/:id
 │   └── admin.ts          Admin key/world management (requires ADMIN_KEY)
 ├── ws/
-│   ├── core-handler.ts   /ws/core — Core→Hub state streaming
+│   ├── world-handler.ts   /ws/world — Core→Hub state streaming
 │   └── viewer-handler.ts /ws/viewer — Hub→Viewer state broadcasting
 ├── db/
 │   └── index.ts          SQLite (worlds, keys, heartbeats, analytics)
@@ -42,14 +42,14 @@ src/
 
 | Path | Direction | Purpose |
 |------|-----------|---------|
-| `/ws/core` | Core → Hub | Handshake, state updates, heartbeat |
+| `/ws/world | World → Hub | Handshake, state updates, heartbeat |
 | `/ws/viewer` | Hub → Viewer | World state broadcasts, subscriptions |
 
 ## Environment Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HUB_PORT` | `4000` | Server port |
+| `HUB_PORT` | `3001` | Server port |
 | `HUB_DB_PATH` | `hub.db` | SQLite database path |
 | `SPRITE_CACHE_DIR` | `sprite-cache` | Sprite cache directory |
 | `ADMIN_KEY` | _(optional)_ | Admin API authentication key |

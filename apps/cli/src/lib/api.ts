@@ -4,7 +4,7 @@ export interface ApiConfig {
 }
 
 export function resolveConfig(opts: { hubUrl?: string; adminKey?: string }): ApiConfig {
-  const hubUrl = opts.hubUrl ?? process.env.HUB_URL ?? "http://localhost:4000";
+  const hubUrl = opts.hubUrl ?? process.env.HUB_URL ?? "http://localhost:3001";
   const adminKey = opts.adminKey ?? process.env.ADMIN_KEY ?? "";
 
   if (!adminKey) {

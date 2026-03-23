@@ -32,7 +32,7 @@ pnpm dev                           # Start Next.js dev server
 ## Project Structure
 
 **agentic-island** (monorepo):
-- `apps/core` — World simulation engine
+- `apps/world` — World simulation engine
 - `apps/hub-api` — Multiplayer hub server
 - `apps/hub-web` — Viewer SPA (Vite + React)
 - `apps/cli` — Admin CLI tool
@@ -53,18 +53,18 @@ pnpm dev                           # Start Next.js dev server
 
 ## Configuration
 
-Game data lives in `apps/core/config/` as JSON files. See [CONFIG.md](apps/core/CONFIG.md) for schema documentation. Changes are hot-reloaded — no restart needed.
+Game data lives in `apps/world/config/` as JSON files. See [CONFIG.md](apps/world/CONFIG.md) for schema documentation. Changes are hot-reloaded — no restart needed.
 
 ## Sprites
 
-All sprite assets are in `apps/core/sprites/`. See [CREDITS.md](apps/core/sprites/CREDITS.md) for attribution and licensing.
+All sprite assets are in `apps/world/sprites/`. See [CREDITS.md](apps/world/sprites/CREDITS.md) for attribution and licensing.
 
 ## Commit Messages
 
 Use clear, descriptive commit messages. Include a scope when relevant:
 
 ```
-feat(core): add berry regrowth mechanic
+feat(world): add berry regrowth mechanic
 fix(hub-api): prevent duplicate world registration
 docs: update CONFIG.md with new entity properties
 ```

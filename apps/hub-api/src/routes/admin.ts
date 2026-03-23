@@ -1,7 +1,18 @@
 import { Hono } from "hono";
-import { randomUUID, createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { adminAuth } from "../middleware/admin-auth.js";
+
+const PASSPORT_SALT =
+  process.env.PASSPORT_SALT || "agentic-island-default-salt-2025";
+
+function generatePassportKey(email: string): string {
+  const normalized = email.toLowerCase().trim();
+  const hash = createHash("sha256")
+    .update(normalized + PASSPORT_SALT)
+    .digest("hex");
+  return `ai_${hash.substring(0, 32)}`;
+}
 
 const admin = new Hono();
 
@@ -12,7 +23,7 @@ admin.use("*", adminAuth());
 admin.get("/keys", (c) => {
   const rows = db
     .prepare(
-      "SELECT id, label, created_at, last_seen_at FROM api_keys ORDER BY created_at DESC",
+      "SELECT id, email, created_at, last_seen_at FROM api_keys ORDER BY created_at DESC",
     )
     .all();
   return c.json({ keys: rows });
@@ -20,18 +31,30 @@ admin.get("/keys", (c) => {
 
 admin.post("/keys", async (c) => {
   const body = await c.req.json().catch(() => ({}));
-  const label = (body as { label?: string }).label ?? null;
-  const id = randomUUID();
-  const rawKey = `ai_${randomUUID().replace(/-/g, "")}`;
+  const email = (body as { email?: string }).email;
+
+  if (!email || typeof email !== "string" || !email.includes("@")) {
+    return c.json({ error: "A valid email address is required." }, 400);
+  }
+
+  const normalized = email.toLowerCase().trim();
+  const rawKey = generatePassportKey(normalized);
   const keyHash = createHash("sha256").update(rawKey).digest("hex");
 
-  db.prepare("INSERT INTO api_keys (id, key_hash, label) VALUES (?, ?, ?)").run(
-    id,
-    keyHash,
-    label,
-  );
+  const existing = db
+    .prepare("SELECT id FROM api_keys WHERE email = ?")
+    .get(normalized) as { id: string } | undefined;
 
-  return c.json({ id, key: rawKey, label, createdAt: new Date().toISOString() }, 201);
+  if (existing) {
+    return c.json({ id: existing.id, key: rawKey, email: normalized }, 200);
+  }
+
+  const id = randomUUID();
+  db.prepare(
+    "INSERT INTO api_keys (id, key_hash, email) VALUES (?, ?, ?)",
+  ).run(id, keyHash, normalized);
+
+  return c.json({ id, key: rawKey, email: normalized }, 201);
 });
 
 admin.delete("/keys/:id", (c) => {

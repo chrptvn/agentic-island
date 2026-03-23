@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
-import { worldViewers, lastWorldState } from "./core-handler.js";
+import { worldViewers, lastWorldState } from "./world-handler.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
   let subscribedWorldId: string | null = null;

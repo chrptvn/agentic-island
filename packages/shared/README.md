@@ -17,7 +17,7 @@ Centralized TypeScript type definitions, message protocols, and constants used a
 
 | Module | Direction | Key Types |
 |--------|-----------|-----------|
-| `protocol/core-hub` | Core ↔ Hub | `CoreHandshakeMessage`, `CoreStateUpdateMessage`, `HubHandshakeAckMessage` |
+| `protocol/world-hub` | Core ↔ Hub | `WorldHandshakeMessage`, `WorldStateUpdateMessage`, `HubHandshakeAckMessage` |
 | `protocol/hub-viewer` | Hub ↔ Viewer | `ViewerSubscribeMessage`, `ViewerWorldStateMessage`, `ViewerWorldOfflineMessage` |
 
 ### Constants
@@ -33,7 +33,7 @@ Centralized TypeScript type definitions, message protocols, and constants used a
 
 ```typescript
 import { WorldState, CharacterState } from "@agentic-island/shared";
-import { CoreToHubMessage } from "@agentic-island/shared";
+import { WorldToHubMessage } from "@agentic-island/shared";
 ```
 
 ## Scripts

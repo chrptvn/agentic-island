@@ -42,7 +42,7 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV HUB_PORT=4000
+ENV HUB_PORT=3001
 ENV HUB_DB_PATH=/data/hub.db
 ENV SPRITE_CACHE_DIR=/data/sprites
 
@@ -58,8 +58,8 @@ COPY --from=builder --chown=hubapi:nodejs /app/node_modules ./node_modules
 
 USER hubapi
 
-EXPOSE 4000
+EXPOSE 3001
 
 WORKDIR /app/apps/hub-api
 
-CMD ["node", "dist/src/index.js"]
+CMD ["node", "dist/index.js"]
