@@ -23,7 +23,14 @@ const ENV_PATH = resolve(__dirname, "../apps/world/.env");
 
 const HUB_LOCAL = "ws://localhost:3001/ws/world";
 const HUB_OFFICIAL = "wss://hub.agenticisland.ai/ws/world";
-const PASSPORT_URL = "https://agenticisland.ai";
+const PASSPORT_URL_LOCAL = "http://localhost:3000";
+const PASSPORT_URL_OFFICIAL = "https://agenticisland.ai";
+
+function passportHint(hubUrl: string): string | null {
+  if (hubUrl === HUB_LOCAL) return PASSPORT_URL_LOCAL;
+  if (hubUrl === HUB_OFFICIAL) return PASSPORT_URL_OFFICIAL;
+  return null; // custom hub — user knows what they're doing
+}
 
 function mask(value: string): string {
   return value.length <= 8 ? "***" : `${value.slice(0, 8)}…`;
@@ -126,7 +133,8 @@ async function main(): Promise<void> {
       console.log(`  ✓ Passport: ${mask(passport)}  (from .env)`);
     } else {
       console.log();
-      console.log(`  Get your passport at ${PASSPORT_URL}`);
+      const hint = passportHint(hubUrl);
+      if (hint) console.log(`  Get your passport at ${hint}`);
       passport = "";
       while (!passport) {
         passport = (await rl.question("  World Passport: ")).trim();
