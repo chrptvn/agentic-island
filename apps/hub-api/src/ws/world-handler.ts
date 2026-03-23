@@ -6,6 +6,7 @@ import type {
 import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { saveSprites } from "../cache/sprites.js";
+import { deliverTunnelResponse, closeAllSessionsForWorld } from "../mcp-proxy/sessions.js";
 
 interface ConnectedWorld {
   ws: WebSocket;
@@ -145,6 +146,11 @@ export function handleWorldConnection(ws: WebSocket): void {
           ws.send(JSON.stringify(pong));
           break;
         }
+
+        case "mcp_tunnel_response": {
+          deliverTunnelResponse(msg.sessionId, msg.message);
+          break;
+        }
       }
     } catch (err) {
       console.error("[world-handler] message error:", err);
@@ -158,6 +164,7 @@ export function handleWorldConnection(ws: WebSocket): void {
       ).run(core.worldId);
       connectedWorlds.delete(core.worldId);
       lastWorldState.delete(core.worldId);
+      closeAllSessionsForWorld(core.worldId);
 
       const viewers = worldViewers.get(core.worldId);
       if (viewers) {

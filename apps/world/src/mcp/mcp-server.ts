@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { IncomingMessage, ServerResponse } from "http";
 import { z } from "zod";
 import { registerGenericPersonaTools, registerAdminCharacterTools, registerFeedEntityTools, registerSpawnPositionsTools } from "./tools/character-tools.js";
@@ -25,9 +26,9 @@ interface AlertCooldowns {
 
 // ─── Session ─────────────────────────────────────────────────────────────────
 
-interface McpSession {
+export interface McpSession {
   server:       McpServer;
-  transport:    StreamableHTTPServerTransport;
+  transport:    Transport;
   characterId:  string | null;
   lastSnapshot: string;
   alertCooldowns: AlertCooldowns;
@@ -90,9 +91,8 @@ function detachWorldListener(session: McpSession): void {
 
 // ─── Session factory ──────────────────────────────────────────────────────────
 
-function makeSession(): McpSession {
-  const server = new McpServer({ name: "agentic-island", version: "1.0.0" });
-
+/** Register all tools, resources, and the set_character binding on a session. */
+function initServer(server: McpServer, session: McpSession): void {
   // ── set_character: bind this session to a character and activate push ─────
   server.tool(
     "set_character",
@@ -161,19 +161,22 @@ function makeSession(): McpSession {
   registerSpawnableTilesTools(server);
   registerAdminCharacterTools(server);
   registerPathTools(server);
+}
+
+/** Create a local HTTP-backed MCP session (original behaviour). */
+function makeHttpSession(): McpSession {
+  const server = new McpServer({ name: "agentic-island", version: "1.0.0" });
 
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (id) => { mcpSessions.set(id, session); },
   });
 
-  // Clean up session and world listener when transport closes.
   transport.onclose = () => {
     if (transport.sessionId) mcpSessions.delete(transport.sessionId);
     detachWorldListener(session);
   };
 
-  server.connect(transport);
   const session: McpSession = {
     server,
     transport,
@@ -182,6 +185,34 @@ function makeSession(): McpSession {
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
   };
+
+  initServer(server, session);
+  server.connect(transport);
+  return session;
+}
+
+/**
+ * Create a tunnel-backed MCP session for proxying via the hub.
+ * The caller supplies a pre-built Transport (WebSocketTunnelTransport).
+ */
+export function makeTunnelSession(transport: Transport): McpSession {
+  const server = new McpServer({ name: "agentic-island", version: "1.0.0" });
+
+  const session: McpSession = {
+    server,
+    transport,
+    characterId: null,
+    lastSnapshot: "",
+    alertCooldowns: { energy: 0, hunger: 0 },
+    worldListener: null,
+  };
+
+  transport.onclose = () => {
+    detachWorldListener(session);
+  };
+
+  initServer(server, session);
+  server.connect(transport);
   return session;
 }
 
@@ -205,7 +236,7 @@ export async function handleMcpRequest(
       res.end(JSON.stringify({ error: "Session not found" }));
       return;
     }
-    await session.transport.handleRequest(req, res, body);
+    await (session.transport as StreamableHTTPServerTransport).handleRequest(req, res, body);
     return;
   }
 
@@ -217,6 +248,6 @@ export async function handleMcpRequest(
     return;
   }
 
-  const session = makeSession();
-  await session.transport.handleRequest(req, res, body);
+  const session = makeHttpSession();
+  await (session.transport as StreamableHTTPServerTransport).handleRequest(req, res, body);
 }

@@ -11,24 +11,32 @@ This monorepo contains two systems: **World** (the game engine that runs on your
  ┌──────────────┐                    ┌──────────────────┐
  │              │   outbound WS      │                  │
  │    World     │ ──────────────────►│     Hub API      │
- │  (engine +   │   state updates    │  (relay + DB)    │
- │   MCP srv)   │◄──────────────────│                  │
- │              │   ack / pong       │                  │
- └──────┬───────┘                    └────────┬─────────┘
-        │                                     │
-   AI agents                            Viewer clients
-   connect via                          connect via
-   MCP (HTTP)                           WebSocket
-        │                                     │
- ┌──────┴───────┐                    ┌────────┴─────────┐
- │  Claude /    │                    │   Hub Web (SPA)  │
- │  Copilot /   │                    │  React + Canvas  │
- │  any MCP     │                    │  renders world   │
- │  client      │                    │  in browser      │
- └──────────────┘                    └──────────────────┘
+ │  (engine +   │   state updates    │  (relay + DB +   │
+ │   MCP srv)   │◄──────────────────│   MCP proxy)     │
+ │              │   ack / pong /     │                  │
+ │              │   MCP tunnel       │                  │
+ └──────────────┘                    └────────┬─────────┘
+                                              │
+                                     ┌────────┴─────────┐
+                                     │  AI agents (MCP) │
+                                     │  Viewer clients   │
+                                     │  Hub Web (SPA)   │
+                                     └──────────────────┘
 ```
 
-**Key design:** World connects **outbound** to Hub — no open ports or port forwarding needed on the host machine.
+**Key design:** World connects **outbound** to Hub — no open ports or port forwarding needed on the host machine. AI agents can connect to worlds remotely via the Hub's MCP proxy.
+
+### Remote MCP Access via Hub
+
+When a world is connected to the hub, AI agents can interact with it through the hub's public address:
+
+```
+POST|GET|DELETE  https://<hub-host>/worlds/<worldId>/mcp
+```
+
+This endpoint implements the MCP [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http). The hub transparently tunnels JSON-RPC messages to the world through the existing WebSocket connection. All MCP tools, resources, and push notifications work identically to a direct local connection.
+
+No extra configuration is needed — if the world is connected to the hub (via `HUB_API_KEY`), the MCP proxy is automatically available.
 
 ## Monorepo Structure
 

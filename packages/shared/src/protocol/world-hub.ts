@@ -45,14 +45,41 @@ export interface HubErrorMessage {
   message: string;
 }
 
+// MCP tunnel messages (Hub → World)
+
+/** Forward a JSON-RPC message from an MCP client to the world's tunnel session. */
+export interface HubMcpTunnelMessage {
+  type: "mcp_tunnel_message";
+  sessionId: string;
+  message: unknown; // JSONRPCMessage
+}
+
+/** Tell the world to close a tunnel session (MCP client disconnected). */
+export interface HubMcpTunnelClose {
+  type: "mcp_tunnel_close";
+  sessionId: string;
+}
+
+// MCP tunnel messages (World → Hub)
+
+/** Forward a JSON-RPC response or notification from the world back to the hub. */
+export interface WorldMcpTunnelResponse {
+  type: "mcp_tunnel_response";
+  sessionId: string;
+  message: unknown; // JSONRPCMessage
+}
+
 // Union types
 
 export type WorldToHubMessage =
   | WorldHandshakeMessage
   | WorldStateUpdateMessage
-  | WorldPingMessage;
+  | WorldPingMessage
+  | WorldMcpTunnelResponse;
 
 export type HubToWorldMessage =
   | HubHandshakeAckMessage
   | HubPongMessage
-  | HubErrorMessage;
+  | HubErrorMessage
+  | HubMcpTunnelMessage
+  | HubMcpTunnelClose;

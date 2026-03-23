@@ -10,6 +10,8 @@ import {
   WS_RECONNECT_MAX_MS,
   HEARTBEAT_INTERVAL_MS,
 } from "@agentic-island/shared";
+import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
+import { handleTunnelMessage, closeTunnelSession, closeAllTunnelSessions } from "../mcp/tunnel-sessions.js";
 
 export interface HubConnectorOptions {
   hubUrl: string;
@@ -169,6 +171,18 @@ export class HubConnector {
           console.error(PREFIX, `Hub error [${msg.code}]: ${msg.message}`);
           this.onError?.(new Error(`[${msg.code}] ${msg.message}`));
           break;
+
+        case "mcp_tunnel_message":
+          handleTunnelMessage(
+            msg.sessionId,
+            msg.message,
+            (sid, rpcMsg) => this.sendTunnelResponse(sid, rpcMsg),
+          );
+          break;
+
+        case "mcp_tunnel_close":
+          closeTunnelSession(msg.sessionId);
+          break;
       }
     });
 
@@ -178,6 +192,7 @@ export class HubConnector {
         `Connection closed (code=${code}, reason=${reason.toString() || "none"})`,
       );
       this.stopHeartbeat();
+      closeAllTunnelSessions();
       const wasConnected = this.connected;
       this.connected = false;
       this.ws = null;
@@ -235,5 +250,16 @@ export class HubConnector {
       clearInterval(this.pingInterval);
       this.pingInterval = null;
     }
+  }
+
+  /** Send a tunnel response (JSON-RPC message) back to the hub for an MCP proxy session. */
+  private sendTunnelResponse(sessionId: string, message: JSONRPCMessage): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    const msg: WorldToHubMessage = {
+      type: "mcp_tunnel_response",
+      sessionId,
+      message,
+    };
+    this.ws.send(JSON.stringify(msg));
   }
 }
