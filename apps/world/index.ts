@@ -68,11 +68,3 @@ if (HUB_API_KEY) {
   console.log("[world] Hub connector disabled (set HUB_API_KEY to enable)");
 }
 
-// Legacy stdio transport, enabled via MCP_TRANSPORT=stdio for backward compatibility.
-if (process.env.MCP_TRANSPORT === "stdio") {
-  const { startServer } = await import("./src/mcp/server.js");
-  startServer().catch((err) => {
-    process.stderr.write(`Fatal: ${err}\n`);
-    process.exit(1);
-  });
-}

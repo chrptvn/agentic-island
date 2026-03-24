@@ -59,87 +59,6 @@ function resolveTarget(
   return null;
 }
 
-export function registerAdminCharacterTools(server: McpServer): void {
-  server.tool(
-    "spawn_character",
-    "Spawn a human character at (x, y) on the map. The cell must be a grass tile with no existing entity on layer 2. Each character has a unique id (default: 'hero') and starts with full health, hunger, and energy stats plus an empty inventory and goal.",
-    {
-      x:  z.number().int().describe("X coordinate to spawn at"),
-      y:  z.number().int().describe("Y coordinate to spawn at"),
-      id: z.string().min(1).optional().describe("Unique character name (default: 'hero')"),
-    },
-    async ({ x, y, id }) => {
-      try {
-        const result = await apiPost("/api/spawn", { x, y, id });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "despawn_character",
-    "Remove a character from the map and delete all their data (position, inventory, equipment). This is permanent.",
-    {
-      id: z.string().min(1).describe("The character's unique id (e.g. 'hero')"),
-    },
-    async ({ id }) => {
-      try {
-        const result = await apiPost("/api/despawn", { id });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "list_characters",
-    "List all characters currently on the map with their positions and stats.",
-    {
-      id: z.string().optional().describe("Filter to a specific character ID (e.g. 'hero'). Omit to list all."),
-    },
-    async ({ id }) => {
-      try {
-        const characters = await apiGet("/api/characters") as Record<string, unknown>;
-        if (id) {
-          const char = characters[id];
-          if (!char) return { content: [{ type: "text", text: `No character with id "${id}".` }], isError: true };
-          return { content: [{ type: "text", text: JSON.stringify({ id, ...char as object }, null, 2) }] };
-        }
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({ total: Object.keys(characters).length, characters }, null, 2),
-          }],
-        };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-}
-
-export function registerSpawnPositionsTools(server: McpServer): void {
-  server.tool(
-    "list_spawn_positions",
-    "Return all valid positions on the current map where a character can be spawned (grass tile, no blocking entity on layer 2, no character already present). Use this to pick a spawn point before calling spawn_character.",
-    {},
-    async () => {
-      const positions = World.getInstance().getValidSpawnPositions();
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({ total: positions.length, positions }, null, 2),
-          },
-        ],
-      };
-    }
-  );
-}
-
 export function registerFeedEntityTools(server: McpServer): void {
   server.tool(
     "feed_entity",
@@ -563,8 +482,4 @@ export function registerGenericPersonaTools(server: McpServer): void {
     }
   );
 
-}
-
-export function registerCharacterTools(server: McpServer): void {
-  registerAdminCharacterTools(server);
 }
