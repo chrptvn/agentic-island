@@ -8,6 +8,7 @@ import { registerFilterTools } from "./tools/filter-tools.js";
 import { registerJournalTools } from "./tools/journal-tools.js";
 import { registerSayTools } from "./tools/say-tools.js";
 import { registerPlantTools } from "./tools/plant-tools.js";
+import { humanizeSurroundings } from "./humanize.js";
 import { World } from "../world/world.js";
 
 // ─── Surroundings snapshot ───────────────────────────────────────────────────
@@ -95,7 +96,7 @@ function initServer(server: McpServer, session: McpSession): void {
   server.resource(
     "character-surroundings",
     new ResourceTemplate("agentic-island://character/{id}/surroundings", { list: undefined }),
-    { description: "Live snapshot of a character's position, stats, inventory, and nearby tiles/entities within a 3-tile radius. Subscribe to this resource to receive push notifications whenever the world changes." },
+    { description: "Live narrative snapshot of how the character feels and what they see around them. Subscribe to receive push notifications whenever the world changes." },
     async (uri, { id }) => {
       const characterId = decodeURIComponent(id as string);
       const snapshot = World.getInstance().getSurroundings(characterId);
@@ -112,7 +113,7 @@ function initServer(server: McpServer, session: McpSession): void {
         contents: [{
           uri: uri.href,
           mimeType: "application/json",
-          text: JSON.stringify(snapshot, null, 2),
+          text: JSON.stringify(humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]), null, 2),
         }],
       };
     }
