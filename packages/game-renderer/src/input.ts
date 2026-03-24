@@ -120,7 +120,12 @@ export class InputHandler {
     this.lastPointerX = e.clientX;
     this.lastPointerY = e.clientY;
 
-    this.camera.pan(dx, dy);
+    // Convert CSS pixel delta to canvas buffer pixel delta so pan speed
+    // matches the visual display regardless of CSS scaling.
+    const rect = this.canvas!.getBoundingClientRect();
+    const scaleX = this.canvas!.width / rect.width;
+    const scaleY = this.canvas!.height / rect.height;
+    this.camera.pan(dx * scaleX, dy * scaleY);
     this.onChange?.();
   }
 
@@ -135,12 +140,17 @@ export class InputHandler {
   private handleWheel(e: WheelEvent): void {
     e.preventDefault();
     const rect = this.canvas!.getBoundingClientRect();
-    const screenX = e.clientX - rect.left;
-    const screenY = e.clientY - rect.top;
+    const scaleX = this.canvas!.width / rect.width;
+    const scaleY = this.canvas!.height / rect.height;
+
+    // Convert CSS pixel coords to canvas buffer pixel coords so the zoom
+    // anchors at the correct world point regardless of CSS scaling.
+    const screenX = (e.clientX - rect.left) * scaleX;
+    const screenY = (e.clientY - rect.top) * scaleY;
 
     // deltaY > 0 = scroll down = zoom out
     const factor = e.deltaY < 0 ? ZOOM_WHEEL_FACTOR : 1 / ZOOM_WHEEL_FACTOR;
-    this.camera.zoomAt(factor, screenX, screenY, rect.width, rect.height);
+    this.camera.zoomAt(factor, screenX, screenY, this.canvas!.width, this.canvas!.height);
     this.onChange?.();
   }
 
@@ -171,12 +181,14 @@ export class InputHandler {
         const factor = dist / this.lastPinchDist;
         const mid = this.getPinchMidpoint();
         const rect = this.canvas!.getBoundingClientRect();
+        const scaleX = this.canvas!.width / rect.width;
+        const scaleY = this.canvas!.height / rect.height;
         this.camera.zoomAt(
           factor,
-          mid.x - rect.left,
-          mid.y - rect.top,
-          rect.width,
-          rect.height,
+          (mid.x - rect.left) * scaleX,
+          (mid.y - rect.top) * scaleY,
+          this.canvas!.width,
+          this.canvas!.height,
         );
         this.onChange?.();
       }

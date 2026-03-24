@@ -105,6 +105,7 @@ export function renderLayers(
   viewport: Viewport,
   tileSize: number,
   frame: number,
+  backgroundTileId?: string,
 ): void {
   const { startCol, startRow, cols, rows, offsetX, offsetY } = viewport;
   const { terrain, overrides, entities } = layerData;
@@ -152,6 +153,8 @@ export function renderLayers(
           const tileId = terrain[worldRow]?.[worldCol];
           if (tileId) {
             drawTile(ctx, tileId, registry, sprites, cx, cy, dw, dh, frame);
+          } else if (backgroundTileId) {
+            drawTile(ctx, backgroundTileId, registry, sprites, cx, cy, dw, dh, frame);
           }
         } else if (layer === 3) {
           // Entity base layer

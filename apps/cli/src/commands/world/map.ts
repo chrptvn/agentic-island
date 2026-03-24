@@ -8,7 +8,10 @@ interface MapResult {
   seed: number;
   width: number;
   height: number;
-  character?: { id: string; x: number; y: number };
+}
+
+interface CharactersResult {
+  [id: string]: { x: number; y: number };
 }
 
 export function registerWorldMapCommand(program: Command): void {
@@ -16,15 +19,26 @@ export function registerWorldMapCommand(program: Command): void {
 
   map
     .command("regenerate")
-    .description("Regenerate the map (wipes all entities and characters)")
-    .option("--width <n>", "Map width in tiles", parseInt)
-    .option("--height <n>", "Map height in tiles", parseInt)
-    .option("--seed <n>", "RNG seed for deterministic generation", parseInt)
-    .option("--fill-probability <n>", "Initial fill probability 0–1", parseFloat)
-    .option("--iterations <n>", "Cellular automata passes", parseInt)
-    .option("--world-url <url>", "World URL")
-    .action((opts) => {
+    .description("Wipe all characters and regenerate the map")
+    .option("--width <n>", "Map width in tiles (default: 30)", parseInt)
+    .option("--height <n>", "Map height in tiles (default: 20)", parseInt)
+    .option("--seed <n>", "RNG seed for deterministic generation (random if omitted)", parseInt)
+    .option("--fill-probability <n>", "Initial cave-fill probability 0–1 (default: 0.45)", parseFloat)
+    .option("--iterations <n>", "Cellular automata smoothing passes 1–20 (default: 5)", parseInt)
+    .option("--world-url <url>", "Override the target world URL")
+    .action(async (opts) => {
       const config = resolveWorldConfig(opts);
+
+      // Despawn all characters first
+      const chars = await worldRequest<CharactersResult>(config, "GET", "/api/characters");
+      const ids = Object.keys(chars);
+      if (ids.length > 0) {
+        await Promise.all(
+          ids.map((id) => worldRequest(config, "POST", "/api/despawn", { id })),
+        );
+        console.log(pc.dim(`Despawned ${ids.length} character(s): ${ids.join(", ")}`));
+      }
+
       const body: Record<string, unknown> = {};
       if (opts.width) body.width = opts.width;
       if (opts.height) body.height = opts.height;
@@ -32,33 +46,9 @@ export function registerWorldMapCommand(program: Command): void {
       if (opts.fillProbability) body.fillProbability = opts.fillProbability;
       if (opts.iterations) body.iterations = opts.iterations;
 
-      worldRequest<MapResult>(config, "POST", "/api/regenerate", body).then((res) => {
-        printSuccess(res.message);
-        console.log(`  Seed:  ${pc.cyan(String(res.seed))}`);
-        console.log(`  Size:  ${pc.cyan(`${res.width}×${res.height}`)}`);
-      });
-    });
-
-  map
-    .command("reset")
-    .description("Regenerate the map and respawn a character")
-    .option("--character <id>", "Character ID to respawn", "hero")
-    .option("--width <n>", "Map width in tiles", parseInt)
-    .option("--height <n>", "Map height in tiles", parseInt)
-    .option("--world-url <url>", "World URL")
-    .action((opts) => {
-      const config = resolveWorldConfig(opts);
-      const body: Record<string, unknown> = { characterId: opts.character };
-      if (opts.width) body.width = opts.width;
-      if (opts.height) body.height = opts.height;
-
-      worldRequest<MapResult>(config, "POST", "/api/reset", body).then((res) => {
-        printSuccess(res.message);
-        console.log(`  Seed:  ${pc.cyan(String(res.seed))}`);
-        console.log(`  Size:  ${pc.cyan(`${res.width}×${res.height}`)}`);
-        if (res.character) {
-          console.log(`  Char:  ${pc.cyan(res.character.id)} at (${res.character.x}, ${res.character.y})`);
-        }
-      });
+      const res = await worldRequest<MapResult>(config, "POST", "/api/regenerate", body);
+      printSuccess(res.message);
+      console.log(`  Seed:  ${pc.cyan(String(res.seed))}`);
+      console.log(`  Size:  ${pc.cyan(`${res.width}×${res.height}`)}`);
     });
 }

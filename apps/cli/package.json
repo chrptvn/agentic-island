@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "bin": {
-    "island-cli": "./dist/index.js"
+    "islandctl": "./dist/index.js"
   },
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc",
+    "install:global": "tsc && npm install -g .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

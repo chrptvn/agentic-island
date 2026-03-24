@@ -1,10 +1,11 @@
+import { resolveUrl } from "./config.js";
+
 export interface WorldApiConfig {
   worldUrl: string;
 }
 
 export function resolveWorldConfig(opts: { worldUrl?: string }): WorldApiConfig {
-  const worldUrl = opts.worldUrl ?? process.env.WORLD_URL ?? "http://localhost:3000";
-  return { worldUrl: worldUrl.replace(/\/$/, "") };
+  return { worldUrl: resolveUrl(opts) };
 }
 
 export async function worldRequest<T>(
