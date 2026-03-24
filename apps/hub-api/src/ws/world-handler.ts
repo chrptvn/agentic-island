@@ -101,6 +101,12 @@ export function handleWorldConnection(ws: WebSocket): void {
             await saveSprites(worldId, msg.sprites);
           }
 
+          // Close any existing connection for this worldId (last-writer-wins)
+          const prevConn = connectedWorlds.get(worldId);
+          if (prevConn && prevConn.ws !== ws && prevConn.ws.readyState === 1) {
+            prevConn.ws.close(4002, "replaced by new connection");
+          }
+
           core = { ws, worldId, apiKeyId: keyRow.id, worldName: msg.world.name, lastPing: Date.now() };
           connectedWorlds.set(worldId, core);
 

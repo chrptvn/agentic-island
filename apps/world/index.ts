@@ -9,14 +9,16 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-startHttpServer(parseInt(process.env.WORLD_PORT ?? "3002", 10));
+const isPrimary = await startHttpServer(parseInt(process.env.WORLD_PORT ?? "3002", 10));
 
 const world = World.getInstance();
 world.watchConfigs();
 
 // --- Hub Connector (opt-in via HUB_API_KEY env var) ---
 const HUB_API_KEY = process.env.HUB_API_KEY;
-if (HUB_API_KEY) {
+if (!isPrimary) {
+  console.log("[world] Hub connector skipped — another instance owns the HTTP port");
+} else if (HUB_API_KEY) {
   const hubUrl = process.env.HUB_URL ?? "ws://localhost:3001/ws/world";
   const worldName = process.env.WORLD_NAME ?? "My Island";
   const worldDescription = process.env.WORLD_DESCRIPTION ?? "";

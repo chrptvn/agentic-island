@@ -415,7 +415,7 @@ function mapPayload(world: World) {
   });
 }
 
-export function startHttpServer(initialPort = 3000): void {
+export function startHttpServer(initialPort = 3000): Promise<boolean> {
   const world = World.getInstance();
 
   const httpServer = createServer((req, res) =>
@@ -447,21 +447,26 @@ export function startHttpServer(initialPort = 3000): void {
   // Poll DB every second to catch map changes made by other processes (e.g. MCP server)
   setInterval(() => world.syncFromDb(), 1000).unref();
 
-  httpServer.on("error", (err: NodeJS.ErrnoException) => {
-    if (err.code === "EADDRINUSE") {
-      process.stderr.write(`Agentic Island: port ${initialPort} already in use — skipping HTTP server (MCP will proxy to existing instance).\n`);
-      httpServer.removeAllListeners();
-    } else {
-      process.stderr.write(`Agentic Island error: ${err.message}\n`);
-    }
-  });
-
   wss.on("error", () => { /* handled by httpServer error handler */ });
 
-  httpServer.listen(initialPort, () => {
-    const addr = httpServer.address();
-    const bound = typeof addr === "object" && addr ? addr.port : initialPort;
-    process.stderr.write(`Agentic Island running at http://localhost:${bound}\n`);
-    process.stderr.write(`Agentic Island MCP server : http://localhost:${bound}/mcp\n`);
+  return new Promise((resolve, reject) => {
+    httpServer.on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EADDRINUSE") {
+        process.stderr.write(`Agentic Island: port ${initialPort} already in use — skipping HTTP server (MCP will proxy to existing instance).\n`);
+        httpServer.removeAllListeners();
+        resolve(false);
+      } else {
+        process.stderr.write(`Agentic Island error: ${err.message}\n`);
+        reject(err);
+      }
+    });
+
+    httpServer.listen(initialPort, () => {
+      const addr = httpServer.address();
+      const bound = typeof addr === "object" && addr ? addr.port : initialPort;
+      process.stderr.write(`Agentic Island running at http://localhost:${bound}\n`);
+      process.stderr.write(`Agentic Island MCP server : http://localhost:${bound}/mcp\n`);
+      resolve(true);
+    });
   });
 }

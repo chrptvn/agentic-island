@@ -199,6 +199,12 @@ export class HubConnector {
       if (wasConnected) {
         this.onDisconnected?.();
       }
+
+      // 4002 = replaced by another connection for the same worldId; don't reconnect
+      if (code === 4002) {
+        console.log(PREFIX, "Replaced by newer connection — not reconnecting.");
+        return;
+      }
       this.scheduleReconnect(sprites, worldConfig);
     });
 
