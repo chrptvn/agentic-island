@@ -136,8 +136,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
           energy: "Every action and step costs energy. You recover energy by standing still. Resting near a campfire helps you recover much faster. When exhausted, you can't do anything until you rest.",
         },
         actions: {
-          move_to: "Walk toward something (e.g. 'trees', 'berries', 'rocks'). You'll automatically find a path. Walking on dirt paths is less tiring.",
-          walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east.",
+          walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east. You'll automatically find a path around obstacles.",
           harvest: "Gather resources from things next to you — pick berries from bushes, chop trees for wood (need an axe), collect rocks.",
           build_structure: "Build things on an empty adjacent tile using materials from your inventory.",
           interact_with: "Interact with nearby things — light or extinguish a campfire, for example.",
@@ -189,25 +188,6 @@ export function registerGenericPersonaTools(server: McpServer): void {
       if (!snapshot) return { content: [{ type: "text", text: `Character "${character_id}" not found on the map.` }], isError: true };
       const humanized = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]);
       return { content: [{ type: "text", text: JSON.stringify(humanized, null, 2) }] };
-    }
-  );
-
-  server.tool(
-    "move_to",
-    "Walk a character to the nearest cell matching any of the given filters. For blocking entities (trees, rocks) the character automatically stops at the adjacent cell rather than walking onto it. Use list_target_filters to see all valid tokens. If nothing matches, returns found:false with a 'nearby' map of what IS within 15 tiles so you can choose an alternative target.",
-    {
-      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
-      target_filter: z.array(z.string()).describe(
-        "Walk to the nearest cell matching ANY of these tokens. Each token can be: a searchTarget group (e.g. 'trees', 'berries', 'rocks'), an entity tile ID (e.g. 'young_tree'), a tile category (e.g. 'vegetation'), or a terrain type ('grass', 'water'). Example: [\"berries\"] or [\"trees\"]"
-      ),
-    },
-    async ({ character_id, target_filter }) => {
-      try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "move_to", target_filter } });
-        return { content: [{ type: "text", text: JSON.stringify(humanizeMoveResult(result as Record<string, unknown>), null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
     }
   );
 

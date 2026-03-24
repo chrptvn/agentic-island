@@ -4,7 +4,6 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { IncomingMessage, ServerResponse } from "http";
 import { registerGenericPersonaTools, registerFeedEntityTools } from "./tools/character-tools.js";
-import { registerFilterTools } from "./tools/filter-tools.js";
 import { registerJournalTools } from "./tools/journal-tools.js";
 import { registerSayTools } from "./tools/say-tools.js";
 import { registerPlantTools } from "./tools/plant-tools.js";
@@ -122,7 +121,6 @@ function initServer(server: McpServer, session: McpSession): void {
   // ── Player tools (character actions, inventory, crafting) ────────────────────
   registerGenericPersonaTools(server);
   registerFeedEntityTools(server);
-  registerFilterTools(server);
   registerJournalTools(server);
   registerSayTools(server);
   registerPlantTools(server);
