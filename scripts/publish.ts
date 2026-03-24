@@ -67,12 +67,26 @@ function saveToEnv(updates: Record<string, string>): void {
   writeFileSync(ENV_PATH, lines.join("\n"), "utf8");
 }
 
-async function main(): Promise<void> {
-  // Load apps/world/.env if present — populates process.env before prompting
+/** Parse a .env file into a Record, ignoring comments and blank lines. */
+function parseEnvFile(path: string): Record<string, string> {
   try {
-    process.loadEnvFile(ENV_PATH);
+    const entries: Record<string, string> = {};
+    for (const line of readFileSync(path, "utf8").split("\n")) {
+      const match = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/);
+      if (match) entries[match[1]] = match[2];
+    }
+    return entries;
   } catch {
-    // File absent or unreadable — proceed without it
+    return {};
+  }
+}
+
+async function main(): Promise<void> {
+  // Load apps/world/.env — values from the file override shell env vars so that
+  // the .env file is the authoritative source of truth for publish:world.
+  const fileEnv = parseEnvFile(ENV_PATH);
+  for (const [key, value] of Object.entries(fileEnv)) {
+    process.env[key] = value;
   }
 
   const rl = createInterface({ input: stdin, output: stdout });
