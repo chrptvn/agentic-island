@@ -35,6 +35,9 @@ export interface RendererOptions {
 export class GameRenderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
+  /** Off-screen buffer for double-buffering (prevents visible clear flashes). */
+  private buffer: OffscreenCanvas | null = null;
+  private bufCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null = null;
   private sprites: SpriteCache;
   private tileSize: number;
   private scaleFactor: number;
@@ -65,6 +68,7 @@ export class GameRenderer {
 
     // Pixel-perfect rendering
     this.ctx.imageSmoothingEnabled = false;
+    this.ensureBuffer();
   }
 
   /** Load sprite sheets from URLs (Core local UI). */
@@ -132,28 +136,28 @@ export class GameRenderer {
     const now = performance.now();
     this.animState = tickAnimation(this.animState, now);
 
-    const ctx = this.ctx;
     const baseTileSize = this.tileSize;
     const scale = this.camera.scale;
     const effectiveTile = baseTileSize * scale;
 
-    ctx.save();
-    ctx.imageSmoothingEnabled = false;
+    const w = this.canvas.width;
+    const h = this.canvas.height;
 
-    // Clear
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // Ensure off-screen buffer matches canvas size
+    this.ensureBuffer();
+    const buf = this.bufCtx;
+    if (!buf) return;
+
+    buf.save();
+    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = false;
+
+    // Clear the off-screen buffer (visible canvas is untouched)
+    buf.clearRect(0, 0, w, h);
 
     const { map, tileRegistry, overrides, entities, characters } = this.state;
 
     // Compute viewport in output-pixel space (offsets already scaled & rounded)
-    const viewport = this.camera.toViewport(
-      this.canvas.width,
-      this.canvas.height,
-      baseTileSize,
-    );
-
-    // No ctx.scale() — rendering is done in output pixel space to avoid
-    // sub-pixel seams between tiles.
+    const viewport = this.camera.toViewport(w, h, baseTileSize);
 
     // Prepare layer data
     const layerData: LayerData = {
@@ -162,22 +166,22 @@ export class GameRenderer {
       entities,
     };
 
-    // Render tile layers (effectiveTile may be fractional; renderLayers
-    // rounds per-tile positions to integers internally)
+    // Render tile layers to off-screen buffer
     renderLayers(
-      ctx,
+      buf as CanvasRenderingContext2D,
       layerData,
       tileRegistry,
       this.sprites,
       viewport,
       effectiveTile,
       this.animState.frame,
+      'water',
     );
 
-    // Render characters
+    // Render characters to off-screen buffer
     for (const char of characters) {
       drawCharacter(
-        ctx,
+        buf as CanvasRenderingContext2D,
         char,
         tileRegistry,
         this.sprites,
@@ -187,9 +191,13 @@ export class GameRenderer {
       );
     }
 
-    ctx.restore();
+    buf.restore();
 
-    // Draw overlays at screen scale
+    // Atomic blit: copy completed frame to visible canvas (no intermediate blank)
+    this.ctx.clearRect(0, 0, w, h);
+    this.ctx.drawImage(this.buffer!, 0, 0);
+
+    // Draw overlays directly on visible canvas (they sit on top)
     this.drawOverlays(characters, entities, tileRegistry, viewport, effectiveTile);
   }
 
@@ -198,6 +206,7 @@ export class GameRenderer {
     this.canvas.width = width;
     this.canvas.height = height;
     this.ctx.imageSmoothingEnabled = false;
+    this.ensureBuffer();
 
     if (!this.mapSizeSet && this.state?.map) {
       // First resize with a known map — initialize camera
@@ -216,6 +225,8 @@ export class GameRenderer {
     this.input.detach();
     this.sprites.clear();
     this.state = null;
+    this.buffer = null;
+    this.bufCtx = null;
   }
 
   // ── Public camera controls ─────────────────────────────────────────
@@ -254,6 +265,20 @@ export class GameRenderer {
   }
 
   // ── Private ─────────────────────────────────────────────────────────
+
+  /**
+   * Ensure the off-screen buffer matches the visible canvas size.
+   * Creates or resizes the buffer as needed for double-buffered rendering.
+   */
+  private ensureBuffer(): void {
+    const w = this.canvas.width;
+    const h = this.canvas.height;
+    if (w === 0 || h === 0) return;
+    if (this.buffer && this.buffer.width === w && this.buffer.height === h) return;
+
+    this.buffer = new OffscreenCanvas(w, h);
+    this.bufCtx = this.buffer.getContext("2d");
+  }
 
   private loop(now: number): void {
     if (!this.running) return;

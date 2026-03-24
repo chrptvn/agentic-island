@@ -25,24 +25,21 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     stateRef.current = state;
   }, [state]);
 
-  const canvasW = state?.map ? state.map.width * PX_PER_TILE : 960;
-  const canvasH = state?.map ? state.map.height * PX_PER_TILE : 640;
   const hasTileRegistry = !!state?.tileRegistry;
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current;
+      const renderer = rendererRef.current;
       const s = stateRef.current;
-      if (!canvas || !s) return;
+      if (!canvas || !renderer || !s) return;
 
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
-      const tileX = Math.floor(
-        ((e.clientX - rect.left) * scaleX) / PX_PER_TILE,
-      );
-      const tileY = Math.floor(
-        ((e.clientY - rect.top) * scaleY) / PX_PER_TILE,
+      const { tileX, tileY } = renderer.screenToTile(
+        (e.clientX - rect.left) * scaleX,
+        (e.clientY - rect.top) * scaleY,
       );
 
       const character =
@@ -112,19 +109,27 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spriteBaseUrl, hasTileRegistry]);
 
-  // Update state
+  // Update state and resize canvas imperatively (avoids React-triggered clears)
   useEffect(() => {
-    if (rendererRef.current && state) {
-      rendererRef.current.setState(state);
+    const renderer = rendererRef.current;
+    const canvas = canvasRef.current;
+    if (!renderer || !canvas || !state) return;
+
+    if (state.map) {
+      const w = state.map.width * PX_PER_TILE;
+      const h = state.map.height * PX_PER_TILE;
+      if (canvas.width !== w || canvas.height !== h) {
+        renderer.resize(w, h);
+      }
     }
+
+    renderer.setState(state);
   }, [state]);
 
   return (
     <>
       <canvas
         ref={canvasRef}
-        width={canvasW}
-        height={canvasH}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         className="block max-w-full rounded-lg bg-black cursor-crosshair"

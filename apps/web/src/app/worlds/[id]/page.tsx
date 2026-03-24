@@ -1,6 +1,6 @@
 'use client';
 
-import { use } from 'react';
+import { use, useRef } from 'react';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
@@ -15,6 +15,11 @@ export default function WorldViewerPage({
   const { id } = use(params);
   const { state, spriteBaseUrl, worldName, connected, error } =
     useWorldStream(id);
+
+  // Once the viewer has been shown, keep it mounted to avoid
+  // unmount→remount sprite-reload flashes on transient disconnects.
+  const everShown = useRef(false);
+  if (connected || state) everShown.current = true;
 
   return (
     <Container className="py-8">
@@ -57,8 +62,8 @@ export default function WorldViewerPage({
         </Card>
       )}
 
-      {/* Game canvas */}
-      {(connected || state) && (
+      {/* Game canvas — stays mounted once first shown */}
+      {everShown.current && (
         <div className="overflow-x-auto">
           <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
         </div>
