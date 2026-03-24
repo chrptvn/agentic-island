@@ -3,10 +3,7 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { IncomingMessage, ServerResponse } from "http";
-import { z } from "zod";
-import { registerGenericPersonaTools, registerAdminCharacterTools, registerFeedEntityTools, registerSpawnPositionsTools } from "./tools/character-tools.js";
-import { registerMapReadTools, registerMapAdminTools } from "./tools/map-tools.js";
-import { registerSpawnableTilesTools, registerTileQueryTools, registerTileEditTools, registerPathTools } from "./tools/tile-tools.js";
+import { registerGenericPersonaTools, registerFeedEntityTools } from "./tools/character-tools.js";
 import { registerFilterTools } from "./tools/filter-tools.js";
 import { registerJournalTools } from "./tools/journal-tools.js";
 import { registerSayTools } from "./tools/say-tools.js";
@@ -91,31 +88,8 @@ function detachWorldListener(session: McpSession): void {
 
 // ─── Session factory ──────────────────────────────────────────────────────────
 
-/** Register all tools, resources, and the set_character binding on a session. */
+/** Register all tools, resources, and the surroundings resource on a session. */
 function initServer(server: McpServer, session: McpSession): void {
-  // ── set_character: bind this session to a character and activate push ─────
-  server.tool(
-    "set_character",
-    "Bind this session to a character by ID. Once bound, the server will push live environment updates whenever the world changes. The agent receives a `agentic-island://character/{id}/surroundings` resource notification and can read it to get current position, stats, and nearby entities without polling.",
-    { character_id: z.string().min(1).describe("The character's unique id to bind this session to") },
-    async ({ character_id }) => {
-      const world = World.getInstance();
-      if (!world.characters.has(character_id)) {
-        return { content: [{ type: "text", text: `No character named "${character_id}" exists. Spawn it first.` }], isError: true };
-      }
-      session.characterId = character_id;
-      session.lastSnapshot = "";
-      session.alertCooldowns = { energy: 0, hunger: 0 };
-      detachWorldListener(session);
-      attachWorldListener(session);
-      return {
-        content: [{
-          type: "text",
-          text: `Session bound to "${character_id}". Push notifications active.\nSubscribe to: agentic-island://character/${encodeURIComponent(character_id)}/surroundings`,
-        }],
-      };
-    }
-  );
 
   // ── Surroundings resource template ────────────────────────────────────────
   server.resource(
@@ -144,23 +118,13 @@ function initServer(server: McpServer, session: McpSession): void {
     }
   );
 
-  // ── Game tools (character actions, inventory, crafting) ─────────────────────
+  // ── Player tools (character actions, inventory, crafting) ────────────────────
   registerGenericPersonaTools(server);
   registerFeedEntityTools(server);
-  registerSpawnPositionsTools(server);
   registerFilterTools(server);
   registerJournalTools(server);
   registerSayTools(server);
   registerPlantTools(server);
-
-  // ── World tools (map, tiles, character admin) ─────────────────────────────
-  registerMapReadTools(server);
-  registerMapAdminTools(server);
-  registerTileQueryTools(server);
-  registerTileEditTools(server);
-  registerSpawnableTilesTools(server);
-  registerAdminCharacterTools(server);
-  registerPathTools(server);
 }
 
 /** Create a local HTTP-backed MCP session (original behaviour). */
