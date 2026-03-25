@@ -11,13 +11,13 @@ const HEALTH_BAR_FG = "#2ecc40";
 const HEALTH_BAR_LOW = "#e74c3c";
 const HEALTH_LOW_THRESHOLD = 0.3;
 
-const BUBBLE_PADDING = 4;
-const BUBBLE_RADIUS = 4;
+const BUBBLE_PADDING = 8;
+const BUBBLE_RADIUS = 6;
 const BUBBLE_BG = "rgba(255,255,255,0.92)";
 const BUBBLE_TEXT_COLOR = "#222";
-const BUBBLE_FONT = "10px sans-serif";
-const BUBBLE_MAX_WIDTH_DEFAULT = 120;
-const BUBBLE_TAIL_SIZE = 4;
+const BUBBLE_FONT = "bold 16px ui-monospace, 'Cascadia Code', 'Fira Code', Menlo, monospace";
+const BUBBLE_MAX_WIDTH_DEFAULT = 220;
+const BUBBLE_TAIL_SIZE = 5;
 
 const LABEL_FONT = "bold 8px sans-serif";
 const LABEL_COLOR = "#fff";
@@ -72,7 +72,7 @@ export function drawSpeechBubble(
 
   // Word-wrap text
   const lines = wrapText(ctx, text, maxWidth - BUBBLE_PADDING * 2);
-  const lineHeight = 12;
+  const lineHeight = 20;
   const textHeight = lines.length * lineHeight;
   const textWidth = Math.min(
     maxWidth - BUBBLE_PADDING * 2,

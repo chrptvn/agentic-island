@@ -255,6 +255,68 @@ export function deleteCharacter(id: string): void {
   db.prepare("DELETE FROM characters WHERE id = ?").run(id);
 }
 
+// ── Character markers ─────────────────────────────────────────────────────────
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS character_markers (
+    character_id TEXT    NOT NULL,
+    x            INTEGER NOT NULL,
+    y            INTEGER NOT NULL,
+    description  TEXT    NOT NULL,
+    created_at   TEXT    NOT NULL,
+    PRIMARY KEY (character_id, x, y)
+  );
+`);
+
+// Migration: drop old name-based schema if it exists
+{
+  const cols = db.prepare("PRAGMA table_info(character_markers)").all() as { name: string }[];
+  if (cols.some((c) => c.name === "name")) {
+    db.exec(`DROP TABLE character_markers`);
+    db.exec(`
+      CREATE TABLE character_markers (
+        character_id TEXT    NOT NULL,
+        x            INTEGER NOT NULL,
+        y            INTEGER NOT NULL,
+        description  TEXT    NOT NULL,
+        created_at   TEXT    NOT NULL,
+        PRIMARY KEY (character_id, x, y)
+      );
+    `);
+  }
+}
+
+export interface CharacterMarker {
+  character_id: string;
+  x: number;
+  y: number;
+  description: string;
+  created_at: string;
+}
+
+export function upsertMarker(characterId: string, x: number, y: number, description: string): CharacterMarker {
+  const created_at = new Date().toISOString();
+  db.prepare(
+    `INSERT INTO character_markers (character_id, x, y, description, created_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(character_id, x, y) DO UPDATE SET description = excluded.description, created_at = excluded.created_at`
+  ).run(characterId, x, y, description, created_at);
+  return { character_id: characterId, x, y, description, created_at };
+}
+
+export function listMarkers(characterId: string): CharacterMarker[] {
+  return db
+    .prepare("SELECT character_id, x, y, description, created_at FROM character_markers WHERE character_id = ? ORDER BY created_at ASC")
+    .all(characterId) as CharacterMarker[];
+}
+
+export function deleteMarkerByLocation(characterId: string, x: number, y: number): boolean {
+  const result = db
+    .prepare("DELETE FROM character_markers WHERE character_id = ? AND x = ? AND y = ?")
+    .run(characterId, x, y);
+  return result.changes > 0;
+}
+
 // ── Journal ───────────────────────────────────────────────────────────────────
 
 export interface JournalEntry {

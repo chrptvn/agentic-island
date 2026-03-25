@@ -5,7 +5,7 @@
  * all layers plus overlays onto a single <canvas>.
  */
 
-import type { WorldState, TileRegistry, CharacterState } from "@agentic-island/shared";
+import type { WorldState, TileRegistry } from "@agentic-island/shared";
 import { SpriteCache } from "./sprite-loader.js";
 import { renderLayers, type LayerData, type Viewport } from "./layers.js";
 import {
@@ -14,7 +14,6 @@ import {
   createAnimationState,
   type AnimationState,
 } from "./animation.js";
-import { drawSpeechBubble } from "./overlays.js";
 import { Camera, type CameraOptions } from "./camera.js";
 import { InputHandler } from "./input.js";
 
@@ -49,6 +48,9 @@ export class GameRenderer {
   readonly camera: Camera;
   private input: InputHandler;
   private mapSizeSet = false;
+
+  /** Optional callback invoked after each rendered frame. */
+  onFrame?: () => void;
 
   constructor(options: RendererOptions) {
     this.canvas = options.canvas;
@@ -197,8 +199,8 @@ export class GameRenderer {
     this.ctx.clearRect(0, 0, w, h);
     this.ctx.drawImage(this.buffer!, 0, 0);
 
-    // Draw overlays directly on visible canvas (they sit on top)
-    this.drawOverlays(characters, entities, tileRegistry, viewport, effectiveTile);
+    // Notify host (e.g. React) so it can update HTML overlays
+    this.onFrame?.();
   }
 
   /** Resize the canvas. */
@@ -264,6 +266,20 @@ export class GameRenderer {
     );
   }
 
+  /**
+   * Convert tile coordinates to canvas-pixel coordinates (center-top of tile).
+   * Useful for positioning HTML overlays above characters.
+   */
+  tileToScreen(tileX: number, tileY: number): { x: number; y: number } {
+    const world = this.camera.worldToScreen(
+      (tileX + 0.5) * this.tileSize,
+      tileY * this.tileSize,
+      this.canvas.width,
+      this.canvas.height,
+    );
+    return { x: world.x, y: world.y };
+  }
+
   // ── Private ─────────────────────────────────────────────────────────
 
   /**
@@ -284,34 +300,5 @@ export class GameRenderer {
     if (!this.running) return;
     this.render();
     this.rafId = requestAnimationFrame((t) => this.loop(t));
-  }
-
-  private drawOverlays(
-    characters: CharacterState[],
-    _entities: WorldState["entities"],
-    _registry: TileRegistry,
-    viewport: Viewport,
-    tileSize: number,
-  ): void {
-    const ctx = this.ctx;
-
-    for (const char of characters) {
-      const screenCol = char.x - viewport.startCol;
-      const screenRow = char.y - viewport.startRow;
-
-      if (
-        screenCol < -1 ||
-        screenRow < -1 ||
-        screenCol > viewport.cols ||
-        screenRow > viewport.rows
-      ) {
-        continue;
-      }
-
-      const cx = Math.round(screenCol * tileSize + viewport.offsetX) + Math.round(tileSize / 2);
-      const cy = Math.round(screenRow * tileSize + viewport.offsetY);
-
-      // TODO: speech bubble rendering (requires speech state tracking)
-    }
   }
 }

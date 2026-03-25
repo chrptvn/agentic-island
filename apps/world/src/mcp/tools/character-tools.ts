@@ -6,8 +6,9 @@ import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, INTERACT_DEFS, GROWTH_DEFS } from 
 import { RECIPES } from "../../world/craft-registry.js";
 import {
   humanizeSurroundings, humanizeMoveResult, humanizeHarvestResult,
-  humanizeEatResult, humanizeFeedResult, humanizePlowResult, stripCoordinates,
+  humanizeEatResult, humanizeFeedResult, humanizePlowResult,
 } from "../humanize.js";
+import { upsertMarker, listMarkers, deleteMarkerByLocation } from "../../persistence/db.js";
 
 const BASE_URL = `http://localhost:${process.env.WORLD_PORT ?? 3002}`;
 
@@ -153,12 +154,18 @@ export function registerGenericPersonaTools(server: McpServer): void {
           container_take: "Take items from an adjacent container.",
           write_journal: "Record useful knowledge for later — crafting tips, discoveries, survival tricks.",
           read_journal: "Read your saved knowledge entries.",
+          set_marker: "Place a marker at your current position with a description. Use markers to remember locations — resource spots, your base camp, or anything worth revisiting. Each location (x, y) can have one marker.",
+          get_markers: "Retrieve all your placed markers with their (x, y) coordinates and descriptions. Use this to navigate back to places you've marked.",
+          delete_marker: "Remove a marker at a specific (x, y) location you no longer need.",
         },
         world: {
           terrain: "The island is grass surrounded by water. You can only walk on grass. Dirt paths make walking easier.",
+          coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate and remember locations.",
+          vision: "You can see the 8 tiles around you in detail, notice things a couple of steps away, and sense terrain changes in the distance.",
           adjacency: "To harvest, build, interact, or use containers, you must be standing next to the target (N/S/E/W).",
           planting: "To plant or plow, you must be standing ON the tile.",
           blocking: "Trees, rocks, campfires, chests, and sprouts block movement — walk around them.",
+          exploration: "Use markers to remember important locations. When you find resources or build a camp, set a marker so you can navigate back using the coordinates.",
         },
         edible_items: edibleList,
         energy_recovery: regenSources.length
@@ -179,7 +186,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
 
   server.tool(
     "get_status",
-    "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and a description of the 8 tiles immediately surrounding them.",
+    "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and a description of the tiles immediately surrounding them.",
     {
       character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
     },
@@ -324,7 +331,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         const pos = resolveTarget(character_id, direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/container/inspect", { id: character_id, x: pos.x, y: pos.y });
-        return { content: [{ type: "text", text: JSON.stringify(stripCoordinates(result), null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -345,7 +352,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         const pos = resolveTarget(character_id, direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/container/put", { id: character_id, x: pos.x, y: pos.y, item, qty });
-        return { content: [{ type: "text", text: JSON.stringify(stripCoordinates(result), null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -366,7 +373,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         const pos = resolveTarget(character_id, direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/container/take", { id: character_id, x: pos.x, y: pos.y, item, qty });
-        return { content: [{ type: "text", text: JSON.stringify(stripCoordinates(result), null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -420,7 +427,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         const pos = resolveTarget(character_id, target_direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/build", { id: character_id, target_x: pos.x, target_y: pos.y, entity_id });
-        return { content: [{ type: "text", text: JSON.stringify(stripCoordinates(result), null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -439,7 +446,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         const pos = resolveTarget(character_id, target_direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/interact", { id: character_id, target_x: pos.x, target_y: pos.y });
-        return { content: [{ type: "text", text: JSON.stringify(stripCoordinates(result), null, 2) }] };
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -456,6 +463,68 @@ export function registerGenericPersonaTools(server: McpServer): void {
       try {
         const result = await apiPost("/api/plow", { id: character_id });
         return { content: [{ type: "text", text: JSON.stringify(humanizePlowResult(result as Record<string, unknown>), null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  // ── Marker tools ────────────────────────────────────────────────────────────
+
+  server.tool(
+    "set_marker",
+    "Place a marker at your current position with a description. Use markers to remember locations you want to return to — resource spots, your base camp, points of interest. If a marker already exists at this location, its description is updated.",
+    {
+      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+      description: z.string().min(1).max(200).describe("A note describing this location (e.g. 'Berry bush near water', 'Base camp with campfire and chest')"),
+    },
+    async ({ character_id, description }) => {
+      try {
+        const character = World.getInstance().getCharacter(character_id);
+        if (!character) return { content: [{ type: "text", text: `Character "${character_id}" not found.` }], isError: true };
+        const marker = upsertMarker(character_id, character.x, character.y, description);
+        return { content: [{ type: "text", text: JSON.stringify({ message: `Marker placed at (${marker.x}, ${marker.y}).`, marker: { x: marker.x, y: marker.y, description: marker.description } }, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  server.tool(
+    "get_markers",
+    "Retrieve all your placed markers with their coordinates and descriptions. Use this to navigate back to places you've marked.",
+    {
+      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+    },
+    async ({ character_id }) => {
+      try {
+        const character = World.getInstance().getCharacter(character_id);
+        if (!character) return { content: [{ type: "text", text: `Character "${character_id}" not found.` }], isError: true };
+        const markers = listMarkers(character_id);
+        if (markers.length === 0) {
+          return { content: [{ type: "text", text: JSON.stringify({ message: "You have no markers placed. Use set_marker to remember a location." }, null, 2) }] };
+        }
+        const result = markers.map(m => ({ x: m.x, y: m.y, description: m.description }));
+        return { content: [{ type: "text", text: JSON.stringify({ markers: result }, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  server.tool(
+    "delete_marker",
+    "Remove a marker at a specific location. Use this to clean up markers you no longer need.",
+    {
+      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+      x: z.number().int().describe("X coordinate of the marker to delete"),
+      y: z.number().int().describe("Y coordinate of the marker to delete"),
+    },
+    async ({ character_id, x, y }) => {
+      try {
+        const deleted = deleteMarkerByLocation(character_id, x, y);
+        if (!deleted) return { content: [{ type: "text", text: `No marker found at (${x}, ${y}).` }], isError: true };
+        return { content: [{ type: "text", text: JSON.stringify({ message: `Marker at (${x}, ${y}) deleted.` }, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }

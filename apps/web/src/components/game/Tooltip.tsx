@@ -52,8 +52,15 @@ function StatBar({
   );
 }
 
+function prettifyName(name: string): string {
+  return name.replace(/_/g, ' ');
+}
+
 function CharacterBox({ character }: { character: CharacterState }) {
-  const { stats } = character;
+  const { stats, inventory, equipment } = character;
+  const equippedSlots = Object.entries(equipment).filter(
+    ([, v]) => v !== null && v !== undefined,
+  );
   return (
     <div className="space-y-1">
       <p className="font-bold text-accent-cyan">{character.id}</p>
@@ -78,6 +85,32 @@ function CharacterBox({ character }: { character: CharacterState }) {
         max={stats.maxEnergy}
         color="bg-accent-emerald"
       />
+      {inventory.length > 0 && (
+        <>
+          <hr className="my-1 border-border-muted" />
+          <p className="text-text-muted">🎒 Inventory</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+            {inventory.map((inv) => (
+              <span key={inv.item}>
+                {prettifyName(inv.item)} ×{inv.qty}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+      {equippedSlots.length > 0 && (
+        <>
+          <hr className="my-1 border-border-muted" />
+          <p className="text-text-muted">🛡️ Equipment</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+            {equippedSlots.map(([slot, item]) => (
+              <span key={slot}>
+                {slot}: {prettifyName(item!.item)}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -22,4 +22,5 @@ export interface CharacterState {
   inventory: InventoryItem[];
   equipment: EquipmentSlots;
   goal: string;
+  speech?: { text: string; expiresAt: number };
 }

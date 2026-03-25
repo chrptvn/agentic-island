@@ -1,6 +1,6 @@
 /**
- * Converts raw game data into narrative, analogue-style descriptions.
- * No coordinates, no numeric stats — just how the world *feels*.
+ * Converts raw game data into descriptive output with coordinates.
+ * Stats are humanized (feelings), but positions are exposed as (x, y).
  */
 
 // ─── Stat labels ─────────────────────────────────────────────────────────────
@@ -90,13 +90,6 @@ export function describeEntity(tileId: string): string {
   return ENTITY_DESCRIPTIONS[tileId] ?? prettifyName(tileId);
 }
 
-// ─── Direction labels ────────────────────────────────────────────────────────
-
-const DIRECTION_NAMES: Record<string, string> = {
-  n: "to the north", s: "to the south", e: "to the east", w: "to the west",
-  ne: "to the northeast", nw: "to the northwest", se: "to the southeast", sw: "to the southwest",
-};
-
 // ─── Surroundings humanizer ──────────────────────────────────────────────────
 
 interface RawNearbyCell {
@@ -127,6 +120,12 @@ interface RawSurroundings {
   nearby: RawNearbyCell[];
 }
 
+interface TileInfo {
+  x: number;
+  y: number;
+  description: string;
+}
+
 function describeCell(cell: RawNearbyCell): string {
   const parts: string[] = [];
 
@@ -145,11 +144,28 @@ function describeCell(cell: RawNearbyCell): string {
   return parts.join(", ");
 }
 
-function describeInventory(inventory: { item: string; qty: number }[]): string[] {
-  if (inventory.length === 0) return ["nothing"];
-  return inventory.map(({ item, qty }) =>
-    qty === 1 ? prettifyName(item) : `${humanizeQuantity(qty)} ${prettifyName(item)}`
-  );
+function describeFarCell(cell: RawNearbyCell): string | null {
+  const parts: string[] = [];
+  if (cell.character) parts.push(`a character`);
+  if (cell.entity) parts.push(describeEntity(cell.entity));
+  if (cell.terrain === "water") parts.push("water");
+  if (parts.length === 0) return null;
+  return parts.join(", ");
+}
+
+function describeDistantCell(cell: RawNearbyCell): string | null {
+  if (cell.terrain === "water") return "water";
+  return null;
+}
+
+function cellToTileInfo(cell: RawNearbyCell, origin: { x: number; y: number }, describe: (c: RawNearbyCell) => string | null): TileInfo | null {
+  const desc = describe(cell);
+  if (desc === null) return null;
+  return { x: origin.x + cell.dx, y: origin.y + cell.dy, description: desc };
+}
+
+function describeInventory(inventory: { item: string; qty: number }[]): { item: string; qty: number }[] {
+  return inventory.map(({ item, qty }) => ({ item, qty }));
 }
 
 function describeEquipment(equipment: Record<string, { item: string; qty: number } | null>): Record<string, string> {
@@ -174,16 +190,28 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
   if (raw.standing.path) standingParts.push("on a dirt path");
   if (!raw.standing.entity && !raw.standing.path) standingParts.push("on open grass");
 
-  // Only show the 8 immediately adjacent tiles (steps === 1)
-  const adjacent = raw.nearby.filter(c => c.steps === 1);
-  const surroundings: Record<string, string> = {};
-  for (const cell of adjacent) {
-    const dirName = DIRECTION_NAMES[cell.direction] ?? cell.direction;
-    surroundings[dirName] = describeCell(cell);
-  }
+  const origin = raw.position;
+
+  // Ring 1 — adjacent (steps === 1): full detail
+  const surroundings: TileInfo[] = raw.nearby
+    .filter(c => c.steps === 1)
+    .map(c => ({ x: origin.x + c.dx, y: origin.y + c.dy, description: describeCell(c) }));
+
+  // Ring 2 — near (steps === 2): entities + water only
+  const nearby: TileInfo[] = raw.nearby
+    .filter(c => c.steps === 2)
+    .map(c => cellToTileInfo(c, origin, describeFarCell))
+    .filter((t): t is TileInfo => t !== null);
+
+  // Ring 3 — far (steps === 3): terrain boundaries only
+  const farAway: TileInfo[] = raw.nearby
+    .filter(c => c.steps === 3)
+    .map(c => cellToTileInfo(c, origin, describeDistantCell))
+    .filter((t): t is TileInfo => t !== null);
 
   return {
     character: raw.character,
+    position: raw.position,
     feeling: {
       health: humanizeHealth(raw.stats.health, raw.stats.maxHealth),
       hunger: humanizeHunger(raw.stats.hunger, raw.stats.maxHunger),
@@ -194,12 +222,14 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
     carrying: describeInventory(raw.stats.inventory),
     equipment: describeEquipment(raw.stats.equipment),
     surroundings,
+    ...(nearby.length > 0 ? { nearby } : {}),
+    ...(farAway.length > 0 ? { far_away: farAway } : {}),
   };
 }
 
 // ─── Tool response sanitizers ────────────────────────────────────────────────
 
-/** Strip coordinates and numeric stats from move_to / walk responses. */
+/** Humanize move_to / walk responses. */
 export function humanizeMoveResult(raw: Record<string, unknown>): object {
   return {
     message: raw.message ?? (raw.found === false ? "Could not find a path to that target." : "Started walking."),
@@ -260,16 +290,4 @@ export function humanizePlowResult(raw: Record<string, unknown>): object {
       ? "You finished plowing a dirt path."
       : "You made some progress plowing. Keep going.",
   };
-}
-
-/** Generic sanitizer: strip any x/y/position/coordinate keys recursively. */
-export function stripCoordinates(obj: unknown): unknown {
-  if (obj === null || obj === undefined || typeof obj !== "object") return obj;
-  if (Array.isArray(obj)) return obj.map(stripCoordinates);
-  const result: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(obj as Record<string, unknown>)) {
-    if (["x", "y", "position", "target_x", "target_y", "target", "offset", "dx", "dy", "entityPosition", "destination"].includes(k)) continue;
-    result[k] = stripCoordinates(v);
-  }
-  return result;
 }

@@ -151,6 +151,23 @@ export class Camera {
     };
   }
 
+  /**
+   * Convert world-pixel coordinates to canvas-pixel (screen) coordinates.
+   * Inverse of screenToWorld.
+   */
+  worldToScreen(
+    worldX: number,
+    worldY: number,
+    canvasW: number,
+    canvasH: number,
+  ): { x: number; y: number } {
+    const s = this.scale;
+    return {
+      x: (worldX - this.x) * s + canvasW / 2,
+      y: (worldY - this.y) * s + canvasH / 2,
+    };
+  }
+
   /** Jump camera center to a world-pixel position. */
   setCenter(worldX: number, worldY: number): void {
     this.x = worldX;

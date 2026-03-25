@@ -158,7 +158,9 @@ export class World extends EventEmitter {
 
   getCharacters(): Array<object> {
     const result: Array<object> = [];
+    const now = Date.now();
     for (const [, c] of this.characters) {
+      const speech = (c.speech && c.speech.expiresAt > now) ? { text: c.speech.text, expiresAt: c.speech.expiresAt } : undefined;
       result.push({
         id: c.id,
         x: c.x,
@@ -174,9 +176,16 @@ export class World extends EventEmitter {
         inventory: c.stats.inventory ?? [],
         equipment: c.stats.equipment ?? {},
         goal: c.stats.goal ?? "",
+        ...(speech ? { speech } : {}),
       });
     }
     return result;
+  }
+
+  /** Look up a character by ID. Returns position and basic info, or null if not found. */
+  getCharacter(id: string): { id: string; x: number; y: number } | null {
+    const c = this.characters.get(id);
+    return c ? { id: c.id, x: c.x, y: c.y } : null;
   }
 
   getOverrides(): Array<{ x: number; y: number; layer: number; tileId: string }> {
