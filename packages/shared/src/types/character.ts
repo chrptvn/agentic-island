@@ -18,6 +18,9 @@ export interface CharacterState {
   id: string;
   x: number;
   y: number;
+  tileId?: string;
+  hairTileId?: string;
+  beardTileId?: string;
   stats: CharacterStats;
   inventory: InventoryItem[];
   equipment: EquipmentSlots;

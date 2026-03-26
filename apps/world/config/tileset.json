@@ -774,6 +774,764 @@
         }
       ],
       "description": "Human character \u2014 2-frame walk animation"
+    },
+    {
+      "id": "human_dark",
+      "col": 0,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "frames": [
+        {
+          "col": 0,
+          "row": 1
+        },
+        {
+          "col": 1,
+          "row": 1
+        }
+      ],
+      "description": "Human character (dark skin) \u2014 2-frame walk animation"
+    },
+    {
+      "id": "human_darker",
+      "col": 0,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "frames": [
+        {
+          "col": 0,
+          "row": 2
+        },
+        {
+          "col": 1,
+          "row": 2
+        }
+      ],
+      "description": "Human character (darker skin) \u2014 2-frame walk animation"
+    },
+    {
+      "id": "hair_brown_1",
+      "col": 19,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 1 (brown)"
+    },
+    {
+      "id": "hair_brown_2",
+      "col": 20,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 2 (brown)"
+    },
+    {
+      "id": "hair_brown_3",
+      "col": 21,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 3 (brown)"
+    },
+    {
+      "id": "hair_brown_4",
+      "col": 22,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 4 (brown)"
+    },
+    {
+      "id": "hair_brown_5",
+      "col": 19,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 5 (brown)"
+    },
+    {
+      "id": "hair_brown_6",
+      "col": 20,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 6 (brown)"
+    },
+    {
+      "id": "hair_brown_7",
+      "col": 21,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 7 (brown)"
+    },
+    {
+      "id": "hair_brown_8",
+      "col": 22,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 8 (brown)"
+    },
+    {
+      "id": "hair_brown_9",
+      "col": 19,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 9 (brown)"
+    },
+    {
+      "id": "hair_brown_10",
+      "col": 20,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 10 (brown)"
+    },
+    {
+      "id": "hair_brown_11",
+      "col": 21,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 11 (brown)"
+    },
+    {
+      "id": "hair_brown_12",
+      "col": 22,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 12 (brown)"
+    },
+    {
+      "id": "beard_brown_1",
+      "col": 19,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 1 (brown)"
+    },
+    {
+      "id": "beard_brown_2",
+      "col": 20,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 2 (brown)"
+    },
+    {
+      "id": "beard_brown_3",
+      "col": 21,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 3 (brown)"
+    },
+    {
+      "id": "beard_brown_4",
+      "col": 22,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 4 (brown)"
+    },
+    {
+      "id": "hair_orange_1",
+      "col": 23,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 1 (orange)"
+    },
+    {
+      "id": "hair_orange_2",
+      "col": 24,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 2 (orange)"
+    },
+    {
+      "id": "hair_orange_3",
+      "col": 25,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 3 (orange)"
+    },
+    {
+      "id": "hair_orange_4",
+      "col": 26,
+      "row": 0,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 4 (orange)"
+    },
+    {
+      "id": "hair_orange_5",
+      "col": 23,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 5 (orange)"
+    },
+    {
+      "id": "hair_orange_6",
+      "col": 24,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 6 (orange)"
+    },
+    {
+      "id": "hair_orange_7",
+      "col": 25,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 7 (orange)"
+    },
+    {
+      "id": "hair_orange_8",
+      "col": 26,
+      "row": 1,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 8 (orange)"
+    },
+    {
+      "id": "hair_orange_9",
+      "col": 23,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 9 (orange)"
+    },
+    {
+      "id": "hair_orange_10",
+      "col": 24,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 10 (orange)"
+    },
+    {
+      "id": "hair_orange_11",
+      "col": 25,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 11 (orange)"
+    },
+    {
+      "id": "hair_orange_12",
+      "col": 26,
+      "row": 2,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 12 (orange)"
+    },
+    {
+      "id": "beard_orange_1",
+      "col": 23,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 1 (orange)"
+    },
+    {
+      "id": "beard_orange_2",
+      "col": 24,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 2 (orange)"
+    },
+    {
+      "id": "beard_orange_3",
+      "col": 25,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 3 (orange)"
+    },
+    {
+      "id": "beard_orange_4",
+      "col": 26,
+      "row": 3,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 4 (orange)"
+    },
+    {
+      "id": "hair_blonde_1",
+      "col": 19,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 1 (blonde)"
+    },
+    {
+      "id": "hair_blonde_2",
+      "col": 20,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 2 (blonde)"
+    },
+    {
+      "id": "hair_blonde_3",
+      "col": 21,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 3 (blonde)"
+    },
+    {
+      "id": "hair_blonde_4",
+      "col": 22,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 4 (blonde)"
+    },
+    {
+      "id": "hair_blonde_5",
+      "col": 19,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 5 (blonde)"
+    },
+    {
+      "id": "hair_blonde_6",
+      "col": 20,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 6 (blonde)"
+    },
+    {
+      "id": "hair_blonde_7",
+      "col": 21,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 7 (blonde)"
+    },
+    {
+      "id": "hair_blonde_8",
+      "col": 22,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 8 (blonde)"
+    },
+    {
+      "id": "hair_blonde_9",
+      "col": 19,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 9 (blonde)"
+    },
+    {
+      "id": "hair_blonde_10",
+      "col": 20,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 10 (blonde)"
+    },
+    {
+      "id": "hair_blonde_11",
+      "col": 21,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 11 (blonde)"
+    },
+    {
+      "id": "hair_blonde_12",
+      "col": 22,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 12 (blonde)"
+    },
+    {
+      "id": "beard_blonde_1",
+      "col": 19,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 1 (blonde)"
+    },
+    {
+      "id": "beard_blonde_2",
+      "col": 20,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 2 (blonde)"
+    },
+    {
+      "id": "beard_blonde_3",
+      "col": 21,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 3 (blonde)"
+    },
+    {
+      "id": "beard_blonde_4",
+      "col": 22,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 4 (blonde)"
+    },
+    {
+      "id": "hair_gray_1",
+      "col": 23,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 1 (gray)"
+    },
+    {
+      "id": "hair_gray_2",
+      "col": 24,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 2 (gray)"
+    },
+    {
+      "id": "hair_gray_3",
+      "col": 25,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 3 (gray)"
+    },
+    {
+      "id": "hair_gray_4",
+      "col": 26,
+      "row": 4,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 4 (gray)"
+    },
+    {
+      "id": "hair_gray_5",
+      "col": 23,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 5 (gray)"
+    },
+    {
+      "id": "hair_gray_6",
+      "col": 24,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 6 (gray)"
+    },
+    {
+      "id": "hair_gray_7",
+      "col": 25,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 7 (gray)"
+    },
+    {
+      "id": "hair_gray_8",
+      "col": 26,
+      "row": 5,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 8 (gray)"
+    },
+    {
+      "id": "hair_gray_9",
+      "col": 23,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 9 (gray)"
+    },
+    {
+      "id": "hair_gray_10",
+      "col": 24,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 10 (gray)"
+    },
+    {
+      "id": "hair_gray_11",
+      "col": 25,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 11 (gray)"
+    },
+    {
+      "id": "hair_gray_12",
+      "col": 26,
+      "row": 6,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 12 (gray)"
+    },
+    {
+      "id": "beard_gray_1",
+      "col": 23,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 1 (gray)"
+    },
+    {
+      "id": "beard_gray_2",
+      "col": 24,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 2 (gray)"
+    },
+    {
+      "id": "beard_gray_3",
+      "col": 25,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 3 (gray)"
+    },
+    {
+      "id": "beard_gray_4",
+      "col": 26,
+      "row": 7,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 4 (gray)"
+    },
+    {
+      "id": "hair_white_1",
+      "col": 19,
+      "row": 8,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 1 (white)"
+    },
+    {
+      "id": "hair_white_2",
+      "col": 20,
+      "row": 8,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 2 (white)"
+    },
+    {
+      "id": "hair_white_3",
+      "col": 21,
+      "row": 8,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 3 (white)"
+    },
+    {
+      "id": "hair_white_4",
+      "col": 22,
+      "row": 8,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 4 (white)"
+    },
+    {
+      "id": "hair_white_5",
+      "col": 19,
+      "row": 9,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 5 (white)"
+    },
+    {
+      "id": "hair_white_6",
+      "col": 20,
+      "row": 9,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 6 (white)"
+    },
+    {
+      "id": "hair_white_7",
+      "col": 21,
+      "row": 9,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 7 (white)"
+    },
+    {
+      "id": "hair_white_8",
+      "col": 22,
+      "row": 9,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 8 (white)"
+    },
+    {
+      "id": "hair_white_9",
+      "col": 19,
+      "row": 10,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 9 (white)"
+    },
+    {
+      "id": "hair_white_10",
+      "col": 20,
+      "row": 10,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 10 (white)"
+    },
+    {
+      "id": "hair_white_11",
+      "col": 21,
+      "row": 10,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 11 (white)"
+    },
+    {
+      "id": "hair_white_12",
+      "col": 22,
+      "row": 10,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Hair style 12 (white)"
+    },
+    {
+      "id": "beard_white_1",
+      "col": 19,
+      "row": 11,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 1 (white)"
+    },
+    {
+      "id": "beard_white_2",
+      "col": 20,
+      "row": 11,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 2 (white)"
+    },
+    {
+      "id": "beard_white_3",
+      "col": 21,
+      "row": 11,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 3 (white)"
+    },
+    {
+      "id": "beard_white_4",
+      "col": 22,
+      "row": 11,
+      "layer": 3,
+      "category": "character",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Beard style 4 (white)"
     }
   ]
 }

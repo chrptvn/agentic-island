@@ -58,6 +58,9 @@ export class World extends EventEmitter {
       if (!loadedStats.equipment) loadedStats.equipment = defaultEquipment();
       this.characters.set(c.id, {
         id: c.id, x: c.x, y: c.y,
+        tileId: c.tileId,
+        hairTileId: c.hairTileId,
+        beardTileId: c.beardTileId,
         stats: loadedStats,
         path: c.path as Point[],
         action: c.action,
@@ -102,7 +105,7 @@ export class World extends EventEmitter {
       };
       const now = Date.now();
       const speech = (c.speech && c.speech.expiresAt > now) ? c.speech.text : undefined;
-      characters[id] = { x: c.x, y: c.y, stats: roundedStats, path: c.path, action: c.action, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
+      characters[id] = { x: c.x, y: c.y, tileId: c.tileId, hairTileId: c.hairTileId, beardTileId: c.beardTileId, stats: roundedStats, path: c.path, action: c.action, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
     }
     return { ...base, entities, characters };
   }
@@ -166,6 +169,9 @@ export class World extends EventEmitter {
         id: c.id,
         x: c.x,
         y: c.y,
+        tileId: c.tileId,
+        ...(c.hairTileId ? { hairTileId: c.hairTileId } : {}),
+        ...(c.beardTileId ? { beardTileId: c.beardTileId } : {}),
         stats: {
           health: Math.floor(c.stats.health),
           hunger: Math.floor(c.stats.hunger),
@@ -587,10 +593,27 @@ export class World extends EventEmitter {
     }
 
     const stats: CharacterStats = { ...getDefaultCharacterStats(), equipment: defaultEquipment(), inventory: [{ item: "rocks", qty: 1 }] };
-    const character: CharacterInstance = { id, x, y, stats, path: [], action: "idle" };
+    const skinOptions = ["human", "human_dark", "human_darker"];
+    const tileId = skinOptions[Math.floor(Math.random() * skinOptions.length)];
+
+    // Random hair & beard
+    const hairColors = ["brown", "orange", "blonde", "gray", "white"];
+    const hairColor = hairColors[Math.floor(Math.random() * hairColors.length)];
+    const hairSubRow = Math.floor(Math.random() * 3); // 0, 1, or 2
+    const hairStyle = Math.floor(Math.random() * 4) + 1; // 1-4
+    const hairN = hairSubRow * 4 + hairStyle; // 1-12
+    const hairTileId = `hair_${hairColor}_${hairN}`;
+    // 50% chance of beard, but not with long hair (sub-row 1 = styles 5-8)
+    let beardTileId: string | undefined;
+    if (hairSubRow !== 1 && Math.random() < 0.5) {
+      const beardStyle = Math.floor(Math.random() * 4) + 1;
+      beardTileId = `beard_${hairColor}_${beardStyle}`;
+    }
+
+    const character: CharacterInstance = { id, x, y, tileId, hairTileId, beardTileId, stats, path: [], action: "idle" };
 
     this.characters.set(id, character);
-    saveCharacter(id, x, y, stats, [], "idle");
+    saveCharacter(id, x, y, stats, [], "idle", tileId, hairTileId, beardTileId);
     this.emit("map:updated", this.map);
     return character;
   }
@@ -734,7 +757,7 @@ export class World extends EventEmitter {
       saveEntityStat(entityX, entityY, raw);
     }
 
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.emit("map:updated", this.map);
     return { harvested, entity: { tileId, destroyed } };
   }
@@ -771,7 +794,7 @@ export class World extends EventEmitter {
         // Only removed when all resources are drained (handled in _harvestByDrain).
         this.entityStats.set(key, updatedStats);
         saveEntityStat(entityX, entityY, updatedStats);
-        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action);
+        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
         this.emit("map:updated", this.map);
         return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: false } };
       }
@@ -826,7 +849,7 @@ export class World extends EventEmitter {
         saveEntityStat(entityX, entityY, spawnStats);
       }
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: true } };
     } else {
@@ -834,7 +857,7 @@ export class World extends EventEmitter {
       this.entityStats.set(key, updatedStats);
       saveEntityStat(entityX, entityY, updatedStats);
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: newHealth, maxHealth, destroyed: false } };
     }
@@ -891,7 +914,7 @@ export class World extends EventEmitter {
       (newStats as unknown as Record<string, number>)[res] =
         Math.max(0, ((newStats as unknown as Record<string, number>)[res] ?? 0) - amt);
     }
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
 
     // Only trigger visual swap / disappear if ALL resources are now depleted
     const remaining = getResources(newStats);
@@ -1035,7 +1058,7 @@ export class World extends EventEmitter {
       if (Object.keys(initStats).length > 0) {
         saveEntityStat(targetX, targetY, initStats as EntityStats);
       }
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     });
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
@@ -1108,7 +1131,7 @@ export class World extends EventEmitter {
       saveEntityStat(targetX, targetY, initStats as EntityStats);
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
     return { result: def.result, consumed: def.costs };
@@ -1154,7 +1177,7 @@ export class World extends EventEmitter {
     if (slot!.qty <= 0) inv.splice(inv.indexOf(slot!), 1);
 
     saveEntityStat(x, y, stats);
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.emit("map:updated", this.map);
 
     return { fed: amount, health: stats.health, maxHealth: stats.maxHealth };
@@ -1196,7 +1219,7 @@ export class World extends EventEmitter {
       else inv.push({ item: outputItem, qty });
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     return { crafted: recipe.output };
   }
 
@@ -1220,7 +1243,7 @@ export class World extends EventEmitter {
     slot.qty -= 1;
     if (slot.qty <= 0) inv.splice(inv.indexOf(slot), 1);
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     return { eaten: item, hungerRestored: restored, stats: { hunger: character.stats.hunger, maxHunger: character.stats.maxHunger } };
   }
 
@@ -1296,7 +1319,7 @@ export class World extends EventEmitter {
     if (contSlot) contSlot.qty += amount;
     else stats.inventory.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     saveEntityStat(x, y, stats);
     this.emit("map:updated", this.map);
     return { transferred: amount, contents: stats.inventory };
@@ -1323,7 +1346,7 @@ export class World extends EventEmitter {
     if (charSlot) charSlot.qty += amount;
     else charInv.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
 
     // Auto-remove container tile when all items have been taken
     if (stats.inventory.length === 0) {
@@ -1427,7 +1450,7 @@ export class World extends EventEmitter {
     // Place in slot
     eq[slot] = { item, qty: 1 };
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.emit("map:updated", this.map);
     return { equipped: { item, qty: 1 }, swapped };
   }
@@ -1451,7 +1474,7 @@ export class World extends EventEmitter {
 
     eq[slot] = null;
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.emit("map:updated", this.map);
     return slotItem;
   }
@@ -1557,7 +1580,7 @@ export class World extends EventEmitter {
       // path.length === 0 means already at the destination — success, no movement needed
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     this.emit("map:updated", this.map);
     return { character, entityPos };
   }
@@ -1641,7 +1664,7 @@ export class World extends EventEmitter {
     runTransaction(() => {
       saveOverride(character.x, character.y, 3, sproutId);
       saveEntityStat(character.x, character.y, sproutStats);
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
     });
     this.overridesVersion = loadOverridesVersion();
 
@@ -1991,7 +2014,7 @@ export class World extends EventEmitter {
         statWrites.length > 0 || statDeletes.length > 0 || decayedEntities.length > 0) {
       runTransaction(() => {
         for (const c of changedCharacters) {
-          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action);
+          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action, c.tileId, c.hairTileId, c.beardTileId);
         }
         for (const deadChar of deadCharacters) deleteCharacter(deadChar.id);
         for (const { x, y, layer, tileId } of overrideWrites) saveOverride(x, y, layer, tileId);
