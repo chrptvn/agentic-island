@@ -362,6 +362,7 @@ import {
   ENTITY_DEFS,
   ENTITY_DEFAULTS,
   type EntityStats,
+  applyRandomStats,
 } from "./entity-registry.js";
 import { getWorldConfig } from "./world-config.js";
 
@@ -474,14 +475,18 @@ export function buildVegetationLayer(
 
       tileOverrides.push({ x, y,        layer: 3, tileId: candidate.id });
       tileOverrides.push({ x, y: y - 1, layer: 4, tileId: candidate.topId });
-      entityStats.push({ x, y, stats: { ...ENTITY_DEFAULTS[candidate.id] } });
+      const stats = { ...ENTITY_DEFAULTS[candidate.id] } as Record<string, unknown>;
+      applyRandomStats(candidate.id, stats, rng);
+      entityStats.push({ x, y, stats: stats as EntityStats });
 
       occupied.add(key);
       occupied.add(canopyKey);
     } else {
       // Single-tile entity
       tileOverrides.push({ x, y, layer: 3, tileId: candidate.id });
-      entityStats.push({ x, y, stats: { ...ENTITY_DEFAULTS[candidate.id] } });
+      const stats = { ...ENTITY_DEFAULTS[candidate.id] } as Record<string, unknown>;
+      applyRandomStats(candidate.id, stats, rng);
+      entityStats.push({ x, y, stats: stats as EntityStats });
       occupied.add(key);
     }
   }

@@ -76,7 +76,18 @@ export function drawCharacter(
   const cy = Math.round(screenRow * tileSize + offsetY);
   const size = Math.round(tileSize);
 
+  // Draw base character sprite
   drawTile(ctx, CHARACTER_TILE_ID, registry, sprites, cx, cy, size, size, animFrame);
+
+  // Draw equipped items on top of character
+  if (character.equipment) {
+    for (const slot of Object.keys(character.equipment)) {
+      const equip = character.equipment[slot];
+      if (equip && registry[equip.item]) {
+        drawTile(ctx, equip.item, registry, sprites, cx, cy, size, size);
+      }
+    }
+  }
 }
 
 /**

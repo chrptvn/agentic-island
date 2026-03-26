@@ -5,6 +5,8 @@ export interface EntityInstance {
   y: number;
   tileId: string;
   stats: EntityStats;
+  /** Container entities (chests, log piles, skulls) may hold inventory items. */
+  inventory?: { item: string; qty: number }[];
 }
 
 export interface EntityDef {

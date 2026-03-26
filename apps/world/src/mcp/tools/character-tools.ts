@@ -132,7 +132,7 @@ export function registerGenericPersonaTools(server: McpServer): void {
         IMPORTANT: "All in-world communication MUST go through the 'say' tool. Never express thoughts, reactions, or speech as plain text — use say() so it appears above your character. Your text responses are invisible to the world; only say() is visible.",
         overview: "You are a character on a grass island surrounded by water. You need to eat to survive, rest to recover energy, and can craft tools, build structures, and interact with the world around you.",
         survival: {
-          health: "You can feel how healthy you are. If you stop eating, you'll starve and your health will drop. Rest while fed to recover.",
+          health: "You can feel how healthy you are. If you stop eating, you'll starve and your health will drop. Standing on fire also hurts. If your health reaches zero, you die — your body becomes a skull on the ground containing everything you were carrying. Rest while fed to recover.",
           hunger: "You get hungrier over time. Eat berries or acorns to satisfy your hunger. If you starve completely, your health suffers.",
           energy: "Every action and step costs energy. You recover energy by standing still. Resting near a campfire helps you recover much faster. When exhausted, you can't do anything until you rest.",
         },

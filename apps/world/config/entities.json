@@ -366,6 +366,315 @@
       }
     },
     {
+      "id": "cotton_plant",
+      "tileType": "single",
+      "stats": {
+        "cotton": 3,
+        "cotton_seed": 2
+      },
+      "harvest": {
+        "fullBase": "cotton_plant",
+        "emptyBase": null
+      },
+      "searchTarget": "cotton",
+      "spawn": {
+        "weight": 2,
+        "requiresDeep": false
+      },
+      "randomStats": {
+        "cotton_seed": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "id": "cotton_sprout",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "cotton_sprout_big",
+        "growthMs": 120000
+      }
+    },
+    {
+      "id": "cotton_sprout_big",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "cotton_plant",
+        "growthMs": 300000
+      }
+    },
+    {
+      "id": "cotton",
+      "tileType": "single",
+      "stats": {
+        "cotton": 1
+      },
+      "harvest": {
+        "fullBase": "cotton",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "cotton_seed",
+      "tileType": "single",
+      "stats": {
+        "cotton_seed": 1
+      },
+      "harvest": {
+        "fullBase": "cotton_seed",
+        "emptyBase": null
+      },
+      "searchTarget": null,
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "item": true
+    },
+    {
+      "id": "skull",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "skull",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "container": true,
+      "maxItems": 100
+    },
+    {
+      "id": "flower_blue",
+      "tileType": "single",
+      "stats": {
+        "flower_blue": 1,
+        "flower_blue_seed": 2
+      },
+      "harvest": {
+        "fullBase": "flower_blue",
+        "emptyBase": null
+      },
+      "searchTarget": "flowers",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "randomStats": {
+        "flower_blue_seed": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "id": "flower_red",
+      "tileType": "single",
+      "stats": {
+        "flower_red": 1,
+        "flower_red_seed": 2
+      },
+      "harvest": {
+        "fullBase": "flower_red",
+        "emptyBase": null
+      },
+      "searchTarget": "flowers",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "randomStats": {
+        "flower_red_seed": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "id": "flower_purple",
+      "tileType": "single",
+      "stats": {
+        "flower_purple": 1,
+        "flower_purple_seed": 2
+      },
+      "harvest": {
+        "fullBase": "flower_purple",
+        "emptyBase": null
+      },
+      "searchTarget": "flowers",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "randomStats": {
+        "flower_purple_seed": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "id": "flower_white",
+      "tileType": "single",
+      "stats": {
+        "flower_white": 1,
+        "flower_white_seed": 2
+      },
+      "harvest": {
+        "fullBase": "flower_white",
+        "emptyBase": null
+      },
+      "searchTarget": "flowers",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "randomStats": {
+        "flower_white_seed": { "min": 1, "max": 2 }
+      }
+    },
+    {
+      "id": "flower_blue_sprout",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "flower_blue",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_red_sprout",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "flower_red",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_purple_sprout",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "flower_purple",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_white_sprout",
+      "tileType": "single",
+      "stats": {},
+      "harvest": null,
+      "searchTarget": "sprouts",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
+      "growthStages": {
+        "nextStage": "flower_white",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_blue_item",
+      "tileType": "single",
+      "stats": { "flower_blue": 1 },
+      "harvest": { "fullBase": "flower_blue_item", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_red_item",
+      "tileType": "single",
+      "stats": { "flower_red": 1 },
+      "harvest": { "fullBase": "flower_red_item", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_purple_item",
+      "tileType": "single",
+      "stats": { "flower_purple": 1 },
+      "harvest": { "fullBase": "flower_purple_item", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_white_item",
+      "tileType": "single",
+      "stats": { "flower_white": 1 },
+      "harvest": { "fullBase": "flower_white_item", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_blue_seed",
+      "tileType": "single",
+      "stats": { "flower_blue_seed": 1 },
+      "harvest": { "fullBase": "flower_blue_seed", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_red_seed",
+      "tileType": "single",
+      "stats": { "flower_red_seed": 1 },
+      "harvest": { "fullBase": "flower_red_seed", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_purple_seed",
+      "tileType": "single",
+      "stats": { "flower_purple_seed": 1 },
+      "harvest": { "fullBase": "flower_purple_seed", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
+      "id": "flower_white_seed",
+      "tileType": "single",
+      "stats": { "flower_white_seed": 1 },
+      "harvest": { "fullBase": "flower_white_seed", "emptyBase": null },
+      "searchTarget": null,
+      "spawn": { "weight": 0, "requiresDeep": false },
+      "item": true
+    },
+    {
       "id": "log_pile",
       "tileType": "single",
       "stats": {},

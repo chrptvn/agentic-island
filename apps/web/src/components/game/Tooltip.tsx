@@ -15,6 +15,12 @@ const ENTITY_LABELS: Record<string, string> = {
   campfire_lit: 'Campfire 🔥',
   campfire_extinct: 'Campfire',
   chest: 'Chest',
+  skull: 'Skull 💀',
+  flower_blue: 'Blue Flower 🔵',
+  flower_red: 'Red Flower 🔴',
+  flower_purple: 'Purple Flower 🟣',
+  flower_white: 'White Flower ⚪',
+  cotton_plant: 'Cotton',
 };
 
 export interface TooltipData {
@@ -89,7 +95,7 @@ function CharacterBox({ character }: { character: CharacterState }) {
         <>
           <hr className="my-1 border-border-muted" />
           <p className="text-text-muted">🎒 Inventory</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {inventory.map((inv) => (
               <span key={inv.item}>
                 {prettifyName(inv.item)} ×{inv.qty}
@@ -102,7 +108,7 @@ function CharacterBox({ character }: { character: CharacterState }) {
         <>
           <hr className="my-1 border-border-muted" />
           <p className="text-text-muted">🛡️ Equipment</p>
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+          <div className="flex flex-col gap-y-0.5">
             {equippedSlots.map(([slot, item]) => (
               <span key={slot}>
                 {slot}: {prettifyName(item!.item)}
@@ -119,11 +125,47 @@ function EntityBox({ entity }: { entity: EntityInstance }) {
   const name = ENTITY_LABELS[entity.tileId] ?? entity.tileId;
   const hp = entity.stats?.health;
   const maxHp = entity.stats?.maxHealth;
+
+  // Resource counts: numeric stats excluding health/max* keys
+  const resources = entity.stats
+    ? Object.entries(entity.stats).filter(
+        ([k, v]) => k !== 'health' && !k.startsWith('max') && k !== 'inventory' && typeof v === 'number' && v > 0,
+      )
+    : [];
+
+  // Container inventory
+  const inventory = entity.inventory ?? [];
+
   return (
     <div className="space-y-1">
       <p className="font-bold text-accent-gold">{name}</p>
-      {hp !== undefined && maxHp !== undefined && (
+      {hp !== undefined && maxHp !== undefined && maxHp > 0 && (
         <StatBar label="❤️ HP" value={hp} max={maxHp} color="bg-accent-red" />
+      )}
+      {resources.length > 0 && (
+        <>
+          <hr className="my-1 border-border-muted" />
+          <div className="flex flex-col gap-y-0.5">
+            {resources.map(([item, qty]) => (
+              <span key={item}>
+                {prettifyName(item)} ×{qty}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+      {inventory.length > 0 && (
+        <>
+          <hr className="my-1 border-border-muted" />
+          <p className="text-text-muted">📦 Contents</p>
+          <div className="flex flex-col gap-y-0.5">
+            {inventory.map((inv) => (
+              <span key={inv.item}>
+                {prettifyName(inv.item)} ×{inv.qty}
+              </span>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

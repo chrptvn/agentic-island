@@ -10,7 +10,7 @@ import {
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
-import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ITEM_IDS, GROWTH_DEFS, getResources, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ITEM_IDS, GROWTH_DEFS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
 import { resolveTargetFilter } from "./goal-executor.js";
@@ -142,15 +142,16 @@ export class World extends EventEmitter {
     return registry;
   }
 
-  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats }> {
-    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats }> = [];
+  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[] }> {
+    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[] }> = [];
     for (const [key, stats] of this.entityStats) {
       const [x, y] = key.split(",").map(Number);
       const layers = this.overrides.get(key);
       // Entity base tiles are on layer 3 (index 3 in the overrides array)
       const tileId = layers?.[3];
       if (tileId && tileId !== "") {
-        result.push({ x, y, tileId, stats });
+        const inv = (stats as unknown as { inventory?: { item: string; qty: number }[] }).inventory;
+        result.push({ x, y, tileId, stats, ...(inv ? { inventory: inv } : {}) });
       }
     }
     return result;
@@ -1606,6 +1607,11 @@ export class World extends EventEmitter {
     const SEED_TO_SPROUT: Record<string, string> = {
       acorns:  "oak_sprout",
       berries: "berry_sprout",
+      cotton_seed: "cotton_sprout",
+      flower_blue_seed: "flower_blue_sprout",
+      flower_red_seed: "flower_red_sprout",
+      flower_purple_seed: "flower_purple_sprout",
+      flower_white_seed: "flower_white_sprout",
     };
     const sproutId = SEED_TO_SPROUT[seedItem];
     if (!sproutId) throw new Error(`"${seedItem}" is not a plantable seed. Valid seeds: ${Object.keys(SEED_TO_SPROUT).join(", ")}.`);
@@ -1688,6 +1694,7 @@ export class World extends EventEmitter {
     this.entityStats.delete(key);
     deleteEntityStat(x, y);
     const initStats = { ...(ENTITY_DEFAULTS[nextId] ?? {}) } as Record<string, unknown>;
+    applyRandomStats(nextId, initStats);
     const nextGrowth = GROWTH_DEFS[nextId];
     if (nextGrowth) {
       // Still a sprout — keep plantedAt for next stage
@@ -1806,6 +1813,7 @@ export class World extends EventEmitter {
 
     // Collect characters whose state changed so we can flush them in one transaction.
     const changedCharacters: CharacterInstance[] = [];
+    const deadCharacters: CharacterInstance[] = [];
 
     for (const character of this.characters.values()) {
       let changed = false;
@@ -1834,6 +1842,13 @@ export class World extends EventEmitter {
       if (s.hunger === 0 && s.health > 0) {
         s.health = Math.max(0, s.health - healthDrain);
         changed = true;
+      }
+
+      // ── Character death → skull ─────────────────────────────────────────────
+      if (s.health <= 0) {
+        deadCharacters.push(character);
+        anyChanged = true;
+        continue;
       }
 
       // ── Health regen when fed and standing still ──────────────────────────────
@@ -1942,13 +1957,43 @@ export class World extends EventEmitter {
       }
     }
 
+    // ── Process character deaths → spawn skull containers ────────────────────
+    for (const deadChar of deadCharacters) {
+      const deathKey = `${deadChar.x},${deadChar.y}`;
+
+      // Combine inventory + equipped items into the skull's container inventory
+      const containerInv: { item: string; qty: number }[] = [
+        ...(deadChar.stats.inventory as { item: string; qty: number }[]),
+      ];
+      for (const eq of Object.values(deadChar.stats.equipment)) {
+        if (eq) containerInv.push({ item: eq.item, qty: eq.qty });
+      }
+
+      // Place skull entity on the map (layer 3)
+      const layers = this.overrides.get(deathKey) ?? [];
+      while (layers.length <= 3) layers.push("");
+      layers[3] = "skull";
+      this.overrides.set(deathKey, layers);
+      overrideWrites.push({ x: deadChar.x, y: deadChar.y, layer: 3, tileId: "skull" });
+
+      // Set skull entity stats (container inventory)
+      const skullStats = { inventory: containerInv } as unknown as EntityStats;
+      this.entityStats.set(deathKey, skullStats);
+      statWrites.push({ x: deadChar.x, y: deadChar.y, stats: skullStats });
+
+      // Remove character from memory
+      this.characters.delete(deadChar.id);
+    }
+
     // ── Flush all DB writes in a single transaction ───────────────────────────
-    if (changedCharacters.length > 0 || overrideWrites.length > 0 || overrideClears.length > 0 ||
+    if (changedCharacters.length > 0 || deadCharacters.length > 0 ||
+        overrideWrites.length > 0 || overrideClears.length > 0 ||
         statWrites.length > 0 || statDeletes.length > 0 || decayedEntities.length > 0) {
       runTransaction(() => {
         for (const c of changedCharacters) {
           saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action);
         }
+        for (const deadChar of deadCharacters) deleteCharacter(deadChar.id);
         for (const { x, y, layer, tileId } of overrideWrites) saveOverride(x, y, layer, tileId);
         for (const { x, y, layer } of overrideClears)          clearTileOverride(x, y, layer);
         for (const { x, y }        of statDeletes)             deleteEntityStat(x, y);

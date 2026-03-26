@@ -84,6 +84,7 @@ const ENTITY_DESCRIPTIONS: Record<string, string> = {
   acorns:              "acorns on the ground",
   wood:                "a piece of wood",
   stone_axe:           "a stone axe on the ground",
+  skull:               "a skull left by a fallen character",
 };
 
 export function describeEntity(tileId: string): string {

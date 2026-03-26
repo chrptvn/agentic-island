@@ -59,5 +59,49 @@
     "capabilities": {
       "plow": 1
     }
+  },
+  "skull": {
+    "equippable": false,
+    "wearable": null
+  },
+  "cotton": {
+    "equippable": false,
+    "wearable": null
+  },
+  "cotton_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_blue": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_red": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_purple": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_white": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_blue_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_red_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_purple_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_white_seed": {
+    "equippable": false,
+    "wearable": null
   }
 }

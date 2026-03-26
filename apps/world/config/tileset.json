@@ -25,7 +25,7 @@
       "row": 0,
       "layer": 0,
       "category": "terrain",
-      "description": "Base water terrain — solid water fill used as layer-0 terrain"
+      "description": "Base water terrain \u2014 solid water fill used as layer-0 terrain"
     },
     {
       "id": "water_blob",
@@ -33,7 +33,7 @@
       "row": 0,
       "layer": 0,
       "category": "water_transition",
-      "description": "Solid water — base fill for water cells"
+      "description": "Solid water \u2014 base fill for water cells"
     },
     {
       "id": "water_full",
@@ -41,7 +41,7 @@
       "row": 1,
       "layer": 1,
       "category": "water_transition",
-      "description": "Water interior — all cardinal neighbors are water"
+      "description": "Water interior \u2014 all cardinal neighbors are water"
     },
     {
       "id": "water_edge_n",
@@ -153,7 +153,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Old oak tree — base"
+      "description": "Old oak tree \u2014 base"
     },
     {
       "id": "old_tree_top",
@@ -161,7 +161,7 @@
       "row": 10,
       "layer": 3,
       "category": "vegetation",
-      "description": "Old oak tree — canopy"
+      "description": "Old oak tree \u2014 canopy"
     },
     {
       "id": "young_berry",
@@ -177,7 +177,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Oak sprout — stage 1"
+      "description": "Oak sprout \u2014 stage 1"
     },
     {
       "id": "oak_sprout_big",
@@ -185,7 +185,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Oak sprout — stage 2"
+      "description": "Oak sprout \u2014 stage 2"
     },
     {
       "id": "berry_sprout",
@@ -193,7 +193,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Berry sprout — stage 1"
+      "description": "Berry sprout \u2014 stage 1"
     },
     {
       "id": "berry_sprout_big",
@@ -201,7 +201,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Berry sprout — stage 2"
+      "description": "Berry sprout \u2014 stage 2"
     },
     {
       "id": "old_berry_base",
@@ -209,7 +209,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Old berry tree — base"
+      "description": "Old berry tree \u2014 base"
     },
     {
       "id": "old_berry_top",
@@ -217,7 +217,7 @@
       "row": 10,
       "layer": 3,
       "category": "vegetation",
-      "description": "Old berry tree — canopy"
+      "description": "Old berry tree \u2014 canopy"
     },
     {
       "id": "young_berry_empty",
@@ -225,7 +225,7 @@
       "row": 9,
       "layer": 2,
       "category": "vegetation",
-      "description": "Young berry tree — empty"
+      "description": "Young berry tree \u2014 empty"
     },
     {
       "id": "old_berry_empty_base",
@@ -233,7 +233,7 @@
       "row": 11,
       "layer": 2,
       "category": "vegetation",
-      "description": "Old berry tree empty — base"
+      "description": "Old berry tree empty \u2014 base"
     },
     {
       "id": "old_berry_empty_top",
@@ -241,7 +241,7 @@
       "row": 10,
       "layer": 3,
       "category": "vegetation",
-      "description": "Old berry tree empty — canopy"
+      "description": "Old berry tree empty \u2014 canopy"
     },
     {
       "id": "rock",
@@ -249,7 +249,7 @@
       "row": 22,
       "layer": 2,
       "category": "vegetation",
-      "description": "Rock — harvestable stone"
+      "description": "Rock \u2014 harvestable stone"
     },
     {
       "id": "wood",
@@ -284,7 +284,7 @@
       "row": 1,
       "layer": 2,
       "category": "item",
-      "description": "Stone pickaxe — useful for mining rocks",
+      "description": "Stone pickaxe \u2014 useful for mining rocks",
       "sheet": "roguelikeChar_transparent.png",
       "item": true
     },
@@ -294,7 +294,7 @@
       "row": 7,
       "layer": 2,
       "category": "item",
-      "description": "Stone knife — useful for cutting",
+      "description": "Stone knife \u2014 useful for cutting",
       "sheet": "roguelikeChar_transparent.png",
       "item": true
     },
@@ -367,7 +367,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — isolated (no connections)"
+      "description": "Dirt path \u2014 isolated (no connections)"
     },
     {
       "id": "path_t",
@@ -375,7 +375,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (top connection only)"
+      "description": "Dirt path \u2014 dead end (top connection only)"
     },
     {
       "id": "path_r",
@@ -383,7 +383,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (right connection only)"
+      "description": "Dirt path \u2014 dead end (right connection only)"
     },
     {
       "id": "path_tr",
@@ -391,7 +391,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner top-right"
+      "description": "Dirt path \u2014 corner top-right"
     },
     {
       "id": "path_b",
@@ -399,7 +399,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (bottom connection only)"
+      "description": "Dirt path \u2014 dead end (bottom connection only)"
     },
     {
       "id": "path_tb",
@@ -407,7 +407,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — straight vertical (top+bottom)"
+      "description": "Dirt path \u2014 straight vertical (top+bottom)"
     },
     {
       "id": "path_rb",
@@ -415,7 +415,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner right-bottom"
+      "description": "Dirt path \u2014 corner right-bottom"
     },
     {
       "id": "path_trb",
@@ -423,7 +423,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+right+bottom, open left)"
+      "description": "Dirt path \u2014 T-intersection (top+right+bottom, open left)"
     },
     {
       "id": "path_l",
@@ -431,7 +431,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (left connection only)"
+      "description": "Dirt path \u2014 dead end (left connection only)"
     },
     {
       "id": "path_tl",
@@ -439,7 +439,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner top-left"
+      "description": "Dirt path \u2014 corner top-left"
     },
     {
       "id": "path_rl",
@@ -447,7 +447,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — straight horizontal (right+left)"
+      "description": "Dirt path \u2014 straight horizontal (right+left)"
     },
     {
       "id": "path_trl",
@@ -455,7 +455,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+right+left, open bottom)"
+      "description": "Dirt path \u2014 T-intersection (top+right+left, open bottom)"
     },
     {
       "id": "path_bl",
@@ -463,7 +463,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner bottom-left"
+      "description": "Dirt path \u2014 corner bottom-left"
     },
     {
       "id": "path_tbl",
@@ -471,7 +471,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+bottom+left, open right)"
+      "description": "Dirt path \u2014 T-intersection (top+bottom+left, open right)"
     },
     {
       "id": "path_rbl",
@@ -479,7 +479,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (right+bottom+left, open top)"
+      "description": "Dirt path \u2014 T-intersection (right+bottom+left, open top)"
     },
     {
       "id": "path_all",
@@ -487,7 +487,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — crossroads (all 4 connections)"
+      "description": "Dirt path \u2014 crossroads (all 4 connections)"
     },
     {
       "id": "path_inner_corner_tl",
@@ -495,7 +495,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner top-left corner"
+      "description": "Dirt path wide \u2014 concave inner top-left corner"
     },
     {
       "id": "path_inner_border_t",
@@ -503,7 +503,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — top border"
+      "description": "Dirt path wide \u2014 top border"
     },
     {
       "id": "path_inner_corner_tr",
@@ -511,7 +511,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner top-right corner"
+      "description": "Dirt path wide \u2014 concave inner top-right corner"
     },
     {
       "id": "path_inner_border_l",
@@ -519,7 +519,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — left border"
+      "description": "Dirt path wide \u2014 left border"
     },
     {
       "id": "path_inner_plain",
@@ -527,7 +527,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — plain interior (all 8 neighbours are path)"
+      "description": "Dirt path wide \u2014 plain interior (all 8 neighbours are path)"
     },
     {
       "id": "path_inner_border_r",
@@ -535,7 +535,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — right border"
+      "description": "Dirt path wide \u2014 right border"
     },
     {
       "id": "path_inner_corner_bl",
@@ -543,7 +543,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner bottom-left corner"
+      "description": "Dirt path wide \u2014 concave inner bottom-left corner"
     },
     {
       "id": "path_inner_border_b",
@@ -551,7 +551,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — bottom border"
+      "description": "Dirt path wide \u2014 bottom border"
     },
     {
       "id": "path_inner_corner_br",
@@ -559,7 +559,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner bottom-right corner"
+      "description": "Dirt path wide \u2014 concave inner bottom-right corner"
     },
     {
       "id": "plow",
@@ -568,7 +568,193 @@
       "layer": 2,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "Plow tool — equip in hands to till soil faster"
+      "description": "Plow tool \u2014 equip in hands to till soil faster"
+    },
+    {
+      "id": "skull",
+      "col": 49,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "A skull left behind when a character dies"
+    },
+    {
+      "id": "cotton_plant",
+      "col": 25,
+      "row": 11,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Cotton plant \u2014 harvestable for cotton and cotton seeds"
+    },
+    {
+      "id": "cotton_sprout",
+      "col": 22,
+      "row": 11,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Cotton sprout \u2014 stage 1"
+    },
+    {
+      "id": "cotton_sprout_big",
+      "col": 22,
+      "row": 11,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Cotton sprout \u2014 stage 2"
+    },
+    {
+      "id": "cotton",
+      "col": 3,
+      "row": 10,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped cotton",
+      "item": true
+    },
+    {
+      "id": "cotton_seed",
+      "col": 42,
+      "row": 23,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped cotton seed",
+      "item": true
+    },
+    {
+      "id": "flower_blue",
+      "col": 28,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Blue flower \u2014 harvestable"
+    },
+    {
+      "id": "flower_red",
+      "col": 29,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Red flower \u2014 harvestable"
+    },
+    {
+      "id": "flower_purple",
+      "col": 30,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Purple flower \u2014 harvestable"
+    },
+    {
+      "id": "flower_white",
+      "col": 31,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "White flower \u2014 harvestable"
+    },
+    {
+      "id": "flower_blue_sprout",
+      "col": 34,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Blue flower sprout"
+    },
+    {
+      "id": "flower_red_sprout",
+      "col": 37,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Red flower sprout"
+    },
+    {
+      "id": "flower_purple_sprout",
+      "col": 35,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "Purple flower sprout"
+    },
+    {
+      "id": "flower_white_sprout",
+      "col": 36,
+      "row": 9,
+      "layer": 2,
+      "category": "vegetation",
+      "description": "White flower sprout"
+    },
+    {
+      "id": "flower_blue_item",
+      "col": 28,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped blue flower",
+      "item": true
+    },
+    {
+      "id": "flower_red_item",
+      "col": 29,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped red flower",
+      "item": true
+    },
+    {
+      "id": "flower_purple_item",
+      "col": 30,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped purple flower",
+      "item": true
+    },
+    {
+      "id": "flower_white_item",
+      "col": 31,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Dropped white flower",
+      "item": true
+    },
+    {
+      "id": "flower_blue_seed",
+      "col": 34,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Blue flower seed",
+      "item": true
+    },
+    {
+      "id": "flower_red_seed",
+      "col": 37,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Red flower seed",
+      "item": true
+    },
+    {
+      "id": "flower_purple_seed",
+      "col": 35,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "Purple flower seed",
+      "item": true
+    },
+    {
+      "id": "flower_white_seed",
+      "col": 36,
+      "row": 9,
+      "layer": 2,
+      "category": "item",
+      "description": "White flower seed",
+      "item": true
     },
     {
       "id": "human",
@@ -577,8 +763,17 @@
       "layer": 3,
       "category": "character",
       "sheet": "roguelikeChar_transparent.png",
-      "frames": [{ "col": 0, "row": 0 }, { "col": 1, "row": 0 }],
-      "description": "Human character — 2-frame walk animation"
+      "frames": [
+        {
+          "col": 0,
+          "row": 0
+        },
+        {
+          "col": 1,
+          "row": 0
+        }
+      ],
+      "description": "Human character \u2014 2-frame walk animation"
     }
   ]
 }

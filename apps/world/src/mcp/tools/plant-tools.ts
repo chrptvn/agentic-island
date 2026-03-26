@@ -9,7 +9,7 @@ export function registerPlantTools(server: McpServer): void {
     "Plant a seed at the character's current position. Consumes 1 seed from inventory and places a sprout that grows into a full tree over time (2 min → bigger sprout, then 5 min → mature tree). Character must be standing on an empty grass cell.",
     {
       character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
-      seed_item: z.enum(["acorns", "berries"]).describe("The seed to plant: 'acorns' grows an oak tree, 'berries' grows a berry tree"),
+      seed_item: z.enum(["acorns", "berries", "cotton_seed", "flower_blue_seed", "flower_red_seed", "flower_purple_seed", "flower_white_seed"]).describe("The seed to plant: 'acorns' grows an oak tree, 'berries' grows a berry tree, 'cotton_seed' grows a cotton plant, 'flower_*_seed' grows a flower of that color"),
     },
     async ({ character_id, seed_item }) => {
       try {

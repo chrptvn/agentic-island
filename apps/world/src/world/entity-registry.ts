@@ -47,6 +47,8 @@ export interface EntityDef {
   fireDamage?: number;
   /** Staged growth: after growthMs ms this entity automatically becomes nextStage. */
   growthStages?: GrowthStagesDef;
+  /** Per-stat randomization applied at spawn/growth time. Keys are stat names, values have min/max. */
+  randomStats?: Record<string, { min: number; max: number }>;
 }
 
 /** Recipe cost to build an entity onto the map from an adjacent cell. */
@@ -190,7 +192,11 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.filter((e) => e.growthStages !== undefined).map((e) => [e.id, e.growthStages!])
   );
 
-  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS };
+  const RANDOM_STATS: Record<string, Record<string, { min: number; max: number }>> = Object.fromEntries(
+    defs.filter((e) => e.randomStats !== undefined).map((e) => [e.id, e.randomStats!])
+  );
+
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS, RANDOM_STATS };
 }
 
 /** Full entity definitions as loaded from config/entities.json. */
@@ -204,6 +210,16 @@ export function getResources(stats: EntityStats): Record<string, number> {
     if (k !== "health" && !k.startsWith("max") && typeof v === "number" && v > 0) result[k] = v;
   }
   return result;
+}
+
+/** Apply randomStats rules to a stats object, mutating it in place.
+ *  @param rng  A () => number function returning [0,1). Falls back to Math.random. */
+export function applyRandomStats(entityId: string, stats: Record<string, unknown>, rng: () => number = Math.random): void {
+  const rules = RANDOM_STATS[entityId];
+  if (!rules) return;
+  for (const [key, { min, max }] of Object.entries(rules)) {
+    (stats as Record<string, number>)[key] = min + Math.floor(rng() * (max - min + 1));
+  }
 }
 
 let _derived = buildDerivedExports(ENTITY_DEFS);
@@ -238,6 +254,9 @@ export let REPAIR_DEFS: Record<string, RepairDef> = _derived.REPAIR_DEFS;
 /** Growth stage definitions keyed by entity tile ID. */
 export let GROWTH_DEFS: Record<string, GrowthStagesDef> = _derived.GROWTH_DEFS;
 
+/** Per-entity stat randomization rules. Keys are entity IDs → stat name → { min, max }. */
+export let RANDOM_STATS: Record<string, Record<string, { min: number; max: number }>> = _derived.RANDOM_STATS;
+
 /** Set of entity tile IDs that are solid obstacles — never walkable, harvest requires adjacency. */
 export let BLOCKING_IDS: Set<string> = _derived.BLOCKING_IDS;
 
@@ -268,6 +287,7 @@ export function reloadEntities(): void {
   SEARCH_TARGET_MAP = _derived.SEARCH_TARGET_MAP;
   ITEM_IDS          = _derived.ITEM_IDS;
   GROWTH_DEFS       = _derived.GROWTH_DEFS;
+  RANDOM_STATS      = _derived.RANDOM_STATS;
 }
 
 export function CONFIG_PATH_ENTITIES() { return CONFIG_PATH; }
