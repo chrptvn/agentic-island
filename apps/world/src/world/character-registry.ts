@@ -43,6 +43,8 @@ export interface CharacterInstance {
   path:    { x: number; y: number }[];
   action:  string; // "idle" | "moving" | "searching"
   speech?: CharacterSpeech;
+  /** "x,y" key of the tent base position when the character is inside a tent. */
+  shelter?: string;
 }
 
 export function getDefaultCharacterStats(): CharacterStats {

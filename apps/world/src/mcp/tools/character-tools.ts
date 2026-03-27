@@ -287,6 +287,19 @@ export function registerGenericPersonaTools(server: McpServer): void {
   );
 
   server.tool(
+    "list_recipes",
+    "Returns every crafting recipe and every buildable structure with their material costs. Does not require a character — useful for planning what to gather.",
+    {},
+    async () => {
+      const buildable: Record<string, { costs: Record<string, number> }> = {};
+      for (const [id, def] of Object.entries(BUILD_DEFS)) {
+        buildable[id] = { costs: def.costs };
+      }
+      return { content: [{ type: "text", text: JSON.stringify({ crafting: RECIPES, building: buildable }, null, 2) }] };
+    }
+  );
+
+  server.tool(
     "list_craftable",
     "Returns all recipes split into craftable and not-craftable for a character, based on their current inventory. Craftable entries show available ingredients. Not-craftable entries show how many of each ingredient is still missing.",
     {
@@ -463,6 +476,43 @@ export function registerGenericPersonaTools(server: McpServer): void {
       try {
         const result = await apiPost("/api/plow", { id: character_id });
         return { content: [{ type: "text", text: JSON.stringify(humanizePlowResult(result as Record<string, unknown>), null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  // ── Tent tools ─────────────────────────────────────────────────────────────
+
+  server.tool(
+    "enter_tent",
+    "Enter an adjacent tent to rest. While inside, the character disappears from the map and regenerates energy rapidly. You must be next to the tent's door (bottom-left tile) in a cardinal direction.",
+    {
+      character_id:     z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+      target_direction: z.string().describe("Direction to the tent door: n/s/e/w."),
+    },
+    async ({ character_id, target_direction }) => {
+      try {
+        const pos = resolveTarget(character_id, target_direction);
+        if (!pos) throw new Error("Provide a direction.");
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "enter_tent", target_x: pos.x, target_y: pos.y } });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  server.tool(
+    "exit_tent",
+    "Exit the tent the character is currently resting in. The character will reappear on an adjacent walkable tile.",
+    {
+      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+    },
+    async ({ character_id }) => {
+      try {
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "exit_tent" } });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }

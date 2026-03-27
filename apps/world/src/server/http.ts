@@ -6,6 +6,8 @@ import { WebSocketServer, type WebSocket } from "ws";
 import { World } from "../world/world.js";
 import { TILES, TILE_SIZE, TILE_GAP, TILE_SHEET, SHEET_OVERRIDES } from "../world/tile-registry.js";
 import { allItemDefs } from "../world/item-registry.js";
+import { RECIPES } from "../world/craft-registry.js";
+import { BUILD_DEFS } from "../world/entity-registry.js";
 import { handleMcpRequest } from "../mcp/mcp-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -90,6 +92,15 @@ async function handleRequest(
     const sprites = await readdir(SPRITE_DIR)
       .then(files => files.filter(f => f.endsWith(".png")).map(f => ({ url: `/${f}`, group: "sprites" })));
     jsonOk(res, { sheets: sprites });
+    return;
+  }
+
+  if (url === "/api/recipes" && method === "GET") {
+    const buildable: Record<string, { costs: Record<string, number> }> = {};
+    for (const [id, def] of Object.entries(BUILD_DEFS)) {
+      buildable[id] = { costs: def.costs };
+    }
+    jsonOk(res, { crafting: RECIPES, building: buildable });
     return;
   }
 
@@ -192,8 +203,21 @@ async function handleRequest(
         return;
       }
 
+      if (body.command.type === "enter_tent") {
+        const { target_x, target_y } = body.command as unknown as { target_x: number; target_y: number };
+        const result = world.enterTent(body.id, target_x, target_y);
+        jsonOk(res, { message: `Entered tent at (${target_x},${target_y}).`, ...result });
+        return;
+      }
+
+      if (body.command.type === "exit_tent") {
+        const result = world.exitTent(body.id);
+        jsonOk(res, { message: `Exited tent. Now at (${result.x},${result.y}).`, ...result });
+        return;
+      }
+
       if (body.command.type !== "move_to") {
-        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, craft.`);
+        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, craft, enter_tent, exit_tent.`);
         return;
       }
 

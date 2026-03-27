@@ -3008,6 +3008,70 @@
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
       "description": "Green Wide Hat"
+    },
+    {
+      "id": "green_tent",
+      "col": 46,
+      "row": 11,
+      "layer": 3,
+      "category": "entity",
+      "description": "Green Tent Door (BL)"
+    },
+    {
+      "id": "green_tent_tl",
+      "col": 46,
+      "row": 10,
+      "layer": 3,
+      "category": "entity",
+      "description": "Green Tent Top Left"
+    },
+    {
+      "id": "green_tent_tr",
+      "col": 47,
+      "row": 10,
+      "layer": 3,
+      "category": "entity",
+      "description": "Green Tent Top Right"
+    },
+    {
+      "id": "green_tent_br",
+      "col": 47,
+      "row": 11,
+      "layer": 3,
+      "category": "entity",
+      "description": "Green Tent Bottom Right"
+    },
+    {
+      "id": "beige_tent",
+      "col": 48,
+      "row": 11,
+      "layer": 3,
+      "category": "entity",
+      "description": "Beige Tent Door (BL)"
+    },
+    {
+      "id": "beige_tent_tl",
+      "col": 48,
+      "row": 10,
+      "layer": 3,
+      "category": "entity",
+      "description": "Beige Tent Top Left"
+    },
+    {
+      "id": "beige_tent_tr",
+      "col": 49,
+      "row": 10,
+      "layer": 3,
+      "category": "entity",
+      "description": "Beige Tent Top Right"
+    },
+    {
+      "id": "beige_tent_br",
+      "col": 49,
+      "row": 11,
+      "layer": 3,
+      "category": "entity",
+      "description": "Beige Tent Bottom Right"
     }
   ]
 }

@@ -57,6 +57,9 @@ export function drawCharacter(
   tileSize: number,
   animFrame: number,
 ): void {
+  // Don't render characters sheltered inside tents
+  if (character.shelter) return;
+
   const { startCol, startRow, offsetX, offsetY } = viewport;
 
   const screenCol = character.x - startCol;

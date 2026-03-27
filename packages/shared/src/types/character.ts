@@ -26,4 +26,6 @@ export interface CharacterState {
   equipment: EquipmentSlots;
   goal: string;
   speech?: { text: string; expiresAt: number };
+  /** "x,y" key of the tent base position when the character is sheltered inside a tent. */
+  shelter?: string;
 }

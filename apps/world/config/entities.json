@@ -382,7 +382,10 @@
         "requiresDeep": false
       },
       "randomStats": {
-        "cotton_seed": { "min": 1, "max": 2 }
+        "cotton_seed": {
+          "min": 1,
+          "max": 2
+        }
       }
     },
     {
@@ -479,7 +482,10 @@
         "requiresDeep": false
       },
       "randomStats": {
-        "flower_blue_seed": { "min": 1, "max": 2 }
+        "flower_blue_seed": {
+          "min": 1,
+          "max": 2
+        }
       }
     },
     {
@@ -499,7 +505,10 @@
         "requiresDeep": false
       },
       "randomStats": {
-        "flower_red_seed": { "min": 1, "max": 2 }
+        "flower_red_seed": {
+          "min": 1,
+          "max": 2
+        }
       }
     },
     {
@@ -519,7 +528,10 @@
         "requiresDeep": false
       },
       "randomStats": {
-        "flower_purple_seed": { "min": 1, "max": 2 }
+        "flower_purple_seed": {
+          "min": 1,
+          "max": 2
+        }
       }
     },
     {
@@ -539,7 +551,10 @@
         "requiresDeep": false
       },
       "randomStats": {
-        "flower_white_seed": { "min": 1, "max": 2 }
+        "flower_white_seed": {
+          "min": 1,
+          "max": 2
+        }
       }
     },
     {
@@ -605,73 +620,137 @@
     {
       "id": "flower_blue_item",
       "tileType": "single",
-      "stats": { "flower_blue": 1 },
-      "harvest": { "fullBase": "flower_blue_item", "emptyBase": null },
+      "stats": {
+        "flower_blue": 1
+      },
+      "harvest": {
+        "fullBase": "flower_blue_item",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_red_item",
       "tileType": "single",
-      "stats": { "flower_red": 1 },
-      "harvest": { "fullBase": "flower_red_item", "emptyBase": null },
+      "stats": {
+        "flower_red": 1
+      },
+      "harvest": {
+        "fullBase": "flower_red_item",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_purple_item",
       "tileType": "single",
-      "stats": { "flower_purple": 1 },
-      "harvest": { "fullBase": "flower_purple_item", "emptyBase": null },
+      "stats": {
+        "flower_purple": 1
+      },
+      "harvest": {
+        "fullBase": "flower_purple_item",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_white_item",
       "tileType": "single",
-      "stats": { "flower_white": 1 },
-      "harvest": { "fullBase": "flower_white_item", "emptyBase": null },
+      "stats": {
+        "flower_white": 1
+      },
+      "harvest": {
+        "fullBase": "flower_white_item",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_blue_seed",
       "tileType": "single",
-      "stats": { "flower_blue_seed": 1 },
-      "harvest": { "fullBase": "flower_blue_seed", "emptyBase": null },
+      "stats": {
+        "flower_blue_seed": 1
+      },
+      "harvest": {
+        "fullBase": "flower_blue_seed",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_red_seed",
       "tileType": "single",
-      "stats": { "flower_red_seed": 1 },
-      "harvest": { "fullBase": "flower_red_seed", "emptyBase": null },
+      "stats": {
+        "flower_red_seed": 1
+      },
+      "harvest": {
+        "fullBase": "flower_red_seed",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_purple_seed",
       "tileType": "single",
-      "stats": { "flower_purple_seed": 1 },
-      "harvest": { "fullBase": "flower_purple_seed", "emptyBase": null },
+      "stats": {
+        "flower_purple_seed": 1
+      },
+      "harvest": {
+        "fullBase": "flower_purple_seed",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
       "id": "flower_white_seed",
       "tileType": "single",
-      "stats": { "flower_white_seed": 1 },
-      "harvest": { "fullBase": "flower_white_seed", "emptyBase": null },
+      "stats": {
+        "flower_white_seed": 1
+      },
+      "harvest": {
+        "fullBase": "flower_white_seed",
+        "emptyBase": null
+      },
       "searchTarget": null,
-      "spawn": { "weight": 0, "requiresDeep": false },
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      },
       "item": true
     },
     {
@@ -691,6 +770,52 @@
       },
       "harvest": null,
       "searchTarget": "log_pile",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      }
+    },
+    {
+      "id": "green_tent",
+      "tileType": "quad",
+      "topTileId": "green_tent_tl",
+      "rightTileId": "green_tent_br",
+      "topRightTileId": "green_tent_tr",
+      "stats": {
+        "health": 100,
+        "maxHealth": 100
+      },
+      "blocks": true,
+      "build": {
+        "costs": {
+          "green_fabric": 3,
+          "branches": 4
+        }
+      },
+      "searchTarget": "tents",
+      "spawn": {
+        "weight": 0,
+        "requiresDeep": false
+      }
+    },
+    {
+      "id": "beige_tent",
+      "tileType": "quad",
+      "topTileId": "beige_tent_tl",
+      "rightTileId": "beige_tent_br",
+      "topRightTileId": "beige_tent_tr",
+      "stats": {
+        "health": 100,
+        "maxHealth": 100
+      },
+      "blocks": true,
+      "build": {
+        "costs": {
+          "cream_fabric": 3,
+          "branches": 4
+        }
+      },
+      "searchTarget": "tents",
       "spawn": {
         "weight": 0,
         "requiresDeep": false

@@ -21,6 +21,14 @@ const ENTITY_LABELS: Record<string, string> = {
   flower_purple: 'Purple Flower 🟣',
   flower_white: 'White Flower ⚪',
   cotton_plant: 'Cotton',
+  green_tent: 'Green Tent ⛺',
+  green_tent_right: 'Green Tent ⛺',
+  green_tent_top: 'Green Tent ⛺',
+  green_tent_top_right: 'Green Tent ⛺',
+  beige_tent: 'Beige Tent ⛺',
+  beige_tent_right: 'Beige Tent ⛺',
+  beige_tent_top: 'Beige Tent ⛺',
+  beige_tent_top_right: 'Beige Tent ⛺',
 };
 
 export interface TooltipData {
@@ -163,6 +171,17 @@ function EntityBox({ entity }: { entity: EntityInstance }) {
               <span key={inv.item}>
                 {prettifyName(inv.item)} ×{inv.qty}
               </span>
+            ))}
+          </div>
+        </>
+      )}
+      {entity.occupants && entity.occupants.length > 0 && (
+        <>
+          <hr className="my-1 border-border-muted" />
+          <p className="text-text-muted">🛏️ Resting inside</p>
+          <div className="flex flex-col gap-y-0.5">
+            {entity.occupants.map((name) => (
+              <span key={name}>{name}</span>
             ))}
           </div>
         </>

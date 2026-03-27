@@ -9,8 +9,12 @@ const CONFIG_PATH = join(__dirname, "../..", "config", "entities.json");
 
 export interface EntityDef {
   id: string;
-  tileType: "single" | "two-tile";
+  tileType: "single" | "two-tile" | "quad";
   topTileId?: string;
+  /** For quad entities: the tile placed at (x+1, y) — bottom-right. */
+  rightTileId?: string;
+  /** For quad entities: the tile placed at (x+1, y-1) — top-right. */
+  topRightTileId?: string;
   stats: EntityStats;
   /** If true, this entity is an inventory item and cannot be placed directly on the map. */
   item?: boolean;

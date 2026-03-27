@@ -116,6 +116,9 @@ db.exec(`
   if (!cols.some((c) => c.name === "beard_tile_id")) {
     db.exec(`ALTER TABLE characters ADD COLUMN beard_tile_id TEXT`);
   }
+  if (!cols.some((c) => c.name === "shelter")) {
+    db.exec(`ALTER TABLE characters ADD COLUMN shelter TEXT`);
+  }
 }
 
 
@@ -240,10 +243,10 @@ export function clearEntityStats(): void {
 
 // ── Characters ────────────────────────────────────────────────────────────────
 
-export function loadCharacters(): { id: string; x: number; y: number; stats: object; path: object[]; action: string; tileId: string; hairTileId?: string; beardTileId?: string }[] {
+export function loadCharacters(): { id: string; x: number; y: number; stats: object; path: object[]; action: string; tileId: string; hairTileId?: string; beardTileId?: string; shelter?: string }[] {
   const rows = db
-    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id FROM characters")
-    .all() as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null }[];
+    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter FROM characters")
+    .all() as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null }[];
   return rows.map((r) => ({
     id: r.id,
     x: r.x,
@@ -254,13 +257,14 @@ export function loadCharacters(): { id: string; x: number; y: number; stats: obj
     tileId: r.tile_id ?? "human",
     ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
     ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
+    ...(r.shelter ? { shelter: r.shelter } : {}),
   }));
 }
 
-export function saveCharacter(id: string, x: number, y: number, stats: object, path: object[] = [], action = "idle", tileId = "human", hairTileId?: string, beardTileId?: string): void {
+export function saveCharacter(id: string, x: number, y: number, stats: object, path: object[] = [], action = "idle", tileId = "human", hairTileId?: string, beardTileId?: string, shelter?: string): void {
   db.prepare(
-    "INSERT INTO characters (id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET x=excluded.x, y=excluded.y, stats=excluded.stats, path=excluded.path, action=excluded.action, tile_id=excluded.tile_id, hair_tile_id=excluded.hair_tile_id, beard_tile_id=excluded.beard_tile_id"
-  ).run(id, x, y, JSON.stringify(stats), JSON.stringify(path), action, tileId, hairTileId ?? null, beardTileId ?? null);
+    "INSERT INTO characters (id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET x=excluded.x, y=excluded.y, stats=excluded.stats, path=excluded.path, action=excluded.action, tile_id=excluded.tile_id, hair_tile_id=excluded.hair_tile_id, beard_tile_id=excluded.beard_tile_id, shelter=excluded.shelter"
+  ).run(id, x, y, JSON.stringify(stats), JSON.stringify(path), action, tileId, hairTileId ?? null, beardTileId ?? null, shelter ?? null);
 }
 
 export function deleteCharacter(id: string): void {

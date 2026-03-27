@@ -64,6 +64,7 @@ export class World extends EventEmitter {
         stats: loadedStats,
         path: c.path as Point[],
         action: c.action,
+        ...(c.shelter ? { shelter: c.shelter } : {}),
       });
     }
 
@@ -145,8 +146,19 @@ export class World extends EventEmitter {
     return registry;
   }
 
-  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[] }> {
-    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[] }> = [];
+  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[]; occupants?: string[] }> {
+    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[]; occupants?: string[] }> = [];
+
+    // Build a map of tent base positions → occupant character IDs
+    const tentOccupants = new Map<string, string[]>();
+    for (const [, c] of this.characters) {
+      if (c.shelter) {
+        const list = tentOccupants.get(c.shelter) ?? [];
+        list.push(c.id);
+        tentOccupants.set(c.shelter, list);
+      }
+    }
+
     for (const [key, stats] of this.entityStats) {
       const [x, y] = key.split(",").map(Number);
       const layers = this.overrides.get(key);
@@ -154,7 +166,23 @@ export class World extends EventEmitter {
       const tileId = layers?.[3];
       if (tileId && tileId !== "") {
         const inv = (stats as unknown as { inventory?: { item: string; qty: number }[] }).inventory;
-        result.push({ x, y, tileId, stats, ...(inv ? { inventory: inv } : {}) });
+        const occupants = tentOccupants.get(key);
+        result.push({ x, y, tileId, stats, ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}) });
+
+        // For quad entities, also emit EntityInstance entries for the 3 extra tiles
+        const def = ENTITY_DEF_BY_ID.get(tileId);
+        if (def?.tileType === "quad") {
+          const extras: Array<{ dx: number; dy: number; tid: string | undefined }> = [
+            { dx: 0, dy: -1, tid: def.topTileId },
+            { dx: 1, dy: 0, tid: def.rightTileId },
+            { dx: 1, dy: -1, tid: def.topRightTileId },
+          ];
+          for (const { dx, dy, tid } of extras) {
+            if (tid) {
+              result.push({ x: x + dx, y: y + dy, tileId: tid, stats, ...(occupants ? { occupants } : {}) });
+            }
+          }
+        }
       }
     }
     return result;
@@ -184,6 +212,7 @@ export class World extends EventEmitter {
         equipment: c.stats.equipment ?? {},
         goal: c.stats.goal ?? "",
         ...(speech ? { speech } : {}),
+        ...(c.shelter ? { shelter: c.shelter } : {}),
       });
     }
     return result;
@@ -757,7 +786,7 @@ export class World extends EventEmitter {
       saveEntityStat(entityX, entityY, raw);
     }
 
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.emit("map:updated", this.map);
     return { harvested, entity: { tileId, destroyed } };
   }
@@ -794,7 +823,7 @@ export class World extends EventEmitter {
         // Only removed when all resources are drained (handled in _harvestByDrain).
         this.entityStats.set(key, updatedStats);
         saveEntityStat(entityX, entityY, updatedStats);
-        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
         this.emit("map:updated", this.map);
         return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: false } };
       }
@@ -849,7 +878,7 @@ export class World extends EventEmitter {
         saveEntityStat(entityX, entityY, spawnStats);
       }
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: true } };
     } else {
@@ -857,7 +886,7 @@ export class World extends EventEmitter {
       this.entityStats.set(key, updatedStats);
       saveEntityStat(entityX, entityY, updatedStats);
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: newHealth, maxHealth, destroyed: false } };
     }
@@ -914,7 +943,7 @@ export class World extends EventEmitter {
       (newStats as unknown as Record<string, number>)[res] =
         Math.max(0, ((newStats as unknown as Record<string, number>)[res] ?? 0) - amt);
     }
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
 
     // Only trigger visual swap / disappear if ALL resources are now depleted
     const remaining = getResources(newStats);
@@ -1017,6 +1046,30 @@ export class World extends EventEmitter {
       throw new Error(`Cannot build at (${targetX}, ${targetY}): cell is occupied by "${existing}".`);
     }
 
+    // For quad entities, also check the 3 extra positions
+    const entityDef = ENTITY_DEF_BY_ID.get(entityId);
+    const quadPositions: Array<{ x: number; y: number; tileId: string }> = [];
+    if (entityDef?.tileType === "quad") {
+      const extras = [
+        { dx: 0, dy: -1, tid: entityDef.topTileId },
+        { dx: 1, dy: 0, tid: entityDef.rightTileId },
+        { dx: 1, dy: -1, tid: entityDef.topRightTileId },
+      ];
+      for (const { dx, dy, tid } of extras) {
+        if (!tid) continue;
+        const ex = targetX + dx, ey = targetY + dy;
+        if (ex < 0 || ex >= this.map.width || ey < 0 || ey >= this.map.height) {
+          throw new Error(`Quad entity extends outside map bounds at (${ex}, ${ey}).`);
+        }
+        const eKey = `${ex},${ey}`;
+        const eTile = this.overrides.get(eKey)?.[3] ?? "";
+        if (eTile) {
+          throw new Error(`Cannot build quad entity: cell (${ex}, ${ey}) is occupied by "${eTile}".`);
+        }
+        quadPositions.push({ x: ex, y: ey, tileId: tid });
+      }
+    }
+
     const inv = character.stats.inventory as { item: string; qty: number }[];
     for (const [item, required] of Object.entries(def.costs)) {
       const available = inv.find(i => i.item === item)?.qty ?? 0;
@@ -1027,15 +1080,23 @@ export class World extends EventEmitter {
 
     this._consumeItems(inv, def.costs);
 
-    // Place tile and initialise entity stats
+    // Place base tile and initialise entity stats
     const layers = this.overrides.get(targetKey) ?? [];
     while (layers.length <= 3) layers.push("");
     layers[3] = entityId;
     this.overrides.set(targetKey, layers);
 
+    // Place extra tiles for quad entities
+    for (const qp of quadPositions) {
+      const qKey = `${qp.x},${qp.y}`;
+      const qLayers = this.overrides.get(qKey) ?? [];
+      while (qLayers.length <= 3) qLayers.push("");
+      qLayers[3] = qp.tileId;
+      this.overrides.set(qKey, qLayers);
+    }
+
     const initStats: Record<string, unknown> = { ...(ENTITY_DEFAULTS[entityId] ?? {}) };
     // Pre-fill container inventory with the consumed build costs
-    const entityDef = ENTITY_DEF_BY_ID.get(entityId);
     if (entityDef?.container) {
       initStats.inventory = Object.entries(def.costs).map(([item, qty]) => ({ item, qty }));
     }
@@ -1055,14 +1116,105 @@ export class World extends EventEmitter {
     // Flush tile override + entity stats + character in one atomic transaction
     runTransaction(() => {
       saveOverride(targetX, targetY, 3, entityId);
+      for (const qp of quadPositions) {
+        saveOverride(qp.x, qp.y, 3, qp.tileId);
+      }
       if (Object.keys(initStats).length > 0) {
         saveEntityStat(targetX, targetY, initStats as EntityStats);
       }
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     });
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
     return { built: entityId, consumed: def.costs };
+  }
+
+  // ── Tent enter/exit ────────────────────────────────────────────────────────
+
+  /** Set of entity IDs that are tent base tiles (door tiles a character can enter). */
+  private static readonly TENT_IDS = new Set(
+    Array.from(ENTITY_DEF_BY_ID.values())
+      .filter(d => d.tileType === "quad")
+      .map(d => d.id),
+  );
+
+  /**
+   * Enter a tent at (targetX, targetY). Character must be adjacent to the tent's door (base) tile.
+   * The character disappears from the map and begins resting inside.
+   */
+  enterTent(id: string, targetX: number, targetY: number): { entered: string } {
+    const character = this.characters.get(id);
+    if (!character) throw new Error(`No character named "${id}".`);
+    if (character.shelter) throw new Error(`${id} is already inside a tent.`);
+
+    this._assertAdjacent(character.x, character.y, targetX, targetY);
+
+    const targetKey = `${targetX},${targetY}`;
+    const tileId = this.overrides.get(targetKey)?.[3] ?? "";
+    if (!World.TENT_IDS.has(tileId)) {
+      throw new Error(`No tent at (${targetX}, ${targetY}). Found: "${tileId || "empty"}".`);
+    }
+
+    character.shelter = targetKey;
+    character.path = [];
+    character.action = "resting";
+
+    runTransaction(() => {
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
+    });
+    this.emit("map:updated", this.map);
+    return { entered: tileId };
+  }
+
+  /**
+   * Exit the tent the character is currently inside. Places the character on an
+   * adjacent walkable tile next to the tent door.
+   */
+  exitTent(id: string): { x: number; y: number } {
+    const character = this.characters.get(id);
+    if (!character) throw new Error(`No character named "${id}".`);
+    if (!character.shelter) throw new Error(`${id} is not inside a tent.`);
+
+    const [baseX, baseY] = character.shelter.split(",").map(Number);
+
+    // Find a walkable adjacent tile to place the character (prefer south, then others)
+    const exits: Array<[number, number]> = [
+      [baseX, baseY + 1],   // south (in front of door)
+      [baseX - 1, baseY],   // west
+      [baseX - 1, baseY + 1], // southwest
+      [baseX + 1, baseY + 1], // southeast
+      [baseX, baseY - 1],   // north (unlikely — above tent)
+    ];
+
+    let exitPos: { x: number; y: number } | null = null;
+    for (const [ex, ey] of exits) {
+      if (ex < 0 || ex >= this.map.width || ey < 0 || ey >= this.map.height) continue;
+      const eKey = `${ex},${ey}`;
+      const eLayers = this.overrides.get(eKey);
+      const l1 = eLayers?.[1] ?? "";
+      const l3 = eLayers?.[3] ?? "";
+      if (isWalkableGround(l1) && !l3) {
+        exitPos = { x: ex, y: ey };
+        break;
+      }
+    }
+
+    if (!exitPos) {
+      // Fallback: place at the base position itself (on the tent)
+      exitPos = { x: baseX, y: baseY };
+    }
+
+    character.x = exitPos.x;
+    character.y = exitPos.y;
+    character.shelter = undefined;
+    character.path = [];
+    character.action = "idle";
+
+    runTransaction(() => {
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
+    });
+    this.emit("map:updated", this.map);
+    return exitPos;
   }
 
   /**
@@ -1131,7 +1283,7 @@ export class World extends EventEmitter {
       saveEntityStat(targetX, targetY, initStats as EntityStats);
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
     return { result: def.result, consumed: def.costs };
@@ -1177,7 +1329,7 @@ export class World extends EventEmitter {
     if (slot!.qty <= 0) inv.splice(inv.indexOf(slot!), 1);
 
     saveEntityStat(x, y, stats);
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.emit("map:updated", this.map);
 
     return { fed: amount, health: stats.health, maxHealth: stats.maxHealth };
@@ -1219,7 +1371,7 @@ export class World extends EventEmitter {
       else inv.push({ item: outputItem, qty });
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     return { crafted: recipe.output };
   }
 
@@ -1243,7 +1395,7 @@ export class World extends EventEmitter {
     slot.qty -= 1;
     if (slot.qty <= 0) inv.splice(inv.indexOf(slot), 1);
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     return { eaten: item, hungerRestored: restored, stats: { hunger: character.stats.hunger, maxHunger: character.stats.maxHunger } };
   }
 
@@ -1319,7 +1471,7 @@ export class World extends EventEmitter {
     if (contSlot) contSlot.qty += amount;
     else stats.inventory.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     saveEntityStat(x, y, stats);
     this.emit("map:updated", this.map);
     return { transferred: amount, contents: stats.inventory };
@@ -1346,7 +1498,7 @@ export class World extends EventEmitter {
     if (charSlot) charSlot.qty += amount;
     else charInv.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
 
     // Auto-remove container tile when all items have been taken
     if (stats.inventory.length === 0) {
@@ -1450,7 +1602,7 @@ export class World extends EventEmitter {
     // Place in slot
     eq[slot] = { item, qty: 1 };
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.emit("map:updated", this.map);
     return { equipped: { item, qty: 1 }, swapped };
   }
@@ -1474,7 +1626,7 @@ export class World extends EventEmitter {
 
     eq[slot] = null;
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.emit("map:updated", this.map);
     return slotItem;
   }
@@ -1580,7 +1732,7 @@ export class World extends EventEmitter {
       // path.length === 0 means already at the destination — success, no movement needed
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     this.emit("map:updated", this.map);
     return { character, entityPos };
   }
@@ -1664,7 +1816,7 @@ export class World extends EventEmitter {
     runTransaction(() => {
       saveOverride(character.x, character.y, 3, sproutId);
       saveEntityStat(character.x, character.y, sproutStats);
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
     });
     this.overridesVersion = loadOverridesVersion();
 
@@ -1848,6 +2000,33 @@ export class World extends EventEmitter {
         changed = true;
       }
 
+      // ── Sheltered in tent: boosted regen, skip fire/movement ─────────────
+      if (character.shelter) {
+        // Health drain from starvation still applies
+        if (s.hunger === 0 && s.health > 0) {
+          s.health = Math.max(0, s.health - healthDrain);
+          changed = true;
+        }
+        if (s.health <= 0) {
+          deadCharacters.push(character);
+          anyChanged = true;
+          continue;
+        }
+        // Boosted energy regen (same rate as campfire aura)
+        const tentRegenRate = 5 * TICK_S;
+        if (s.energy < s.maxEnergy) {
+          s.energy = Math.min(s.maxEnergy, s.energy + tentRegenRate);
+          changed = true;
+        }
+        // Health regen when fed
+        if (s.hunger > 0 && s.health < s.maxHealth) {
+          s.health = Math.min(s.maxHealth, s.health + cfg.healthRegenPassive * TICK_S);
+          changed = true;
+        }
+        if (changed) changedCharacters.push(character);
+        continue; // skip fire damage, movement, etc.
+      }
+
       // ── Fire damage when standing on a hazardous tile ────────────────────────
       if (s.health > 0) {
         const standKey = `${character.x},${character.y}`;
@@ -2014,7 +2193,7 @@ export class World extends EventEmitter {
         statWrites.length > 0 || statDeletes.length > 0 || decayedEntities.length > 0) {
       runTransaction(() => {
         for (const c of changedCharacters) {
-          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action, c.tileId, c.hairTileId, c.beardTileId);
+          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action, c.tileId, c.hairTileId, c.beardTileId, c.shelter);
         }
         for (const deadChar of deadCharacters) deleteCharacter(deadChar.id);
         for (const { x, y, layer, tileId } of overrideWrites) saveOverride(x, y, layer, tileId);
