@@ -103,5 +103,549 @@
   "flower_white_seed": {
     "equippable": false,
     "wearable": null
+  },
+  "leather": {
+    "equippable": false,
+    "wearable": null
+  },
+  "fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "red_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "teal_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "purple_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "green_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "cream_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "dark_fabric": {
+    "equippable": false,
+    "wearable": null
+  },
+  "red_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "leather_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "leather_doublet_trimmed": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "beige_robe": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "red_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "teal_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "purple_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "leather_doublet_plain_alt": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "leather_doublet_trimmed_alt": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "beige_robe_alt": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "green_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "tan_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_shirt_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_shirt_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_shirt_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_shirt_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_vest_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_vest_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_vest_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_vest_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_tunic_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_tunic_full": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_tunic_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_tunic_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_doublet_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_doublet_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_robe_crop": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_robe_plain": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "dark_robe_fancy": {
+    "equippable": false,
+    "wearable": "body"
+  },
+  "gray_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "leather_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "white_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "cream_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "red_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "teal_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "purple_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "green_pants": {
+    "equippable": false,
+    "wearable": "legs"
+  },
+  "gray_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "leather_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "white_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "cream_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "red_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "teal_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "purple_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "green_shoes": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "teal_boots": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "leather_boots": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "brown_boots": {
+    "equippable": false,
+    "wearable": "feet"
+  },
+  "purple_boots": {
+    "equippable": false,
+    "wearable": "feet"
   }
 }

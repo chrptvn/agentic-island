@@ -1532,6 +1532,1158 @@
       "category": "character",
       "sheet": "roguelikeChar_transparent.png",
       "description": "Beard style 4 (white)"
+    },
+    {
+      "id": "red_shirt_crop",
+      "col": 6,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red shirt (crop)"
+    },
+    {
+      "id": "red_shirt_full",
+      "col": 7,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red shirt (full)"
+    },
+    {
+      "id": "red_shirt_plain",
+      "col": 8,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red shirt (plain)"
+    },
+    {
+      "id": "red_shirt_fancy",
+      "col": 9,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red shirt (fancy)"
+    },
+    {
+      "id": "red_vest_crop",
+      "col": 6,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red vest (crop)"
+    },
+    {
+      "id": "red_vest_full",
+      "col": 7,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red vest (full)"
+    },
+    {
+      "id": "red_vest_plain",
+      "col": 8,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red vest (plain)"
+    },
+    {
+      "id": "red_vest_fancy",
+      "col": 9,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red vest (fancy)"
+    },
+    {
+      "id": "red_tunic_crop",
+      "col": 6,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red tunic (crop)"
+    },
+    {
+      "id": "red_tunic_full",
+      "col": 7,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red tunic (full)"
+    },
+    {
+      "id": "red_tunic_plain",
+      "col": 8,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red tunic (plain)"
+    },
+    {
+      "id": "red_tunic_fancy",
+      "col": 9,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red tunic (fancy)"
+    },
+    {
+      "id": "leather_doublet_plain",
+      "col": 6,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A sturdy leather doublet \u2014 plain style"
+    },
+    {
+      "id": "leather_doublet_trimmed",
+      "col": 7,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A sturdy leather doublet \u2014 trimmed style"
+    },
+    {
+      "id": "red_doublet_plain",
+      "col": 8,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red doublet (plain) with colored leather"
+    },
+    {
+      "id": "red_doublet_fancy",
+      "col": 9,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red doublet (fancy) with colored leather"
+    },
+    {
+      "id": "red_robe_crop",
+      "col": 6,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red robe (crop)"
+    },
+    {
+      "id": "beige_robe",
+      "col": 7,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A long beige robe"
+    },
+    {
+      "id": "red_robe_plain",
+      "col": 8,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red robe (plain)"
+    },
+    {
+      "id": "red_robe_fancy",
+      "col": 9,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A red robe (fancy)"
+    },
+    {
+      "id": "teal_shirt_crop",
+      "col": 10,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal shirt (crop)"
+    },
+    {
+      "id": "teal_shirt_full",
+      "col": 11,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal shirt (full)"
+    },
+    {
+      "id": "teal_shirt_plain",
+      "col": 12,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal shirt (plain)"
+    },
+    {
+      "id": "teal_shirt_fancy",
+      "col": 13,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal shirt (fancy)"
+    },
+    {
+      "id": "teal_vest_crop",
+      "col": 10,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal vest (crop)"
+    },
+    {
+      "id": "teal_vest_full",
+      "col": 11,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal vest (full)"
+    },
+    {
+      "id": "teal_vest_plain",
+      "col": 12,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal vest (plain)"
+    },
+    {
+      "id": "teal_vest_fancy",
+      "col": 13,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal vest (fancy)"
+    },
+    {
+      "id": "teal_tunic_crop",
+      "col": 10,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal tunic (crop)"
+    },
+    {
+      "id": "teal_tunic_full",
+      "col": 11,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal tunic (full)"
+    },
+    {
+      "id": "teal_tunic_plain",
+      "col": 12,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal tunic (plain)"
+    },
+    {
+      "id": "teal_tunic_fancy",
+      "col": 13,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal tunic (fancy)"
+    },
+    {
+      "id": "teal_doublet_plain",
+      "col": 12,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal doublet (plain) with colored leather"
+    },
+    {
+      "id": "teal_doublet_fancy",
+      "col": 13,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal doublet (fancy) with colored leather"
+    },
+    {
+      "id": "teal_robe_crop",
+      "col": 10,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal robe (crop)"
+    },
+    {
+      "id": "teal_robe_plain",
+      "col": 12,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal robe (plain)"
+    },
+    {
+      "id": "teal_robe_fancy",
+      "col": 13,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A teal robe (fancy)"
+    },
+    {
+      "id": "purple_shirt_crop",
+      "col": 14,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple shirt (crop)"
+    },
+    {
+      "id": "purple_shirt_full",
+      "col": 15,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple shirt (full)"
+    },
+    {
+      "id": "purple_shirt_plain",
+      "col": 16,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple shirt (plain)"
+    },
+    {
+      "id": "purple_shirt_fancy",
+      "col": 17,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple shirt (fancy)"
+    },
+    {
+      "id": "purple_vest_crop",
+      "col": 14,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple vest (crop)"
+    },
+    {
+      "id": "purple_vest_full",
+      "col": 15,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple vest (full)"
+    },
+    {
+      "id": "purple_vest_plain",
+      "col": 16,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple vest (plain)"
+    },
+    {
+      "id": "purple_vest_fancy",
+      "col": 17,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple vest (fancy)"
+    },
+    {
+      "id": "purple_tunic_crop",
+      "col": 14,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple tunic (crop)"
+    },
+    {
+      "id": "purple_tunic_full",
+      "col": 15,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple tunic (full)"
+    },
+    {
+      "id": "purple_tunic_plain",
+      "col": 16,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple tunic (plain)"
+    },
+    {
+      "id": "purple_tunic_fancy",
+      "col": 17,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple tunic (fancy)"
+    },
+    {
+      "id": "purple_doublet_plain",
+      "col": 16,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple doublet (plain) with colored leather"
+    },
+    {
+      "id": "purple_doublet_fancy",
+      "col": 17,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple doublet (fancy) with colored leather"
+    },
+    {
+      "id": "purple_robe_crop",
+      "col": 14,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple robe (crop)"
+    },
+    {
+      "id": "purple_robe_plain",
+      "col": 16,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple robe (plain)"
+    },
+    {
+      "id": "purple_robe_fancy",
+      "col": 17,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A purple robe (fancy)"
+    },
+    {
+      "id": "green_shirt_crop",
+      "col": 6,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green shirt (crop)"
+    },
+    {
+      "id": "green_shirt_full",
+      "col": 7,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green shirt (full)"
+    },
+    {
+      "id": "green_shirt_plain",
+      "col": 8,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green shirt (plain)"
+    },
+    {
+      "id": "green_shirt_fancy",
+      "col": 9,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green shirt (fancy)"
+    },
+    {
+      "id": "green_vest_crop",
+      "col": 6,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green vest (crop)"
+    },
+    {
+      "id": "green_vest_full",
+      "col": 7,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green vest (full)"
+    },
+    {
+      "id": "green_vest_plain",
+      "col": 8,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green vest (plain)"
+    },
+    {
+      "id": "green_vest_fancy",
+      "col": 9,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green vest (fancy)"
+    },
+    {
+      "id": "green_tunic_crop",
+      "col": 6,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green tunic (crop)"
+    },
+    {
+      "id": "green_tunic_full",
+      "col": 7,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green tunic (full)"
+    },
+    {
+      "id": "green_tunic_plain",
+      "col": 8,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green tunic (plain)"
+    },
+    {
+      "id": "green_tunic_fancy",
+      "col": 9,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green tunic (fancy)"
+    },
+    {
+      "id": "leather_doublet_plain_alt",
+      "col": 6,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A sturdy leather doublet \u2014 plain style"
+    },
+    {
+      "id": "leather_doublet_trimmed_alt",
+      "col": 7,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A sturdy leather doublet \u2014 trimmed style"
+    },
+    {
+      "id": "green_doublet_plain",
+      "col": 8,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green doublet (plain) with colored leather"
+    },
+    {
+      "id": "green_doublet_fancy",
+      "col": 9,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green doublet (fancy) with colored leather"
+    },
+    {
+      "id": "green_robe_crop",
+      "col": 6,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green robe (crop)"
+    },
+    {
+      "id": "beige_robe_alt",
+      "col": 7,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A long beige robe"
+    },
+    {
+      "id": "green_robe_plain",
+      "col": 8,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green robe (plain)"
+    },
+    {
+      "id": "green_robe_fancy",
+      "col": 9,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A green robe (fancy)"
+    },
+    {
+      "id": "tan_shirt_crop",
+      "col": 10,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan shirt (crop)"
+    },
+    {
+      "id": "tan_shirt_full",
+      "col": 11,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan shirt (full)"
+    },
+    {
+      "id": "tan_shirt_plain",
+      "col": 12,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan shirt (plain)"
+    },
+    {
+      "id": "tan_shirt_fancy",
+      "col": 13,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan shirt (fancy)"
+    },
+    {
+      "id": "tan_vest_crop",
+      "col": 10,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan vest (crop)"
+    },
+    {
+      "id": "tan_vest_full",
+      "col": 11,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan vest (full)"
+    },
+    {
+      "id": "tan_vest_plain",
+      "col": 12,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan vest (plain)"
+    },
+    {
+      "id": "tan_vest_fancy",
+      "col": 13,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan vest (fancy)"
+    },
+    {
+      "id": "tan_tunic_crop",
+      "col": 10,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan tunic (crop)"
+    },
+    {
+      "id": "tan_tunic_full",
+      "col": 11,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan tunic (full)"
+    },
+    {
+      "id": "tan_tunic_plain",
+      "col": 12,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan tunic (plain)"
+    },
+    {
+      "id": "tan_tunic_fancy",
+      "col": 13,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan tunic (fancy)"
+    },
+    {
+      "id": "tan_doublet_plain",
+      "col": 12,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan doublet (plain) with colored leather"
+    },
+    {
+      "id": "tan_doublet_fancy",
+      "col": 13,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan doublet (fancy) with colored leather"
+    },
+    {
+      "id": "tan_robe_crop",
+      "col": 10,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan robe (crop)"
+    },
+    {
+      "id": "tan_robe_plain",
+      "col": 12,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan robe (plain)"
+    },
+    {
+      "id": "tan_robe_fancy",
+      "col": 13,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A tan robe (fancy)"
+    },
+    {
+      "id": "dark_shirt_crop",
+      "col": 14,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark shirt (crop)"
+    },
+    {
+      "id": "dark_shirt_full",
+      "col": 15,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark shirt (full)"
+    },
+    {
+      "id": "dark_shirt_plain",
+      "col": 16,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark shirt (plain)"
+    },
+    {
+      "id": "dark_shirt_fancy",
+      "col": 17,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark shirt (fancy)"
+    },
+    {
+      "id": "dark_vest_crop",
+      "col": 14,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark vest (crop)"
+    },
+    {
+      "id": "dark_vest_full",
+      "col": 15,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark vest (full)"
+    },
+    {
+      "id": "dark_vest_plain",
+      "col": 16,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark vest (plain)"
+    },
+    {
+      "id": "dark_vest_fancy",
+      "col": 17,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark vest (fancy)"
+    },
+    {
+      "id": "dark_tunic_crop",
+      "col": 14,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark tunic (crop)"
+    },
+    {
+      "id": "dark_tunic_full",
+      "col": 15,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark tunic (full)"
+    },
+    {
+      "id": "dark_tunic_plain",
+      "col": 16,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark tunic (plain)"
+    },
+    {
+      "id": "dark_tunic_fancy",
+      "col": 17,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark tunic (fancy)"
+    },
+    {
+      "id": "dark_doublet_plain",
+      "col": 16,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark doublet (plain) with colored leather"
+    },
+    {
+      "id": "dark_doublet_fancy",
+      "col": 17,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark doublet (fancy) with colored leather"
+    },
+    {
+      "id": "dark_robe_crop",
+      "col": 14,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark robe (crop)"
+    },
+    {
+      "id": "dark_robe_plain",
+      "col": 16,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark robe (plain)"
+    },
+    {
+      "id": "dark_robe_fancy",
+      "col": 17,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A dark robe (fancy)"
+    },
+    {
+      "id": "gray_pants",
+      "col": 3,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of gray pants"
+    },
+    {
+      "id": "leather_pants",
+      "col": 3,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of leather pants"
+    },
+    {
+      "id": "white_pants",
+      "col": 3,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of white pants"
+    },
+    {
+      "id": "cream_pants",
+      "col": 3,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of cream pants"
+    },
+    {
+      "id": "red_pants",
+      "col": 3,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of red pants"
+    },
+    {
+      "id": "teal_pants",
+      "col": 3,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of teal pants"
+    },
+    {
+      "id": "purple_pants",
+      "col": 3,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of purple pants"
+    },
+    {
+      "id": "green_pants",
+      "col": 3,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of green pants"
+    },
+    {
+      "id": "gray_shoes",
+      "col": 4,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of gray shoes"
+    },
+    {
+      "id": "leather_shoes",
+      "col": 4,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of leather shoes"
+    },
+    {
+      "id": "white_shoes",
+      "col": 4,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of white shoes"
+    },
+    {
+      "id": "cream_shoes",
+      "col": 4,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of cream shoes"
+    },
+    {
+      "id": "red_shoes",
+      "col": 4,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of red shoes"
+    },
+    {
+      "id": "teal_shoes",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of teal shoes"
+    },
+    {
+      "id": "purple_shoes",
+      "col": 4,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of purple shoes"
+    },
+    {
+      "id": "green_shoes",
+      "col": 4,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of green shoes"
+    },
+    {
+      "id": "teal_boots",
+      "col": 3,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of teal boots"
+    },
+    {
+      "id": "leather_boots",
+      "col": 4,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of leather boots"
+    },
+    {
+      "id": "brown_boots",
+      "col": 3,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of brown boots"
+    },
+    {
+      "id": "purple_boots",
+      "col": 4,
+      "row": 9,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "A pair of purple boots"
     }
   ]
 }

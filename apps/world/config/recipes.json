@@ -8,7 +8,7 @@
       "output": {
         "stone_axe": 1
       },
-      "description": "A crude stone axe — useful for chopping trees"
+      "description": "A crude stone axe \u2014 useful for chopping trees"
     },
     "stone_knife": {
       "ingredients": {
@@ -17,7 +17,7 @@
       "output": {
         "stone_knife": 1
       },
-      "description": "A crude stone knife — useful for cutting"
+      "description": "A crude stone knife \u2014 useful for cutting"
     },
     "stone_pickaxe": {
       "ingredients": {
@@ -27,7 +27,7 @@
       "output": {
         "stone_pickaxe": 1
       },
-      "description": "A crude stone pickaxe — useful for mining rocks"
+      "description": "A crude stone pickaxe \u2014 useful for mining rocks"
     },
     "plow": {
       "ingredients": {
@@ -37,7 +37,1241 @@
       "output": {
         "plow": 1
       },
-      "description": "A simple wooden plow — till soil into dirt paths faster"
+      "description": "A simple wooden plow \u2014 till soil into dirt paths faster"
+    },
+    "fabric": {
+      "ingredients": {
+        "cotton": 3
+      },
+      "output": {
+        "fabric": 1
+      },
+      "description": "Weave cotton into plain fabric"
+    },
+    "red_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "flower_red": 2
+      },
+      "output": {
+        "red_fabric": 1
+      },
+      "description": "Dye fabric red with red flowers"
+    },
+    "teal_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "flower_blue": 2
+      },
+      "output": {
+        "teal_fabric": 1
+      },
+      "description": "Dye fabric teal with blue flowers"
+    },
+    "purple_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "flower_purple": 2
+      },
+      "output": {
+        "purple_fabric": 1
+      },
+      "description": "Dye fabric purple with purple flowers"
+    },
+    "green_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "flower_blue": 1,
+        "flower_white": 1
+      },
+      "output": {
+        "green_fabric": 1
+      },
+      "description": "Dye fabric green by mixing blue and white flowers"
+    },
+    "cream_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "flower_white": 1
+      },
+      "output": {
+        "cream_fabric": 1
+      },
+      "description": "Dye fabric cream with white flowers"
+    },
+    "dark_fabric": {
+      "ingredients": {
+        "fabric": 1,
+        "rocks": 2
+      },
+      "output": {
+        "dark_fabric": 1
+      },
+      "description": "Dye fabric dark gray with crushed rocks"
+    },
+    "red_shirt_crop": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_shirt_crop": 1
+      },
+      "description": "A red shirt (crop)"
+    },
+    "red_shirt_full": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_shirt_full": 1
+      },
+      "description": "A red shirt (full)"
+    },
+    "red_shirt_plain": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_shirt_plain": 1
+      },
+      "description": "A red shirt (plain)"
+    },
+    "red_shirt_fancy": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_shirt_fancy": 1
+      },
+      "description": "A red shirt (fancy)"
+    },
+    "red_vest_crop": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_vest_crop": 1
+      },
+      "description": "A red vest (crop)"
+    },
+    "red_vest_full": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_vest_full": 1
+      },
+      "description": "A red vest (full)"
+    },
+    "red_vest_plain": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_vest_plain": 1
+      },
+      "description": "A red vest (plain)"
+    },
+    "red_vest_fancy": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_vest_fancy": 1
+      },
+      "description": "A red vest (fancy)"
+    },
+    "red_tunic_crop": {
+      "ingredients": {
+        "red_fabric": 3
+      },
+      "output": {
+        "red_tunic_crop": 1
+      },
+      "description": "A red tunic (crop)"
+    },
+    "red_tunic_full": {
+      "ingredients": {
+        "red_fabric": 3
+      },
+      "output": {
+        "red_tunic_full": 1
+      },
+      "description": "A red tunic (full)"
+    },
+    "red_tunic_plain": {
+      "ingredients": {
+        "red_fabric": 3
+      },
+      "output": {
+        "red_tunic_plain": 1
+      },
+      "description": "A red tunic (plain)"
+    },
+    "red_tunic_fancy": {
+      "ingredients": {
+        "red_fabric": 3
+      },
+      "output": {
+        "red_tunic_fancy": 1
+      },
+      "description": "A red tunic (fancy)"
+    },
+    "leather_doublet_plain": {
+      "ingredients": {
+        "leather": 3
+      },
+      "output": {
+        "leather_doublet_plain": 1
+      },
+      "description": "A sturdy leather doublet \u2014 plain style"
+    },
+    "leather_doublet_trimmed": {
+      "ingredients": {
+        "leather": 3
+      },
+      "output": {
+        "leather_doublet_trimmed": 1
+      },
+      "description": "A sturdy leather doublet \u2014 trimmed style"
+    },
+    "red_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "red_fabric": 1
+      },
+      "output": {
+        "red_doublet_plain": 1
+      },
+      "description": "A red doublet (plain) with colored leather"
+    },
+    "red_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "red_fabric": 1
+      },
+      "output": {
+        "red_doublet_fancy": 1
+      },
+      "description": "A red doublet (fancy) with colored leather"
+    },
+    "red_robe_crop": {
+      "ingredients": {
+        "red_fabric": 4
+      },
+      "output": {
+        "red_robe_crop": 1
+      },
+      "description": "A red robe (crop)"
+    },
+    "beige_robe": {
+      "ingredients": {
+        "fabric": 4
+      },
+      "output": {
+        "beige_robe": 1
+      },
+      "description": "A long beige robe"
+    },
+    "red_robe_plain": {
+      "ingredients": {
+        "red_fabric": 4
+      },
+      "output": {
+        "red_robe_plain": 1
+      },
+      "description": "A red robe (plain)"
+    },
+    "red_robe_fancy": {
+      "ingredients": {
+        "red_fabric": 4
+      },
+      "output": {
+        "red_robe_fancy": 1
+      },
+      "description": "A red robe (fancy)"
+    },
+    "teal_shirt_crop": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_shirt_crop": 1
+      },
+      "description": "A teal shirt (crop)"
+    },
+    "teal_shirt_full": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_shirt_full": 1
+      },
+      "description": "A teal shirt (full)"
+    },
+    "teal_shirt_plain": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_shirt_plain": 1
+      },
+      "description": "A teal shirt (plain)"
+    },
+    "teal_shirt_fancy": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_shirt_fancy": 1
+      },
+      "description": "A teal shirt (fancy)"
+    },
+    "teal_vest_crop": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_vest_crop": 1
+      },
+      "description": "A teal vest (crop)"
+    },
+    "teal_vest_full": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_vest_full": 1
+      },
+      "description": "A teal vest (full)"
+    },
+    "teal_vest_plain": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_vest_plain": 1
+      },
+      "description": "A teal vest (plain)"
+    },
+    "teal_vest_fancy": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_vest_fancy": 1
+      },
+      "description": "A teal vest (fancy)"
+    },
+    "teal_tunic_crop": {
+      "ingredients": {
+        "teal_fabric": 3
+      },
+      "output": {
+        "teal_tunic_crop": 1
+      },
+      "description": "A teal tunic (crop)"
+    },
+    "teal_tunic_full": {
+      "ingredients": {
+        "teal_fabric": 3
+      },
+      "output": {
+        "teal_tunic_full": 1
+      },
+      "description": "A teal tunic (full)"
+    },
+    "teal_tunic_plain": {
+      "ingredients": {
+        "teal_fabric": 3
+      },
+      "output": {
+        "teal_tunic_plain": 1
+      },
+      "description": "A teal tunic (plain)"
+    },
+    "teal_tunic_fancy": {
+      "ingredients": {
+        "teal_fabric": 3
+      },
+      "output": {
+        "teal_tunic_fancy": 1
+      },
+      "description": "A teal tunic (fancy)"
+    },
+    "teal_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "teal_fabric": 1
+      },
+      "output": {
+        "teal_doublet_plain": 1
+      },
+      "description": "A teal doublet (plain) with colored leather"
+    },
+    "teal_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "teal_fabric": 1
+      },
+      "output": {
+        "teal_doublet_fancy": 1
+      },
+      "description": "A teal doublet (fancy) with colored leather"
+    },
+    "teal_robe_crop": {
+      "ingredients": {
+        "teal_fabric": 4
+      },
+      "output": {
+        "teal_robe_crop": 1
+      },
+      "description": "A teal robe (crop)"
+    },
+    "teal_robe_plain": {
+      "ingredients": {
+        "teal_fabric": 4
+      },
+      "output": {
+        "teal_robe_plain": 1
+      },
+      "description": "A teal robe (plain)"
+    },
+    "teal_robe_fancy": {
+      "ingredients": {
+        "teal_fabric": 4
+      },
+      "output": {
+        "teal_robe_fancy": 1
+      },
+      "description": "A teal robe (fancy)"
+    },
+    "purple_shirt_crop": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_shirt_crop": 1
+      },
+      "description": "A purple shirt (crop)"
+    },
+    "purple_shirt_full": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_shirt_full": 1
+      },
+      "description": "A purple shirt (full)"
+    },
+    "purple_shirt_plain": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_shirt_plain": 1
+      },
+      "description": "A purple shirt (plain)"
+    },
+    "purple_shirt_fancy": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_shirt_fancy": 1
+      },
+      "description": "A purple shirt (fancy)"
+    },
+    "purple_vest_crop": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_vest_crop": 1
+      },
+      "description": "A purple vest (crop)"
+    },
+    "purple_vest_full": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_vest_full": 1
+      },
+      "description": "A purple vest (full)"
+    },
+    "purple_vest_plain": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_vest_plain": 1
+      },
+      "description": "A purple vest (plain)"
+    },
+    "purple_vest_fancy": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_vest_fancy": 1
+      },
+      "description": "A purple vest (fancy)"
+    },
+    "purple_tunic_crop": {
+      "ingredients": {
+        "purple_fabric": 3
+      },
+      "output": {
+        "purple_tunic_crop": 1
+      },
+      "description": "A purple tunic (crop)"
+    },
+    "purple_tunic_full": {
+      "ingredients": {
+        "purple_fabric": 3
+      },
+      "output": {
+        "purple_tunic_full": 1
+      },
+      "description": "A purple tunic (full)"
+    },
+    "purple_tunic_plain": {
+      "ingredients": {
+        "purple_fabric": 3
+      },
+      "output": {
+        "purple_tunic_plain": 1
+      },
+      "description": "A purple tunic (plain)"
+    },
+    "purple_tunic_fancy": {
+      "ingredients": {
+        "purple_fabric": 3
+      },
+      "output": {
+        "purple_tunic_fancy": 1
+      },
+      "description": "A purple tunic (fancy)"
+    },
+    "purple_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "purple_fabric": 1
+      },
+      "output": {
+        "purple_doublet_plain": 1
+      },
+      "description": "A purple doublet (plain) with colored leather"
+    },
+    "purple_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "purple_fabric": 1
+      },
+      "output": {
+        "purple_doublet_fancy": 1
+      },
+      "description": "A purple doublet (fancy) with colored leather"
+    },
+    "purple_robe_crop": {
+      "ingredients": {
+        "purple_fabric": 4
+      },
+      "output": {
+        "purple_robe_crop": 1
+      },
+      "description": "A purple robe (crop)"
+    },
+    "purple_robe_plain": {
+      "ingredients": {
+        "purple_fabric": 4
+      },
+      "output": {
+        "purple_robe_plain": 1
+      },
+      "description": "A purple robe (plain)"
+    },
+    "purple_robe_fancy": {
+      "ingredients": {
+        "purple_fabric": 4
+      },
+      "output": {
+        "purple_robe_fancy": 1
+      },
+      "description": "A purple robe (fancy)"
+    },
+    "green_shirt_crop": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_shirt_crop": 1
+      },
+      "description": "A green shirt (crop)"
+    },
+    "green_shirt_full": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_shirt_full": 1
+      },
+      "description": "A green shirt (full)"
+    },
+    "green_shirt_plain": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_shirt_plain": 1
+      },
+      "description": "A green shirt (plain)"
+    },
+    "green_shirt_fancy": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_shirt_fancy": 1
+      },
+      "description": "A green shirt (fancy)"
+    },
+    "green_vest_crop": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_vest_crop": 1
+      },
+      "description": "A green vest (crop)"
+    },
+    "green_vest_full": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_vest_full": 1
+      },
+      "description": "A green vest (full)"
+    },
+    "green_vest_plain": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_vest_plain": 1
+      },
+      "description": "A green vest (plain)"
+    },
+    "green_vest_fancy": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_vest_fancy": 1
+      },
+      "description": "A green vest (fancy)"
+    },
+    "green_tunic_crop": {
+      "ingredients": {
+        "green_fabric": 3
+      },
+      "output": {
+        "green_tunic_crop": 1
+      },
+      "description": "A green tunic (crop)"
+    },
+    "green_tunic_full": {
+      "ingredients": {
+        "green_fabric": 3
+      },
+      "output": {
+        "green_tunic_full": 1
+      },
+      "description": "A green tunic (full)"
+    },
+    "green_tunic_plain": {
+      "ingredients": {
+        "green_fabric": 3
+      },
+      "output": {
+        "green_tunic_plain": 1
+      },
+      "description": "A green tunic (plain)"
+    },
+    "green_tunic_fancy": {
+      "ingredients": {
+        "green_fabric": 3
+      },
+      "output": {
+        "green_tunic_fancy": 1
+      },
+      "description": "A green tunic (fancy)"
+    },
+    "leather_doublet_plain_alt": {
+      "ingredients": {
+        "leather": 3
+      },
+      "output": {
+        "leather_doublet_plain_alt": 1
+      },
+      "description": "A sturdy leather doublet \u2014 plain style"
+    },
+    "leather_doublet_trimmed_alt": {
+      "ingredients": {
+        "leather": 3
+      },
+      "output": {
+        "leather_doublet_trimmed_alt": 1
+      },
+      "description": "A sturdy leather doublet \u2014 trimmed style"
+    },
+    "green_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "green_fabric": 1
+      },
+      "output": {
+        "green_doublet_plain": 1
+      },
+      "description": "A green doublet (plain) with colored leather"
+    },
+    "green_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "green_fabric": 1
+      },
+      "output": {
+        "green_doublet_fancy": 1
+      },
+      "description": "A green doublet (fancy) with colored leather"
+    },
+    "green_robe_crop": {
+      "ingredients": {
+        "green_fabric": 4
+      },
+      "output": {
+        "green_robe_crop": 1
+      },
+      "description": "A green robe (crop)"
+    },
+    "beige_robe_alt": {
+      "ingredients": {
+        "fabric": 4
+      },
+      "output": {
+        "beige_robe_alt": 1
+      },
+      "description": "A long beige robe"
+    },
+    "green_robe_plain": {
+      "ingredients": {
+        "green_fabric": 4
+      },
+      "output": {
+        "green_robe_plain": 1
+      },
+      "description": "A green robe (plain)"
+    },
+    "green_robe_fancy": {
+      "ingredients": {
+        "green_fabric": 4
+      },
+      "output": {
+        "green_robe_fancy": 1
+      },
+      "description": "A green robe (fancy)"
+    },
+    "tan_shirt_crop": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_shirt_crop": 1
+      },
+      "description": "A tan shirt (crop)"
+    },
+    "tan_shirt_full": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_shirt_full": 1
+      },
+      "description": "A tan shirt (full)"
+    },
+    "tan_shirt_plain": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_shirt_plain": 1
+      },
+      "description": "A tan shirt (plain)"
+    },
+    "tan_shirt_fancy": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_shirt_fancy": 1
+      },
+      "description": "A tan shirt (fancy)"
+    },
+    "tan_vest_crop": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_vest_crop": 1
+      },
+      "description": "A tan vest (crop)"
+    },
+    "tan_vest_full": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_vest_full": 1
+      },
+      "description": "A tan vest (full)"
+    },
+    "tan_vest_plain": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_vest_plain": 1
+      },
+      "description": "A tan vest (plain)"
+    },
+    "tan_vest_fancy": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "tan_vest_fancy": 1
+      },
+      "description": "A tan vest (fancy)"
+    },
+    "tan_tunic_crop": {
+      "ingredients": {
+        "fabric": 3
+      },
+      "output": {
+        "tan_tunic_crop": 1
+      },
+      "description": "A tan tunic (crop)"
+    },
+    "tan_tunic_full": {
+      "ingredients": {
+        "fabric": 3
+      },
+      "output": {
+        "tan_tunic_full": 1
+      },
+      "description": "A tan tunic (full)"
+    },
+    "tan_tunic_plain": {
+      "ingredients": {
+        "fabric": 3
+      },
+      "output": {
+        "tan_tunic_plain": 1
+      },
+      "description": "A tan tunic (plain)"
+    },
+    "tan_tunic_fancy": {
+      "ingredients": {
+        "fabric": 3
+      },
+      "output": {
+        "tan_tunic_fancy": 1
+      },
+      "description": "A tan tunic (fancy)"
+    },
+    "tan_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "fabric": 1
+      },
+      "output": {
+        "tan_doublet_plain": 1
+      },
+      "description": "A tan doublet (plain) with colored leather"
+    },
+    "tan_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "fabric": 1
+      },
+      "output": {
+        "tan_doublet_fancy": 1
+      },
+      "description": "A tan doublet (fancy) with colored leather"
+    },
+    "tan_robe_crop": {
+      "ingredients": {
+        "fabric": 4
+      },
+      "output": {
+        "tan_robe_crop": 1
+      },
+      "description": "A tan robe (crop)"
+    },
+    "tan_robe_plain": {
+      "ingredients": {
+        "fabric": 4
+      },
+      "output": {
+        "tan_robe_plain": 1
+      },
+      "description": "A tan robe (plain)"
+    },
+    "tan_robe_fancy": {
+      "ingredients": {
+        "fabric": 4
+      },
+      "output": {
+        "tan_robe_fancy": 1
+      },
+      "description": "A tan robe (fancy)"
+    },
+    "dark_shirt_crop": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_shirt_crop": 1
+      },
+      "description": "A dark shirt (crop)"
+    },
+    "dark_shirt_full": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_shirt_full": 1
+      },
+      "description": "A dark shirt (full)"
+    },
+    "dark_shirt_plain": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_shirt_plain": 1
+      },
+      "description": "A dark shirt (plain)"
+    },
+    "dark_shirt_fancy": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_shirt_fancy": 1
+      },
+      "description": "A dark shirt (fancy)"
+    },
+    "dark_vest_crop": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_vest_crop": 1
+      },
+      "description": "A dark vest (crop)"
+    },
+    "dark_vest_full": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_vest_full": 1
+      },
+      "description": "A dark vest (full)"
+    },
+    "dark_vest_plain": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_vest_plain": 1
+      },
+      "description": "A dark vest (plain)"
+    },
+    "dark_vest_fancy": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "dark_vest_fancy": 1
+      },
+      "description": "A dark vest (fancy)"
+    },
+    "dark_tunic_crop": {
+      "ingredients": {
+        "dark_fabric": 3
+      },
+      "output": {
+        "dark_tunic_crop": 1
+      },
+      "description": "A dark tunic (crop)"
+    },
+    "dark_tunic_full": {
+      "ingredients": {
+        "dark_fabric": 3
+      },
+      "output": {
+        "dark_tunic_full": 1
+      },
+      "description": "A dark tunic (full)"
+    },
+    "dark_tunic_plain": {
+      "ingredients": {
+        "dark_fabric": 3
+      },
+      "output": {
+        "dark_tunic_plain": 1
+      },
+      "description": "A dark tunic (plain)"
+    },
+    "dark_tunic_fancy": {
+      "ingredients": {
+        "dark_fabric": 3
+      },
+      "output": {
+        "dark_tunic_fancy": 1
+      },
+      "description": "A dark tunic (fancy)"
+    },
+    "dark_doublet_plain": {
+      "ingredients": {
+        "leather": 2,
+        "dark_fabric": 1
+      },
+      "output": {
+        "dark_doublet_plain": 1
+      },
+      "description": "A dark doublet (plain) with colored leather"
+    },
+    "dark_doublet_fancy": {
+      "ingredients": {
+        "leather": 2,
+        "dark_fabric": 1
+      },
+      "output": {
+        "dark_doublet_fancy": 1
+      },
+      "description": "A dark doublet (fancy) with colored leather"
+    },
+    "dark_robe_crop": {
+      "ingredients": {
+        "dark_fabric": 4
+      },
+      "output": {
+        "dark_robe_crop": 1
+      },
+      "description": "A dark robe (crop)"
+    },
+    "dark_robe_plain": {
+      "ingredients": {
+        "dark_fabric": 4
+      },
+      "output": {
+        "dark_robe_plain": 1
+      },
+      "description": "A dark robe (plain)"
+    },
+    "dark_robe_fancy": {
+      "ingredients": {
+        "dark_fabric": 4
+      },
+      "output": {
+        "dark_robe_fancy": 1
+      },
+      "description": "A dark robe (fancy)"
+    },
+    "gray_pants": {
+      "ingredients": {
+        "dark_fabric": 2
+      },
+      "output": {
+        "gray_pants": 1
+      },
+      "description": "A pair of gray pants"
+    },
+    "leather_pants": {
+      "ingredients": {
+        "leather": 2
+      },
+      "output": {
+        "leather_pants": 1
+      },
+      "description": "A pair of leather pants"
+    },
+    "white_pants": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "white_pants": 1
+      },
+      "description": "A pair of white pants"
+    },
+    "cream_pants": {
+      "ingredients": {
+        "cream_fabric": 2
+      },
+      "output": {
+        "cream_pants": 1
+      },
+      "description": "A pair of cream pants"
+    },
+    "red_pants": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_pants": 1
+      },
+      "description": "A pair of red pants"
+    },
+    "teal_pants": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_pants": 1
+      },
+      "description": "A pair of teal pants"
+    },
+    "purple_pants": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_pants": 1
+      },
+      "description": "A pair of purple pants"
+    },
+    "green_pants": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_pants": 1
+      },
+      "description": "A pair of green pants"
+    },
+    "gray_shoes": {
+      "ingredients": {
+        "dark_fabric": 1
+      },
+      "output": {
+        "gray_shoes": 1
+      },
+      "description": "A pair of gray shoes"
+    },
+    "leather_shoes": {
+      "ingredients": {
+        "leather": 1
+      },
+      "output": {
+        "leather_shoes": 1
+      },
+      "description": "A pair of leather shoes"
+    },
+    "white_shoes": {
+      "ingredients": {
+        "fabric": 1
+      },
+      "output": {
+        "white_shoes": 1
+      },
+      "description": "A pair of white shoes"
+    },
+    "cream_shoes": {
+      "ingredients": {
+        "cream_fabric": 1
+      },
+      "output": {
+        "cream_shoes": 1
+      },
+      "description": "A pair of cream shoes"
+    },
+    "red_shoes": {
+      "ingredients": {
+        "red_fabric": 1
+      },
+      "output": {
+        "red_shoes": 1
+      },
+      "description": "A pair of red shoes"
+    },
+    "teal_shoes": {
+      "ingredients": {
+        "teal_fabric": 1
+      },
+      "output": {
+        "teal_shoes": 1
+      },
+      "description": "A pair of teal shoes"
+    },
+    "purple_shoes": {
+      "ingredients": {
+        "purple_fabric": 1
+      },
+      "output": {
+        "purple_shoes": 1
+      },
+      "description": "A pair of purple shoes"
+    },
+    "green_shoes": {
+      "ingredients": {
+        "green_fabric": 1
+      },
+      "output": {
+        "green_shoes": 1
+      },
+      "description": "A pair of green shoes"
+    },
+    "teal_boots": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_boots": 1
+      },
+      "description": "A pair of teal boots"
+    },
+    "leather_boots": {
+      "ingredients": {
+        "leather": 2
+      },
+      "output": {
+        "leather_boots": 1
+      },
+      "description": "A pair of leather boots"
+    },
+    "brown_boots": {
+      "ingredients": {
+        "leather": 2
+      },
+      "output": {
+        "brown_boots": 1
+      },
+      "description": "A pair of brown boots"
+    },
+    "purple_boots": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_boots": 1
+      },
+      "description": "A pair of purple boots"
     }
   }
 }

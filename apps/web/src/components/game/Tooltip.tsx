@@ -44,14 +44,14 @@ function StatBar({
   const pct = Math.round((value / max) * 100);
   return (
     <div className="flex items-center gap-2">
-      <span className="w-14 text-right text-text-muted">{label}</span>
+      <span className="w-14 text-left text-text-muted">{label}</span>
       <div className="h-2 flex-1 rounded-full bg-elevated">
         <div
           className={`h-full rounded-full ${color}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-10 text-right">
+      <span className="w-10 text-left">
         {Math.round(value)}/{max}
       </span>
     </div>
@@ -94,7 +94,7 @@ function CharacterBox({ character }: { character: CharacterState }) {
       {inventory.length > 0 && (
         <>
           <hr className="my-1 border-border-muted" />
-          <p className="text-text-muted">🎒 Inventory</p>
+          <p className="text-text-muted">Inventory</p>
           <div className="flex flex-col gap-y-0.5">
             {inventory.map((inv) => (
               <span key={inv.item}>
