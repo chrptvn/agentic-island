@@ -1272,6 +1272,358 @@
         "purple_boots": 1
       },
       "description": "A pair of purple boots"
+    },
+    "white_hat_red": {
+      "ingredients": {
+        "fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "white_hat_red": 1
+      },
+      "description": "Craft a White Hat Red"
+    },
+    "white_hat_green": {
+      "ingredients": {
+        "fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "white_hat_green": 1
+      },
+      "description": "Craft a White Hat Green"
+    },
+    "cream_hat_red": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "cream_hat_red": 1
+      },
+      "description": "Craft a Cream Hat Red"
+    },
+    "cream_hat_green": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "cream_hat_green": 1
+      },
+      "description": "Craft a Cream Hat Green"
+    },
+    "white_hat_teal": {
+      "ingredients": {
+        "fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "white_hat_teal": 1
+      },
+      "description": "Craft a White Hat Teal"
+    },
+    "white_hat_purple": {
+      "ingredients": {
+        "fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "white_hat_purple": 1
+      },
+      "description": "Craft a White Hat Purple"
+    },
+    "cream_hat_teal": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "cream_hat_teal": 1
+      },
+      "description": "Craft a Cream Hat Teal"
+    },
+    "cream_hat_purple": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "cream_hat_purple": 1
+      },
+      "description": "Craft a Cream Hat Purple"
+    },
+    "white_headband_red": {
+      "ingredients": {
+        "fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "white_headband_red": 1
+      },
+      "description": "Craft a White Headband Red"
+    },
+    "cream_headband_red": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "cream_headband_red": 1
+      },
+      "description": "Craft a Cream Headband Red"
+    },
+    "white_headband_teal": {
+      "ingredients": {
+        "fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "white_headband_teal": 1
+      },
+      "description": "Craft a White Headband Teal"
+    },
+    "cream_headband_teal": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "cream_headband_teal": 1
+      },
+      "description": "Craft a Cream Headband Teal"
+    },
+    "white_headband_purple": {
+      "ingredients": {
+        "fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "white_headband_purple": 1
+      },
+      "description": "Craft a White Headband Purple"
+    },
+    "cream_headband_purple": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "cream_headband_purple": 1
+      },
+      "description": "Craft a Cream Headband Purple"
+    },
+    "white_headband_green": {
+      "ingredients": {
+        "fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "white_headband_green": 1
+      },
+      "description": "Craft a White Headband Green"
+    },
+    "cream_headband_green": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "cream_headband_green": 1
+      },
+      "description": "Craft a Cream Headband Green"
+    },
+    "white_crown_red": {
+      "ingredients": {
+        "fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "white_crown_red": 1
+      },
+      "description": "Craft a White Crown Red"
+    },
+    "cream_crown_red": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "red_fabric": 1
+      },
+      "output": {
+        "cream_crown_red": 1
+      },
+      "description": "Craft a Cream Crown Red"
+    },
+    "white_crown_teal": {
+      "ingredients": {
+        "fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "white_crown_teal": 1
+      },
+      "description": "Craft a White Crown Teal"
+    },
+    "cream_crown_teal": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "cream_crown_teal": 1
+      },
+      "description": "Craft a Cream Crown Teal"
+    },
+    "white_crown_purple": {
+      "ingredients": {
+        "fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "white_crown_purple": 1
+      },
+      "description": "Craft a White Crown Purple"
+    },
+    "cream_crown_purple": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "cream_crown_purple": 1
+      },
+      "description": "Craft a Cream Crown Purple"
+    },
+    "white_crown_green": {
+      "ingredients": {
+        "fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "white_crown_green": 1
+      },
+      "description": "Craft a White Crown Green"
+    },
+    "cream_crown_green": {
+      "ingredients": {
+        "cream_fabric": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "cream_crown_green": 1
+      },
+      "description": "Craft a Cream Crown Green"
+    },
+    "white_helmet": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "white_helmet": 1
+      },
+      "description": "Craft a White Helmet"
+    },
+    "cream_helmet": {
+      "ingredients": {
+        "cream_fabric": 2
+      },
+      "output": {
+        "cream_helmet": 1
+      },
+      "description": "Craft a Cream Helmet"
+    },
+    "white_helm": {
+      "ingredients": {
+        "fabric": 2
+      },
+      "output": {
+        "white_helm": 1
+      },
+      "description": "Craft a White Helm"
+    },
+    "cream_helm": {
+      "ingredients": {
+        "cream_fabric": 2
+      },
+      "output": {
+        "cream_helm": 1
+      },
+      "description": "Craft a Cream Helm"
+    },
+    "teal_wizard_hat": {
+      "ingredients": {
+        "leather": 1,
+        "teal_fabric": 1
+      },
+      "output": {
+        "teal_wizard_hat": 1
+      },
+      "description": "Craft a Teal Wizard Hat"
+    },
+    "gray_wizard_hat": {
+      "ingredients": {
+        "leather": 1,
+        "fabric": 1
+      },
+      "output": {
+        "gray_wizard_hat": 1
+      },
+      "description": "Craft a Gray Wizard Hat"
+    },
+    "purple_wizard_hat": {
+      "ingredients": {
+        "leather": 1,
+        "purple_fabric": 1
+      },
+      "output": {
+        "purple_wizard_hat": 1
+      },
+      "description": "Craft a Purple Wizard Hat"
+    },
+    "green_wizard_hat": {
+      "ingredients": {
+        "leather": 1,
+        "green_fabric": 1
+      },
+      "output": {
+        "green_wizard_hat": 1
+      },
+      "description": "Craft a Green Wizard Hat"
+    },
+    "red_wide_hat": {
+      "ingredients": {
+        "red_fabric": 2
+      },
+      "output": {
+        "red_wide_hat": 1
+      },
+      "description": "Craft a Red Wide Hat"
+    },
+    "teal_wide_hat": {
+      "ingredients": {
+        "teal_fabric": 2
+      },
+      "output": {
+        "teal_wide_hat": 1
+      },
+      "description": "Craft a Teal Wide Hat"
+    },
+    "purple_wide_hat": {
+      "ingredients": {
+        "purple_fabric": 2
+      },
+      "output": {
+        "purple_wide_hat": 1
+      },
+      "description": "Craft a Purple Wide Hat"
+    },
+    "green_wide_hat": {
+      "ingredients": {
+        "green_fabric": 2
+      },
+      "output": {
+        "green_wide_hat": 1
+      },
+      "description": "Craft a Green Wide Hat"
     }
   }
 }

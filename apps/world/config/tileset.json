@@ -2684,6 +2684,330 @@
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
       "description": "A pair of purple boots"
+    },
+    {
+      "id": "white_hat_red",
+      "col": 28,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Hat Red"
+    },
+    {
+      "id": "white_hat_green",
+      "col": 29,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Hat Green"
+    },
+    {
+      "id": "cream_hat_red",
+      "col": 30,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Hat Red"
+    },
+    {
+      "id": "cream_hat_green",
+      "col": 31,
+      "row": 0,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Hat Green"
+    },
+    {
+      "id": "white_hat_teal",
+      "col": 28,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Hat Teal"
+    },
+    {
+      "id": "white_hat_purple",
+      "col": 29,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Hat Purple"
+    },
+    {
+      "id": "cream_hat_teal",
+      "col": 30,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Hat Teal"
+    },
+    {
+      "id": "cream_hat_purple",
+      "col": 31,
+      "row": 1,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Hat Purple"
+    },
+    {
+      "id": "white_headband_red",
+      "col": 28,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Headband Red"
+    },
+    {
+      "id": "cream_headband_red",
+      "col": 29,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Headband Red"
+    },
+    {
+      "id": "white_headband_teal",
+      "col": 28,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Headband Teal"
+    },
+    {
+      "id": "cream_headband_teal",
+      "col": 29,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Headband Teal"
+    },
+    {
+      "id": "white_headband_purple",
+      "col": 28,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Headband Purple"
+    },
+    {
+      "id": "cream_headband_purple",
+      "col": 29,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Headband Purple"
+    },
+    {
+      "id": "white_headband_green",
+      "col": 28,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Headband Green"
+    },
+    {
+      "id": "cream_headband_green",
+      "col": 29,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Headband Green"
+    },
+    {
+      "id": "white_crown_red",
+      "col": 30,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Crown Red"
+    },
+    {
+      "id": "cream_crown_red",
+      "col": 31,
+      "row": 2,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Crown Red"
+    },
+    {
+      "id": "white_crown_teal",
+      "col": 30,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Crown Teal"
+    },
+    {
+      "id": "cream_crown_teal",
+      "col": 31,
+      "row": 3,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Crown Teal"
+    },
+    {
+      "id": "white_crown_purple",
+      "col": 30,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Crown Purple"
+    },
+    {
+      "id": "cream_crown_purple",
+      "col": 31,
+      "row": 4,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Crown Purple"
+    },
+    {
+      "id": "white_crown_green",
+      "col": 30,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Crown Green"
+    },
+    {
+      "id": "cream_crown_green",
+      "col": 31,
+      "row": 5,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Crown Green"
+    },
+    {
+      "id": "white_helmet",
+      "col": 28,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Helmet"
+    },
+    {
+      "id": "cream_helmet",
+      "col": 29,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Helmet"
+    },
+    {
+      "id": "white_helm",
+      "col": 30,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "White Helm"
+    },
+    {
+      "id": "cream_helm",
+      "col": 31,
+      "row": 6,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Cream Helm"
+    },
+    {
+      "id": "teal_wizard_hat",
+      "col": 28,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Teal Wizard Hat"
+    },
+    {
+      "id": "gray_wizard_hat",
+      "col": 29,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Gray Wizard Hat"
+    },
+    {
+      "id": "purple_wizard_hat",
+      "col": 30,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Purple Wizard Hat"
+    },
+    {
+      "id": "green_wizard_hat",
+      "col": 31,
+      "row": 7,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Green Wizard Hat"
+    },
+    {
+      "id": "red_wide_hat",
+      "col": 28,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Red Wide Hat"
+    },
+    {
+      "id": "teal_wide_hat",
+      "col": 29,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Teal Wide Hat"
+    },
+    {
+      "id": "purple_wide_hat",
+      "col": 30,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Purple Wide Hat"
+    },
+    {
+      "id": "green_wide_hat",
+      "col": 31,
+      "row": 8,
+      "layer": 3,
+      "category": "item",
+      "sheet": "roguelikeChar_transparent.png",
+      "description": "Green Wide Hat"
     }
   ]
 }

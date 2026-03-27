@@ -647,5 +647,149 @@
   "purple_boots": {
     "equippable": false,
     "wearable": "feet"
+  },
+  "white_hat_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_hat_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_hat_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_hat_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_hat_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_hat_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_hat_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_hat_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_headband_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_headband_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_headband_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_headband_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_headband_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_headband_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_headband_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_headband_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_crown_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_crown_red": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_crown_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_crown_teal": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_crown_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_crown_purple": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_crown_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_crown_green": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_helmet": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_helmet": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "white_helm": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "cream_helm": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "teal_wizard_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "gray_wizard_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "purple_wizard_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "green_wizard_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "red_wide_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "teal_wide_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "purple_wide_hat": {
+    "equippable": false,
+    "wearable": "head"
+  },
+  "green_wide_hat": {
+    "equippable": false,
+    "wearable": "head"
   }
 }
