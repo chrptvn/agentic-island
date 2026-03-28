@@ -8,14 +8,14 @@ const PREFIX = "[mcp-proxy]";
 
 interface ProxySession {
   transport: StreamableHTTPServerTransport;
-  worldId: string;
+  islandId: string;
   islandWs: WebSocket;
 }
 
 /** Active proxy sessions keyed by the hub-assigned MCP session ID. */
 const proxySessions = new Map<string, ProxySession>();
 
-/** Reverse index: worldId → Set<sessionId> for bulk cleanup. */
+/** Reverse index: islandId → Set<sessionId> for bulk cleanup. */
 const islandSessionIndex = new Map<string, Set<string>>();
 
 /**
@@ -24,19 +24,19 @@ const islandSessionIndex = new Map<string, Set<string>>();
  * HTTP initialize request through it.
  */
 export function createProxySession(
-  worldId: string,
+  islandId: string,
   islandWs: WebSocket,
 ): StreamableHTTPServerTransport {
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (sessionId: string) => {
-      console.log(PREFIX, `Session ${sessionId} created for island ${worldId}`);
-      proxySessions.set(sessionId, { transport, worldId, islandWs });
+      console.log(PREFIX, `Session ${sessionId} created for island ${islandId}`);
+      proxySessions.set(sessionId, { transport, islandId, islandWs });
 
-      let islandSessions = islandSessionIndex.get(worldId);
+      let islandSessions = islandSessionIndex.get(islandId);
       if (!islandSessions) {
         islandSessions = new Set();
-        islandSessionIndex.set(worldId, islandSessions);
+        islandSessionIndex.set(islandId, islandSessions);
       }
       islandSessions.add(sessionId);
     },
@@ -62,10 +62,10 @@ export function createProxySession(
     console.log(PREFIX, `Session ${sessionId} closed`);
     proxySessions.delete(sessionId);
 
-    const islandSessions = islandSessionIndex.get(worldId);
+    const islandSessions = islandSessionIndex.get(islandId);
     if (islandSessions) {
       islandSessions.delete(sessionId);
-      if (islandSessions.size === 0) islandSessionIndex.delete(worldId);
+      if (islandSessions.size === 0) islandSessionIndex.delete(islandId);
     }
 
     // Tell the island to clean up its tunnel session
@@ -103,11 +103,11 @@ export function deliverTunnelResponse(sessionId: string, message: unknown): void
 /**
  * Close all proxy sessions for an island (e.g. when the island disconnects).
  */
-export function closeAllSessionsForIsland(worldId: string): void {
-  const sessionIds = islandSessionIndex.get(worldId);
+export function closeAllSessionsForIsland(islandId: string): void {
+  const sessionIds = islandSessionIndex.get(islandId);
   if (!sessionIds || sessionIds.size === 0) return;
 
-  console.log(PREFIX, `Closing ${sessionIds.size} proxy session(s) for island ${worldId}`);
+  console.log(PREFIX, `Closing ${sessionIds.size} proxy session(s) for island ${islandId}`);
   for (const sessionId of sessionIds) {
     const session = proxySessions.get(sessionId);
     if (session) {
@@ -115,5 +115,5 @@ export function closeAllSessionsForIsland(worldId: string): void {
       session.transport.close().catch(() => {});
     }
   }
-  islandSessionIndex.delete(worldId);
+  islandSessionIndex.delete(islandId);
 }

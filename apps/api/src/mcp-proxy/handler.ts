@@ -21,14 +21,14 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
   });
 }
 
-/** Extract worldId from a URL path like /islands/:worldId/mcp */
-function extractWorldId(pathname: string): string | null {
+/** Extract islandId from a URL path like /islands/:islandId/mcp */
+function extractIslandId(pathname: string): string | null {
   const match = pathname.match(/^\/islands\/([^/]+)\/mcp/);
   return match ? match[1] : null;
 }
 
 /**
- * Handle MCP proxy requests at `/islands/:worldId/mcp`.
+ * Handle MCP proxy requests at `/islands/:islandId/mcp`.
  * Routes StreamableHTTP MCP traffic to the island via WebSocket tunnel.
  */
 export async function handleMcpProxy(
@@ -36,20 +36,20 @@ export async function handleMcpProxy(
   res: ServerResponse,
 ): Promise<void> {
   const url = new URL(req.url ?? "/", `http://localhost`);
-  const worldId = extractWorldId(url.pathname);
+  const islandId = extractIslandId(url.pathname);
 
-  if (!worldId) {
+  if (!islandId) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Invalid path — expected /islands/:worldId/mcp" }));
+    res.end(JSON.stringify({ error: "Invalid path — expected /islands/:islandId/mcp" }));
     return;
   }
 
   // Verify the island is connected
   const connectedIslands = getConnectedIslands();
-  const island = connectedIslands.get(worldId);
+  const island = connectedIslands.get(islandId);
   if (!island) {
     res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: `Island "${worldId}" is not online` }));
+    res.end(JSON.stringify({ error: `Island "${islandId}" is not online` }));
     return;
   }
 
@@ -96,7 +96,7 @@ export async function handleMcpProxy(
     return;
   }
 
-  console.log(PREFIX, `New MCP proxy session for island ${worldId}`);
-  const transport = createProxySession(worldId, island.ws);
+  console.log(PREFIX, `New MCP proxy session for island ${islandId}`);
+  const transport = createProxySession(islandId, island.ws);
   await transport.handleRequest(req, res, body);
 }

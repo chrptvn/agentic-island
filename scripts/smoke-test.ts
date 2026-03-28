@@ -102,7 +102,7 @@ async function testViewerWebSocket(): Promise<void> {
       console.log("        ✓ connection opened");
 
       // Send a subscribe message and verify no crash
-      ws.send(JSON.stringify({ type: "subscribe", worldId: "test-world" }));
+      ws.send(JSON.stringify({ type: "subscribe", islandId: "test-world" }));
 
       // Give the server a moment to process, then close cleanly
       setTimeout(() => {

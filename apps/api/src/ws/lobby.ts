@@ -61,10 +61,10 @@ function getAllIslands(): IslandMeta[] {
   return rows.map(rowToMeta);
 }
 
-function getIslandById(worldId: string): IslandMeta | null {
+function getIslandById(islandId: string): IslandMeta | null {
   const row = db
     .prepare(`SELECT ${ISLAND_COLS} FROM islands WHERE id = ?`)
-    .get(worldId) as IslandRow | undefined;
+    .get(islandId) as IslandRow | undefined;
   return row ? rowToMeta(row) : null;
 }
 
@@ -94,45 +94,45 @@ const pendingUpdates = new Map<string, ReturnType<typeof setTimeout>>();
 
 /**
  * Broadcast an island_meta_update for a single island.
- * Throttled per worldId — at most once every THROTTLE_MS.
+ * Throttled per islandId — at most once every THROTTLE_MS.
  * Pass `immediate: true` to bypass the throttle (used for
  * online/offline transitions that should appear instantly).
  */
 export function broadcastIslandUpdate(
-  worldId: string,
+  islandId: string,
   immediate = false,
 ): void {
   if (lobbyViewers.size === 0) return;
 
   if (immediate) {
     // Cancel any pending throttled update
-    const timer = pendingUpdates.get(worldId);
+    const timer = pendingUpdates.get(islandId);
     if (timer) {
       clearTimeout(timer);
-      pendingUpdates.delete(worldId);
+      pendingUpdates.delete(islandId);
     }
-    doSendIslandUpdate(worldId);
+    doSendIslandUpdate(islandId);
     return;
   }
 
   // Throttle: schedule if not already pending
-  if (pendingUpdates.has(worldId)) return;
+  if (pendingUpdates.has(islandId)) return;
   pendingUpdates.set(
-    worldId,
+    islandId,
     setTimeout(() => {
-      pendingUpdates.delete(worldId);
-      doSendIslandUpdate(worldId);
+      pendingUpdates.delete(islandId);
+      doSendIslandUpdate(islandId);
     }, THROTTLE_MS),
   );
 }
 
-function doSendIslandUpdate(worldId: string): void {
-  const meta = getIslandById(worldId);
+function doSendIslandUpdate(islandId: string): void {
+  const meta = getIslandById(islandId);
   if (!meta) return;
   broadcast({ type: "island_meta_update", island: meta });
 }
 
 /** Broadcast that an island was removed (deleted). */
-export function broadcastIslandRemoved(worldId: string): void {
-  broadcast({ type: "island_removed", worldId });
+export function broadcastIslandRemoved(islandId: string): void {
+  broadcast({ type: "island_removed", islandId });
 }

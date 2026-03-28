@@ -6,7 +6,7 @@ import type { IslandState, HubToViewerMessage } from '@agentic-island/shared';
 export interface IslandStream {
   state: IslandState | null;
   spriteBaseUrl: string | null;
-  worldName: string | null;
+  islandName: string | null;
   connected: boolean;
   error: string | null;
 }
@@ -14,15 +14,15 @@ export interface IslandStream {
 const WS_RECONNECT_BASE = 1_000;
 const WS_RECONNECT_MAX = 30_000;
 
-export function useIslandStream(worldId: string | undefined): IslandStream {
+export function useIslandStream(islandId: string | undefined): IslandStream {
   const [state, setState] = useState<IslandState | null>(null);
   const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
-  const [worldName, setWorldName] = useState<string | null>(null);
+  const [islandName, setIslandName] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!worldId) return;
+    if (!islandId) return;
 
     let dead = false;
     let ws: WebSocket | null = null;
@@ -42,7 +42,7 @@ export function useIslandStream(worldId: string | undefined): IslandStream {
         setConnected(true);
         setError(null);
         delay = WS_RECONNECT_BASE;
-        ws!.send(JSON.stringify({ type: 'subscribe', worldId }));
+        ws!.send(JSON.stringify({ type: 'subscribe', islandId }));
       };
 
       ws.onmessage = (event) => {
@@ -52,7 +52,7 @@ export function useIslandStream(worldId: string | undefined): IslandStream {
             case 'island_state':
               setState(msg.state);
               setSpriteBaseUrl(msg.spriteBaseUrl);
-              setWorldName(msg.worldName);
+              setIslandName(msg.islandName);
               break;
             case 'island_offline':
               setError('Island went offline');
@@ -90,7 +90,7 @@ export function useIslandStream(worldId: string | undefined): IslandStream {
       if (timer) clearTimeout(timer);
       if (ws) ws.close();
     };
-  }, [worldId]);
+  }, [islandId]);
 
-  return { state, spriteBaseUrl, worldName, connected, error };
+  return { state, spriteBaseUrl, islandName, connected, error };
 }

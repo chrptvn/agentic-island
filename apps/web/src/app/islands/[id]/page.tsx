@@ -13,7 +13,7 @@ export default function WorldViewerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, spriteBaseUrl, worldName, connected, error } =
+  const { state, spriteBaseUrl, islandName, connected, error } =
     useIslandStream(id);
 
   // Once the viewer has been shown, keep it mounted to avoid
@@ -33,7 +33,7 @@ export default function WorldViewerPage({
             ← Back to Islands
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-text-heading">
-            {worldName ?? id}
+            {islandName ?? id}
           </h1>
         </div>
       </div>

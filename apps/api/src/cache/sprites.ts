@@ -6,10 +6,10 @@ import { safePath } from "../lib/safe-path.js";
 const CACHE_DIR = process.env.SPRITE_CACHE_DIR ?? "sprite-cache";
 
 export async function saveSprites(
-  worldId: string,
+  islandId: string,
   sprites: SpriteAsset[],
 ): Promise<void> {
-  const dir = join(CACHE_DIR, worldId);
+  const dir = join(CACHE_DIR, islandId);
   await mkdir(dir, { recursive: true });
 
   await Promise.all(
@@ -29,8 +29,8 @@ export async function saveSprites(
   );
 }
 
-export async function clearSprites(worldId: string): Promise<void> {
-  const dir = join(CACHE_DIR, worldId);
+export async function clearSprites(islandId: string): Promise<void> {
+  const dir = join(CACHE_DIR, islandId);
   await rm(dir, { recursive: true, force: true });
 }
 
@@ -39,15 +39,15 @@ export async function clearSprites(worldId: string): Promise<void> {
  * Returns the relative URL path for serving the thumbnail.
  */
 export async function saveThumbnail(
-  worldId: string,
+  islandId: string,
   thumbnail: SpriteAsset,
 ): Promise<string> {
-  const dir = join(CACHE_DIR, worldId);
+  const dir = join(CACHE_DIR, islandId);
   await mkdir(dir, { recursive: true });
   const dest = join(dir, "thumbnail.png");
   const buf = Buffer.from(thumbnail.data, "base64");
   await writeFile(dest, buf);
-  return `/sprites/${worldId}/thumbnail.png`;
+  return `/sprites/${islandId}/thumbnail.png`;
 }
 
 export function getSpriteCacheDir(): string {

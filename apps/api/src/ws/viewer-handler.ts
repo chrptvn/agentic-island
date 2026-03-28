@@ -21,14 +21,14 @@ export function handleViewerConnection(ws: WebSocket): void {
             }
           }
 
-          subscribedIslandId = msg.worldId;
-          if (!islandViewers.has(msg.worldId)) {
-            islandViewers.set(msg.worldId, new Set());
+          subscribedIslandId = msg.islandId;
+          if (!islandViewers.has(msg.islandId)) {
+            islandViewers.set(msg.islandId, new Set());
           }
-          islandViewers.get(msg.worldId)!.add(ws);
+          islandViewers.get(msg.islandId)!.add(ws);
 
           // Immediately replay the last cached state so viewer isn't blank
-          const cached = lastIslandState.get(msg.worldId);
+          const cached = lastIslandState.get(msg.islandId);
           if (cached && ws.readyState === 1) ws.send(cached);
           break;
         }

@@ -74,7 +74,7 @@ export function useIslandsStream(): IslandsStream {
 
             case 'island_removed': {
               const prev = islandsRef.current;
-              updateIslands(prev.filter((w) => w.id !== msg.worldId));
+              updateIslands(prev.filter((w) => w.id !== msg.islandId));
               break;
             }
 

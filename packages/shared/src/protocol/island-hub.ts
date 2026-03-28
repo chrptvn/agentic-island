@@ -30,7 +30,7 @@ export interface IslandPingMessage {
 
 export interface HubHandshakeAckMessage {
   type: "handshake_ack";
-  worldId: string;
+  islandId: string;
   status: "ok" | "error";
   error?: string;
 }

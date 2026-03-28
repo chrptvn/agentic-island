@@ -159,35 +159,35 @@ async function main(): Promise<void> {
       enteredInteractively.API_KEY = passport;
     }
 
-    // ── World Name (required) ──────────────────────────────────
-    let worldName: string;
+    // ── Island Name (required) ─────────────────────────────────
+    let islandName: string;
     if (process.env.ISLAND_NAME) {
-      worldName = process.env.ISLAND_NAME;
-      console.log(`  ✓ Name:     ${worldName}  (from .env)`);
+      islandName = process.env.ISLAND_NAME;
+      console.log(`  ✓ Name:     ${islandName}  (from .env)`);
     } else {
       console.log();
-      worldName = "";
-      while (!worldName) {
-        worldName = (await rl.question("  Island Name: ")).trim();
-        if (!worldName) {
+      islandName = "";
+      while (!islandName) {
+        islandName = (await rl.question("  Island Name: ")).trim();
+        if (!islandName) {
           console.log("  ⚠  Island name is required.\n");
         }
       }
-      enteredInteractively.ISLAND_NAME = worldName;
+      enteredInteractively.ISLAND_NAME = islandName;
     }
 
-    // ── World Description (optional) ───────────────────────────
-    let worldDescription: string;
+    // ── Island Description (optional) ──────────────────────────
+    let islandDescription: string;
     if (process.env.ISLAND_DESCRIPTION !== undefined) {
-      worldDescription = process.env.ISLAND_DESCRIPTION;
-      if (worldDescription) {
-        console.log(`  ✓ Description: ${worldDescription}  (from .env)`);
+      islandDescription = process.env.ISLAND_DESCRIPTION;
+      if (islandDescription) {
+        console.log(`  ✓ Description: ${islandDescription}  (from .env)`);
       }
     } else {
-      worldDescription = (
+      islandDescription = (
         await rl.question("  Description (optional): ")
       ).trim();
-      enteredInteractively.ISLAND_DESCRIPTION = worldDescription;
+      enteredInteractively.ISLAND_DESCRIPTION = islandDescription;
     }
 
     // ── Save to .env? (only if something was entered interactively) ─
@@ -209,8 +209,8 @@ async function main(): Promise<void> {
     // ── Set env vars and boot the world engine ─────────────────
     process.env.API_KEY = passport;
     process.env.HUB_URL = hubUrl;
-    process.env.ISLAND_NAME = worldName;
-    process.env.ISLAND_DESCRIPTION = worldDescription;
+    process.env.ISLAND_NAME = islandName;
+    process.env.ISLAND_DESCRIPTION = islandDescription;
 
     // Import the world entry point — it reads env vars on load
     await import("../apps/island/index.js");

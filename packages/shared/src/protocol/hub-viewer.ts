@@ -5,12 +5,12 @@ import type { IslandMeta } from "../types/hub.js";
 
 export interface ViewerSubscribeMessage {
   type: "subscribe";
-  worldId: string;
+  islandId: string;
 }
 
 export interface ViewerUnsubscribeMessage {
   type: "unsubscribe";
-  worldId: string;
+  islandId: string;
 }
 
 export interface ViewerSubscribeLobbyMessage {
@@ -25,15 +25,15 @@ export interface ViewerUnsubscribeLobbyMessage {
 
 export interface ViewerIslandStateMessage {
   type: "island_state";
-  worldId: string;
-  worldName: string;
+  islandId: string;
+  islandName: string;
   state: IslandState;
   spriteBaseUrl: string;
 }
 
 export interface ViewerIslandOfflineMessage {
   type: "island_offline";
-  worldId: string;
+  islandId: string;
 }
 
 export interface ViewerIslandListMessage {
@@ -48,7 +48,7 @@ export interface ViewerIslandMetaUpdateMessage {
 
 export interface ViewerIslandRemovedMessage {
   type: "island_removed";
-  worldId: string;
+  islandId: string;
 }
 
 export interface ViewerErrorMessage {

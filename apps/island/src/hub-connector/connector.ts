@@ -149,14 +149,14 @@ export class HubConnector {
       switch (msg.type) {
         case "handshake_ack":
           if (msg.status === "ok") {
-            this.islandId = msg.worldId;
+            this.islandId = msg.islandId;
             // Persist assigned ID so reconnects reuse the same island entry
-            this.options.islandId = msg.worldId;
+            this.options.islandId = msg.islandId;
             this.connected = true;
             this.reconnectDelay = WS_RECONNECT_BASE_MS;
             this.startHeartbeat();
-            console.log(PREFIX, `Connected — worldId=${msg.worldId}`);
-            this.onConnected?.(msg.worldId);
+            console.log(PREFIX, `Connected — islandId=${msg.islandId}`);
+            this.onConnected?.(msg.islandId);
           } else {
             console.error(
               PREFIX,

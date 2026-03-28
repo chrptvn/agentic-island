@@ -44,10 +44,10 @@ app.route("/api/islands", islands);
 app.route("/api/admin", admin);
 
 // Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
-app.get("/sprites/:worldId/*", async (c) => {
-  const worldId = c.req.param("worldId");
-  const userSegment = c.req.path.slice(`/sprites/${worldId}/`.length);
-  const filePath = safePath(getSpriteCacheDir(), worldId, userSegment);
+app.get("/sprites/:islandId/*", async (c) => {
+  const islandId = c.req.param("islandId");
+  const userSegment = c.req.path.slice(`/sprites/${islandId}/`.length);
+  const filePath = safePath(getSpriteCacheDir(), islandId, userSegment);
 
   if (!filePath) {
     return c.json({ error: "Invalid path" }, 400);
@@ -141,7 +141,7 @@ const honoListener = getRequestListener(app.fetch);
 const server = createServer(async (req, res) => {
   const pathname = req.url?.split("?")[0] ?? "/";
 
-  // MCP proxy: /islands/:worldId/mcp — needs raw Node.js req/res
+  // MCP proxy: /islands/:islandId/mcp — needs raw Node.js req/res
   if (/^\/islands\/[^/]+\/mcp/.test(pathname)) {
     try {
       await handleMcpProxy(req, res);

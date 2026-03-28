@@ -3,8 +3,8 @@ import { resolveIslandConfig, islandRequest } from "../../lib/island-api.js";
 import { printTable } from "../../lib/output.js";
 import pc from "picocolors";
 
-interface WorldStatus {
-  worldName: string;
+interface IslandStatus {
+  islandName: string;
   map: { width: number; height: number; seed: number };
   characterCount: number;
   characters: { id: string; x: number; y: number; action: string | null }[];
@@ -17,8 +17,8 @@ export function registerIslandStatusCommand(program: Command): void {
     .option("--island-url <url>", "Island URL")
     .action((opts) => {
       const config = resolveIslandConfig(opts);
-      islandRequest<WorldStatus>(config, "GET", "/api/status").then((s) => {
-        console.log(`${pc.bold("World:")}  ${pc.cyan(s.worldName)}`);
+      islandRequest<IslandStatus>(config, "GET", "/api/status").then((s) => {
+        console.log(`${pc.bold("World:")}  ${pc.cyan(s.islandName)}`);
         console.log(`${pc.bold("Map:")}    ${s.map.width}×${s.map.height}  seed=${pc.dim(String(s.map.seed))}`);
         console.log(`${pc.bold("Chars:")}  ${s.characterCount}`);
         if (s.characters.length > 0) {

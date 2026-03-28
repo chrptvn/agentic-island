@@ -73,7 +73,7 @@ async function handleRequest(
       id, x: c.x, y: c.y, action: c.action,
     }));
     jsonOk(res, {
-      worldName: process.env.ISLAND_NAME ?? "My Island",
+      islandName: process.env.ISLAND_NAME ?? "My Island",
       map: { width: map.width, height: map.height, seed: map.seed },
       characterCount: characters.length,
       characters,

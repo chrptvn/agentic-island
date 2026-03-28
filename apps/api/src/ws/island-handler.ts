@@ -11,15 +11,15 @@ import { broadcastIslandUpdate, broadcastIslandRemoved } from "./lobby.js";
 
 interface ConnectedIsland {
   ws: WebSocket;
-  worldId: string;
+  islandId: string;
   apiKeyId: string;
-  worldName: string;
+  islandName: string;
   lastPing: number;
 }
 
 const connectedIslands = new Map<string, ConnectedIsland>();
 
-// worldId → set of viewer WebSockets (shared with viewer-handler)
+// islandId → set of viewer WebSockets (shared with viewer-handler)
 export const islandViewers = new Map<string, Set<WebSocket>>();
 
 // Cache the last state payload per island so new viewers get an immediate snapshot
@@ -58,19 +58,19 @@ export function handleIslandConnection(ws: WebSocket): void {
 
           // One island per passport: if no island.id is provided, look up by
           // api_key_id so the same passport always resolves to the same island.
-          let worldId: string;
+          let islandId: string;
           let existing: { id: string } | undefined;
 
           if (msg.island.id) {
-            worldId = msg.island.id;
+            islandId = msg.island.id;
             existing = db
               .prepare("SELECT id FROM islands WHERE id = ? AND api_key_id = ?")
-              .get(worldId, keyRow.id) as { id: string } | undefined;
+              .get(islandId, keyRow.id) as { id: string } | undefined;
           } else {
             existing = db
               .prepare("SELECT id FROM islands WHERE api_key_id = ?")
               .get(keyRow.id) as { id: string } | undefined;
-            worldId = existing?.id ?? randomUUID();
+            islandId = existing?.id ?? randomUUID();
           }
 
           if (existing) {
@@ -82,7 +82,7 @@ export function handleIslandConnection(ws: WebSocket): void {
               msg.island.name,
               msg.island.description ?? null,
               JSON.stringify(msg.island.config ?? {}),
-              worldId,
+              islandId,
             );
           } else {
             db.prepare(
@@ -90,7 +90,7 @@ export function handleIslandConnection(ws: WebSocket): void {
                status, last_heartbeat_at)
                VALUES (?, ?, ?, ?, ?, 'online', datetime('now'))`,
             ).run(
-              worldId,
+              islandId,
               keyRow.id,
               msg.island.name,
               msg.island.description ?? null,
@@ -99,34 +99,34 @@ export function handleIslandConnection(ws: WebSocket): void {
           }
 
           if (msg.sprites?.length) {
-            await saveSprites(worldId, msg.sprites);
+            await saveSprites(islandId, msg.sprites);
           }
 
           // Save thumbnail alongside sprites
           if (msg.thumbnail) {
-            const thumbnailPath = await saveThumbnail(worldId, msg.thumbnail);
+            const thumbnailPath = await saveThumbnail(islandId, msg.thumbnail);
             db.prepare(
               "UPDATE islands SET thumbnail_path = ? WHERE id = ?",
-            ).run(thumbnailPath, worldId);
+            ).run(thumbnailPath, islandId);
           }
 
-          // Close any existing connection for this worldId (last-writer-wins)
-          const prevConn = connectedIslands.get(worldId);
+          // Close any existing connection for this islandId (last-writer-wins)
+          const prevConn = connectedIslands.get(islandId);
           if (prevConn && prevConn.ws !== ws && prevConn.ws.readyState === 1) {
             prevConn.ws.close(4002, "replaced by new connection");
           }
 
-          core = { ws, worldId, apiKeyId: keyRow.id, worldName: msg.island.name, lastPing: Date.now() };
-          connectedIslands.set(worldId, core);
+          core = { ws, islandId, apiKeyId: keyRow.id, islandName: msg.island.name, lastPing: Date.now() };
+          connectedIslands.set(islandId, core);
 
           const ack: HubToIslandMessage = {
             type: "handshake_ack",
-            worldId,
+            islandId,
             status: "ok",
           };
           ws.send(JSON.stringify(ack));
           // Notify lobby viewers that an island came online
-          broadcastIslandUpdate(worldId, true);
+          broadcastIslandUpdate(islandId, true);
           break;
         }
 
@@ -137,21 +137,21 @@ export function handleIslandConnection(ws: WebSocket): void {
           const agentCount = msg.state.characters?.length ?? 0;
           db.prepare(
             "UPDATE islands SET player_count = ? WHERE id = ?",
-          ).run(agentCount, core.worldId);
+          ).run(agentCount, core.islandId);
 
           // Notify lobby viewers of metadata changes (throttled)
-          broadcastIslandUpdate(core.worldId);
+          broadcastIslandUpdate(core.islandId);
 
           const relay = JSON.stringify({
             type: "island_state",
-            worldId: core.worldId,
-            worldName: core.worldName,
+            islandId: core.islandId,
+            islandName: core.islandName,
             state: msg.state,
-            spriteBaseUrl: `/sprites/${core.worldId}/`,
+            spriteBaseUrl: `/sprites/${core.islandId}/`,
           });
           // Cache so late-joining viewers get an immediate snapshot
-          lastIslandState.set(core.worldId, relay);
-          const viewers = islandViewers.get(core.worldId);
+          lastIslandState.set(core.islandId, relay);
+          const viewers = islandViewers.get(core.islandId);
           if (viewers) {
             for (const viewer of viewers) {
               if (viewer.readyState === 1) viewer.send(relay);
@@ -165,7 +165,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           core.lastPing = Date.now();
           db.prepare(
             "UPDATE islands SET last_heartbeat_at = datetime('now') WHERE id = ?",
-          ).run(core.worldId);
+          ).run(core.islandId);
           const pong: HubToIslandMessage = {
             type: "pong",
             timestamp: msg.timestamp,
@@ -188,19 +188,19 @@ export function handleIslandConnection(ws: WebSocket): void {
     if (core) {
       db.prepare(
         "UPDATE islands SET status = 'offline', player_count = 0, updated_at = datetime('now') WHERE id = ?",
-      ).run(core.worldId);
-      connectedIslands.delete(core.worldId);
-      lastIslandState.delete(core.worldId);
-      closeAllSessionsForIsland(core.worldId);
+      ).run(core.islandId);
+      connectedIslands.delete(core.islandId);
+      lastIslandState.delete(core.islandId);
+      closeAllSessionsForIsland(core.islandId);
 
       // Notify lobby viewers that the island is gone
-      broadcastIslandRemoved(core.worldId);
+      broadcastIslandRemoved(core.islandId);
 
-      const viewers = islandViewers.get(core.worldId);
+      const viewers = islandViewers.get(core.islandId);
       if (viewers) {
         const offline = JSON.stringify({
           type: "island_offline",
-          worldId: core.worldId,
+          islandId: core.islandId,
         });
         for (const viewer of viewers) {
           if (viewer.readyState === 1) viewer.send(offline);
