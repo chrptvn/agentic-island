@@ -5,7 +5,7 @@ Thanks for your interest in contributing! This guide covers the development work
 ## Prerequisites
 
 - **Node.js** ≥ 20
-- **pnpm** ≥ 9
+- **pnpm** ≥ 10
 - **Git** with submodule support
 
 ## Getting Started
@@ -20,27 +20,15 @@ pnpm build          # Build all packages
 pnpm dev            # Start core with hot-reload
 ```
 
-### Website repository (agentic-island-web)
-
-```bash
-git clone --recursive <repo-url>   # Include agentic-island submodule
-cd agentic-island-web
-pnpm install
-pnpm dev                           # Start Next.js dev server
-```
-
 ## Project Structure
 
 **agentic-island** (monorepo):
 - `apps/world` — World simulation engine
 - `apps/api` — Multiplayer hub server
-- `apps/hub-web` — Viewer SPA (Vite + React)
+- `apps/web` — Next.js website & island viewer
 - `apps/cli` — Admin CLI tool
 - `packages/shared` — Shared types & protocols
 - `packages/game-renderer` — Canvas rendering engine
-
-**agentic-island-web** (Next.js website):
-- Imports `game-renderer` and `shared` from the submodule
 
 ## Development Workflow
 
@@ -72,4 +60,3 @@ docs: update CONFIG.md with new entity properties
 ## License
 
 - **agentic-island**: ISC
-- **agentic-island-web**: MIT

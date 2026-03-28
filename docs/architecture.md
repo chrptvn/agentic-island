@@ -130,7 +130,7 @@ The Hub is the public-facing server. It accepts connections from World instances
 
 **Path:** `apps/hub-web`
 
-React single-page application for browsing and watching live game worlds.
+React single-page application for browsing and watching live islands.
 
 **Pages:**
 
@@ -400,7 +400,7 @@ CREATE TABLE journal         (id INTEGER PRIMARY KEY AUTOINCREMENT, character_id
 
 ## Customization
 
-### Creating a Custom World
+### Creating a Custom Island
 
 All world behavior is controlled by JSON files in `apps/world/config/`. Edit these to create entirely different game experiences.
 

@@ -1,8 +1,8 @@
 # 🏝️ Agentic Island
 
-AI-powered tile-based survival game where AI agents control characters on a procedurally generated island. Fully customizable worlds with crafting, farming, building, and exploration — all driven by AI through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/).
+AI-powered tile-based survival game where AI agents control characters on a procedurally generated island. Fully customizable islands with crafting, farming, building, and exploration — all driven by AI through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/).
 
-This monorepo contains two systems: **World** (the game engine that runs on your machine) and **Hub** (a public website where anyone can watch your world in real-time).
+This monorepo contains two systems: **World** (the game engine that runs on your machine) and **Hub** (a public website where anyone can watch your island in real-time).
 
 ## Architecture Overview
 
@@ -44,7 +44,7 @@ No extra configuration is needed — if the world is connected to the hub (via `
 |---------|------|-------------|
 | `@agentic-island/world` | `apps/world` | Game engine, world simulation, MCP server, Hub connector |
 | `@agentic-island/api` | `apps/api` | Hono HTTP/WebSocket server, state relay, SQLite DB, sprite cache |
-| `@agentic-island/web` | `apps/web` | Next.js SPA for discovering and watching live worlds |
+| `@agentic-island/web` | `apps/web` | Next.js SPA for discovering and watching live islands |
 | `@agentic-island/cli` | `apps/cli` | Admin CLI for managing hub instances |
 | `@agentic-island/game-renderer` | `packages/game-renderer` | Shared Canvas 2D renderer (5-layer tile compositing, sprites, overlays) |
 | `@agentic-island/shared` | `packages/shared` | TypeScript types, WebSocket protocol definitions, constants |
@@ -89,8 +89,8 @@ pnpm --filter @agentic-island/world dev
 
 ### Connect World to Hub
 
-1. Open the Hub web UI at `http://localhost:3000/get-key`
-2. Generate an API key (save it — it's only shown once)
+1. Open the Hub web UI at `http://localhost:3000/passport`
+2. Claim an Island Passport (API key) — it can be resent to your email at any time
 3. Set the key and Hub URL as environment variables for World:
 
 ```bash
@@ -99,7 +99,7 @@ HUB_API_KEY=ai_your_key_here \
 pnpm --filter @agentic-island/world dev
 ```
 
-Your world will appear on the Hub's homepage. Open it to watch the game live.
+Your island will appear on the homepage. Open it to watch the game live.
 
 ### Connect an AI Agent
 
@@ -120,11 +120,11 @@ To share your world live on [agenticisland.ai](https://agenticisland.ai):
 pnpm run publish:world
 ```
 
-This interactive CLI will prompt for a world name, optional description, and your **World Passport** (API key). Get your passport at [agenticisland.ai](https://agenticisland.ai). It then boots World with an outbound connection to the public Hub — no port forwarding required.
+This interactive CLI will prompt for a world name, optional description, and your **Island Passport** (API key). Get your passport at [agenticisland.ai](https://agenticisland.ai). It then boots World with an outbound connection to the public Hub — no port forwarding required.
 
 ## Configuration
 
-World's game world is fully customizable through JSON config files in `apps/world/config/`:
+Your island is fully customizable through JSON config files in `apps/world/config/`:
 
 | File | Controls |
 |------|----------|
@@ -147,7 +147,7 @@ All config files support **hot-reload** — edit and save while the server is ru
 | `pnpm run typecheck` | Type-check all packages |
 | `pnpm run clean` | Remove all build artifacts |
 | `pnpm run test:smoke` | Run smoke tests against api |
-| `pnpm run publish:world` | Interactive CLI to publish your world to the public Hub |
+| `pnpm run publish:world` | Interactive CLI to publish your island |
 
 ## Tech Stack
 
