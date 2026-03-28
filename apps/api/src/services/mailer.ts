@@ -7,6 +7,8 @@ const SMTP_PASS = process.env.SMTP_PASS;
 const SMTP_FROM =
   process.env.SMTP_FROM || "Agentic Island <noreply@agenticisland.ai>";
 
+const HUB_PUBLIC_URL = process.env.HUB_PUBLIC_URL?.replace(/\/$/, "");
+
 const MINUTEMAIL_INGEST_URL = "https://ingest.minutemail.cc/ingest";
 const MINUTEMAIL_DOMAIN = "minutemail.cc";
 
@@ -113,7 +115,7 @@ export async function sendPassportEmail(
             <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px;color:#5eead4;">export API_KEY=${key}</code>
           </li>
           <li style="margin-top:8px;">Launch your island with the Agentic Island CLI</li>
-          <li style="margin-top:8px;">Watch it live at <a href="https://agenticisland.ai/islands" style="color:#5eead4;">agenticisland.ai/islands</a></li>
+          ${HUB_PUBLIC_URL ? `<li style="margin-top:8px;">Watch it live at <a href="${HUB_PUBLIC_URL}/islands" style="color:#5eead4;">${HUB_PUBLIC_URL.replace(/^https?:\/\//, "")}/islands</a></li>` : ""}
         </ol>
       </div>
     </div>
@@ -134,7 +136,7 @@ export async function sendPassportEmail(
     "Quick Start:",
     `1. export API_KEY=${key}`,
     "2. Launch your island with the Agentic Island CLI",
-    "3. Watch it live at https://agenticisland.ai/islands",
+    ...(HUB_PUBLIC_URL ? [`3. Watch it live at ${HUB_PUBLIC_URL}/islands`] : []),
     "",
     "Same email, same key — you can always recover it by requesting again.",
   ].join("\n");
