@@ -19,6 +19,7 @@ export interface HubConnectorOptions {
   islandName: string;
   islandId?: string;
   islandDescription?: string;
+  secured?: boolean;
 }
 
 export type SpritePayload = SpriteAsset;
@@ -35,7 +36,7 @@ export class HubConnector {
   private connected = false;
   private destroyed = false;
 
-  onConnected?: (islandId: string) => void;
+  onConnected?: (islandId: string, accessKey?: string) => void;
   onDisconnected?: () => void;
   onError?: (error: Error) => void;
 
@@ -130,6 +131,7 @@ export class HubConnector {
           id: this.options.islandId,
           description: this.options.islandDescription,
           config: islandConfig,
+          secured: this.options.secured,
         },
         sprites,
         ...(thumbnail ? { thumbnail } : {}),
@@ -156,7 +158,7 @@ export class HubConnector {
             this.reconnectDelay = WS_RECONNECT_BASE_MS;
             this.startHeartbeat();
             console.log(PREFIX, `Connected — islandId=${msg.islandId}`);
-            this.onConnected?.(msg.islandId);
+            this.onConnected?.(msg.islandId, msg.accessKey);
           } else {
             console.error(
               PREFIX,

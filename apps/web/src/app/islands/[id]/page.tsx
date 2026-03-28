@@ -4,8 +4,10 @@ import { use, useRef } from 'react';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
+import CodeBlock from '@/components/ui/CodeBlock';
 import { useIslandStream } from '@/hooks/useIslandStream';
 import GameViewer from '@/components/game/GameViewer';
+import { HUB_API_URL } from '@/lib/constants';
 
 export default function WorldViewerPage({
   params,
@@ -13,13 +15,25 @@ export default function WorldViewerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, spriteBaseUrl, islandName, connected, error } =
+  const { state, spriteBaseUrl, islandName, secured, connected, error } =
     useIslandStream(id);
 
   // Once the viewer has been shown, keep it mounted to avoid
   // unmount→remount sprite-reload flashes on transient disconnects.
   const everShown = useRef(false);
   if (connected || state) everShown.current = true;
+
+  const mcpConfig = JSON.stringify(
+    {
+      mcpServers: {
+        [islandName ?? id]: {
+          url: `${HUB_API_URL}/islands/${id}/mcp`,
+        },
+      },
+    },
+    null,
+    2
+  );
 
   return (
     <Container className="py-8">
@@ -32,9 +46,16 @@ export default function WorldViewerPage({
           >
             ← Back to Islands
           </Link>
-          <h1 className="mt-1 text-2xl font-bold text-text-heading">
-            {islandName ?? id}
-          </h1>
+          <div className="mt-1 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-text-heading">
+              {islandName ?? id}
+            </h1>
+            {connected && (
+              <span title={secured ? 'Secured island' : 'Open island'}>
+                {secured ? '🔒' : '🔓'}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -52,6 +73,21 @@ export default function WorldViewerPage({
       {/* Game canvas — stays mounted once first shown */}
       {everShown.current && (
         <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
+      )}
+
+      {/* MCP Configuration section — only for unsecured islands */}
+      {connected && !secured && (
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-text-heading mb-4">
+            MCP Configuration
+          </h2>
+          <div>
+            <p className="text-sm text-text-muted mb-3">
+              Connect your AI agent to this island:
+            </p>
+            <CodeBlock code={mcpConfig} language="json" />
+          </div>
+        </div>
       )}
     </Container>
   );

@@ -6,6 +6,7 @@
 import type { WebSocket } from "ws";
 import type { HubToViewerMessage, IslandMeta } from "@agentic-island/shared";
 import db from "../db/index.js";
+import { islandViewers } from "./island-handler.js";
 
 // ── Lobby viewer set ────────────────────────────────────────────────────────
 
@@ -33,21 +34,24 @@ interface IslandRow {
   description: string | null;
   thumbnail_path: string | null;
   player_count: number;
+  secured: number;
   status: string;
   last_heartbeat_at: string | null;
   created_at: string;
 }
 
 const ISLAND_COLS =
-  "id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at";
+  "id, name, description, thumbnail_path, player_count, secured, status, last_heartbeat_at, created_at";
 
-function rowToMeta(row: IslandRow): IslandMeta {
+function rowToMeta(row: IslandRow, viewerCount = 0): IslandMeta {
   return {
     id: row.id,
     name: row.name,
     description: row.description ?? undefined,
     thumbnailUrl: row.thumbnail_path ?? undefined,
     playerCount: row.player_count,
+    viewerCount,
+    secured: Boolean(row.secured),
     status: row.status as "online" | "offline",
     lastHeartbeatAt: row.last_heartbeat_at ?? undefined,
     createdAt: row.created_at,
@@ -58,14 +62,14 @@ function getAllIslands(): IslandMeta[] {
   const rows = db
     .prepare(`SELECT ${ISLAND_COLS} FROM islands WHERE status = 'online' ORDER BY updated_at DESC`)
     .all() as IslandRow[];
-  return rows.map(rowToMeta);
+  return rows.map((row) => rowToMeta(row, islandViewers.get(row.id)?.size ?? 0));
 }
 
 function getIslandById(islandId: string): IslandMeta | null {
   const row = db
     .prepare(`SELECT ${ISLAND_COLS} FROM islands WHERE id = ?`)
     .get(islandId) as IslandRow | undefined;
-  return row ? rowToMeta(row) : null;
+  return row ? rowToMeta(row, islandViewers.get(islandId)?.size ?? 0) : null;
 }
 
 // ── Broadcast helpers ───────────────────────────────────────────────────────

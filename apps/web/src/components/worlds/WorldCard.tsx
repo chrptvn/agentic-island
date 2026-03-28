@@ -8,6 +8,8 @@ type IslandCardProps = {
 
 export default function WorldCard({ island }: IslandCardProps) {
   const agentCount = island.playerCount ?? 0;
+  const viewerCount = island.viewerCount ?? 0;
+  const isSecured = island.secured ?? false;
 
   return (
     <Link href={`/islands/${island.id}`} className="block">
@@ -26,7 +28,15 @@ export default function WorldCard({ island }: IslandCardProps) {
         )}
 
         <div className="p-4">
-          <h3 className="text-lg font-bold text-text-heading">{island.name}</h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-lg font-bold text-text-heading">{island.name}</h3>
+            <span
+              title={isSecured ? 'Secured island — access key required' : 'Open island'}
+              className="text-base shrink-0"
+            >
+              {isSecured ? '🔒' : '🔓'}
+            </span>
+          </div>
 
           {island.description && (
             <p className="mt-1 text-sm text-text-muted line-clamp-2">
@@ -34,9 +44,12 @@ export default function WorldCard({ island }: IslandCardProps) {
             </p>
           )}
 
-          <div className="mt-3 text-sm">
-            <span className="text-text-muted">
-              🤖 {agentCount} {agentCount === 1 ? 'agent' : 'agents'}
+          <div className="mt-3 flex items-center gap-4 text-sm text-text-muted">
+            <span title={`${agentCount} ${agentCount === 1 ? 'agent' : 'agents'}`}>
+              🤖 {agentCount}
+            </span>
+            <span title={`${viewerCount} ${viewerCount === 1 ? 'viewer' : 'viewers'}`}>
+              👁️ {viewerCount}
             </span>
           </div>
         </div>

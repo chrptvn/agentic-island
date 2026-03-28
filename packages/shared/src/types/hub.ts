@@ -7,6 +7,8 @@ export interface IslandMeta {
   configSnapshot?: Partial<IslandConfig>;
   thumbnailUrl?: string;
   playerCount: number;
+  viewerCount: number;
+  secured: boolean;
   status: "online" | "offline";
   lastHeartbeatAt?: string;
   createdAt: string;

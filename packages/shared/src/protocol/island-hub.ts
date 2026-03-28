@@ -11,6 +11,7 @@ export interface IslandHandshakeMessage {
     id?: string;
     description?: string;
     config: Partial<IslandConfig>;
+    secured?: boolean;
   };
   sprites: SpriteAsset[];
   thumbnail?: SpriteAsset;
@@ -33,6 +34,8 @@ export interface HubHandshakeAckMessage {
   islandId: string;
   status: "ok" | "error";
   error?: string;
+  /** Access key returned when a secured island is first published (plaintext, one-time) */
+  accessKey?: string;
 }
 
 export interface HubPongMessage {

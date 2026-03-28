@@ -7,6 +7,7 @@ export interface IslandStream {
   state: IslandState | null;
   spriteBaseUrl: string | null;
   islandName: string | null;
+  secured: boolean;
   connected: boolean;
   error: string | null;
 }
@@ -18,6 +19,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
   const [state, setState] = useState<IslandState | null>(null);
   const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
   const [islandName, setIslandName] = useState<string | null>(null);
+  const [secured, setSecured] = useState(false);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,6 +55,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               setState(msg.state);
               setSpriteBaseUrl(msg.spriteBaseUrl);
               setIslandName(msg.islandName);
+              setSecured(msg.secured ?? false);
               break;
             case 'island_offline':
               setError('Island went offline');
@@ -92,5 +95,5 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
     };
   }, [islandId]);
 
-  return { state, spriteBaseUrl, islandName, connected, error };
+  return { state, spriteBaseUrl, islandName, secured, connected, error };
 }

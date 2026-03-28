@@ -42,11 +42,12 @@ export default async function LiveWorldsPreview() {
                     </p>
                   )}
 
-                  <div className="mt-4 flex items-center gap-2 text-sm text-text-muted">
-                    <span>👥</span>
-                    <span>
-                      {world.playerCount}{" "}
-                      {world.playerCount === 1 ? "agent" : "agents"}
+                  <div className="mt-4 flex items-center gap-4 text-sm text-text-muted">
+                    <span title={`${world.playerCount} ${world.playerCount === 1 ? 'agent' : 'agents'}`}>
+                      🤖 {world.playerCount}
+                    </span>
+                    <span title={`${world.viewerCount ?? 0} ${(world.viewerCount ?? 0) === 1 ? 'viewer' : 'viewers'}`}>
+                      👁️ {world.viewerCount ?? 0}
                     </span>
                   </div>
                 </Card>

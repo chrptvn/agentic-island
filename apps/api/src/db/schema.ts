@@ -18,6 +18,8 @@ export function initDb(db: Database.Database): void {
       config_snapshot TEXT,
       thumbnail_path TEXT,
       player_count INTEGER DEFAULT 0,
+      secured INTEGER DEFAULT 0,
+      access_key_hash TEXT,
       status TEXT DEFAULT 'offline',
       last_heartbeat_at TEXT,
       created_at TEXT DEFAULT (datetime('now')),
@@ -50,5 +52,12 @@ export function initDb(db: Database.Database): void {
     .all() as { name: string }[];
   if (!cols.some((c) => c.name === "thumbnail_path")) {
     db.exec("ALTER TABLE islands ADD COLUMN thumbnail_path TEXT");
+  }
+  // Migration: add secured and access_key_hash columns if missing
+  if (!cols.some((c) => c.name === "secured")) {
+    db.exec("ALTER TABLE islands ADD COLUMN secured INTEGER DEFAULT 0");
+  }
+  if (!cols.some((c) => c.name === "access_key_hash")) {
+    db.exec("ALTER TABLE islands ADD COLUMN access_key_hash TEXT");
   }
 }

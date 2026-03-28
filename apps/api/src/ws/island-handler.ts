@@ -3,7 +3,7 @@ import type {
   IslandToHubMessage,
   HubToIslandMessage,
 } from "@agentic-island/shared";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomUUID, randomBytes } from "node:crypto";
 import db from "../db/index.js";
 import { saveSprites, saveThumbnail } from "../cache/sprites.js";
 import { deliverTunnelResponse, closeAllSessionsForIsland } from "../mcp-proxy/sessions.js";
@@ -15,6 +15,7 @@ interface ConnectedIsland {
   apiKeyId: string;
   islandName: string;
   lastPing: number;
+  secured: boolean;
 }
 
 const connectedIslands = new Map<string, ConnectedIsland>();
@@ -59,42 +60,60 @@ export function handleIslandConnection(ws: WebSocket): void {
           // One island per passport: if no island.id is provided, look up by
           // api_key_id so the same passport always resolves to the same island.
           let islandId: string;
-          let existing: { id: string } | undefined;
+          let existing: { id: string; secured: number; access_key_hash: string | null } | undefined;
+          const isSecured = msg.island.secured ?? false;
 
           if (msg.island.id) {
             islandId = msg.island.id;
             existing = db
-              .prepare("SELECT id FROM islands WHERE id = ? AND api_key_id = ?")
-              .get(islandId, keyRow.id) as { id: string } | undefined;
+              .prepare("SELECT id, secured, access_key_hash FROM islands WHERE id = ? AND api_key_id = ?")
+              .get(islandId, keyRow.id) as { id: string; secured: number; access_key_hash: string | null } | undefined;
           } else {
             existing = db
-              .prepare("SELECT id FROM islands WHERE api_key_id = ?")
-              .get(keyRow.id) as { id: string } | undefined;
+              .prepare("SELECT id, secured, access_key_hash FROM islands WHERE api_key_id = ?")
+              .get(keyRow.id) as { id: string; secured: number; access_key_hash: string | null } | undefined;
             islandId = existing?.id ?? randomUUID();
+          }
+
+          // Handle access key generation for secured islands
+          let accessKey: string | undefined;
+          let accessKeyHash: string | null = existing?.access_key_hash ?? null;
+
+          // Generate new access key if:
+          // 1. Island is newly secured and doesn't have a key yet
+          // 2. Island is new and secured
+          if (isSecured && !accessKeyHash) {
+            accessKey = `ik_${randomBytes(16).toString("hex")}`;
+            accessKeyHash = createHash("sha256").update(accessKey).digest("hex");
           }
 
           if (existing) {
             db.prepare(
               `UPDATE islands SET name = ?, description = ?, config_snapshot = ?,
+               secured = ?, access_key_hash = ?,
                status = 'online', last_heartbeat_at = datetime('now'),
                updated_at = datetime('now') WHERE id = ?`,
             ).run(
               msg.island.name,
               msg.island.description ?? null,
               JSON.stringify(msg.island.config ?? {}),
+              isSecured ? 1 : 0,
+              accessKeyHash,
               islandId,
             );
           } else {
             db.prepare(
               `INSERT INTO islands (id, api_key_id, name, description, config_snapshot,
-               status, last_heartbeat_at)
-               VALUES (?, ?, ?, ?, ?, 'online', datetime('now'))`,
+               secured, access_key_hash, status, last_heartbeat_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, 'online', datetime('now'))`,
             ).run(
               islandId,
               keyRow.id,
               msg.island.name,
               msg.island.description ?? null,
               JSON.stringify(msg.island.config ?? {}),
+              isSecured ? 1 : 0,
+              accessKeyHash,
             );
           }
 
@@ -116,13 +135,14 @@ export function handleIslandConnection(ws: WebSocket): void {
             prevConn.ws.close(4002, "replaced by new connection");
           }
 
-          core = { ws, islandId, apiKeyId: keyRow.id, islandName: msg.island.name, lastPing: Date.now() };
+          core = { ws, islandId, apiKeyId: keyRow.id, islandName: msg.island.name, lastPing: Date.now(), secured: isSecured };
           connectedIslands.set(islandId, core);
 
           const ack: HubToIslandMessage = {
             type: "handshake_ack",
             islandId,
             status: "ok",
+            accessKey, // Only set when newly generated
           };
           ws.send(JSON.stringify(ack));
           // Notify lobby viewers that an island came online
@@ -148,6 +168,7 @@ export function handleIslandConnection(ws: WebSocket): void {
             islandName: core.islandName,
             state: msg.state,
             spriteBaseUrl: `/sprites/${core.islandId}/`,
+            secured: core.secured,
           });
           // Cache so late-joining viewers get an immediate snapshot
           lastIslandState.set(core.islandId, relay);
