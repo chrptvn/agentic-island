@@ -16,7 +16,12 @@ import { handleViewerConnection } from "./ws/viewer-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
 import { handleMcpProxy } from "./mcp-proxy/handler.js";
+import { safePath } from "./lib/safe-path.js";
+import { initPassportSalt } from "./lib/passport.js";
 import db from "./db/index.js";
+
+// Initialize passport salt (auto-generates and persists if not set)
+await initPassportSalt();
 
 const app = new Hono();
 
@@ -41,11 +46,12 @@ app.route("/api/admin", admin);
 // Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
 app.get("/sprites/:worldId/*", async (c) => {
   const worldId = c.req.param("worldId");
-  const filePath = join(
-    getSpriteCacheDir(),
-    worldId,
-    c.req.path.slice(`/sprites/${worldId}/`.length),
-  );
+  const userSegment = c.req.path.slice(`/sprites/${worldId}/`.length);
+  const filePath = safePath(getSpriteCacheDir(), worldId, userSegment);
+
+  if (!filePath) {
+    return c.json({ error: "Invalid path" }, 400);
+  }
 
   try {
     await stat(filePath);
@@ -97,8 +103,10 @@ if (servingStatic) {
       return next();
     }
 
-    // Try exact file match first
-    const filePath = join(WEB_DIST, urlPath);
+    // Try exact file match first (with path traversal guard)
+    const filePath = safePath(WEB_DIST, urlPath);
+    if (!filePath) return next();
+
     try {
       const s = await stat(filePath);
       if (s.isFile()) {

@@ -1,6 +1,7 @@
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import type { SpriteAsset } from "@agentic-island/shared";
+import { safePath } from "../lib/safe-path.js";
 
 const CACHE_DIR = process.env.SPRITE_CACHE_DIR ?? "sprite-cache";
 
@@ -13,7 +14,13 @@ export async function saveSprites(
 
   await Promise.all(
     sprites.map(async (sprite) => {
-      const dest = join(dir, sprite.filename);
+      const dest = safePath(dir, sprite.filename);
+      if (!dest) {
+        console.warn(
+          `[sprites] Rejected path-traversal filename: ${sprite.filename}`,
+        );
+        return;
+      }
       // Create subdirectories if the filename contains path separators
       await mkdir(dirname(dest), { recursive: true });
       const buf = Buffer.from(sprite.data, "base64");

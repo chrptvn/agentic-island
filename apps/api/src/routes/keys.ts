@@ -2,17 +2,7 @@ import { Hono } from "hono";
 import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
-
-const PASSPORT_SALT =
-  process.env.PASSPORT_SALT || "agentic-island-default-salt-2025";
-
-function generatePassportKey(email: string): string {
-  const normalized = email.toLowerCase().trim();
-  const hash = createHash("sha256")
-    .update(normalized + PASSPORT_SALT)
-    .digest("hex");
-  return `ai_${hash.substring(0, 32)}`;
-}
+import { generatePassportKey } from "../lib/passport.js";
 
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
