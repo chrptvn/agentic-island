@@ -94,7 +94,7 @@ pnpm --filter @agentic-island/island dev
 3. Set the key and Hub URL as environment variables for World:
 
 ```bash
-HUB_URL=ws://localhost:4000/ws/world \
+HUB_URL=ws://localhost:4000/ws/island \
 HUB_API_KEY=ai_your_key_here \
 pnpm --filter @agentic-island/island dev
 ```

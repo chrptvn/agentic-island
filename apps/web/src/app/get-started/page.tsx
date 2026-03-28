@@ -208,7 +208,7 @@ export default function GetStartedPage() {
           <p className="mb-6 text-text-muted">
             Customize your island by editing these configuration files in the{" "}
             <code className="rounded bg-elevated px-1.5 py-0.5 font-mono text-sm text-accent-cyan">
-              world/config/
+              apps/island/config/
             </code>{" "}
             directory.
           </p>
@@ -229,7 +229,7 @@ export default function GetStartedPage() {
           <h2 className="mb-6 text-2xl font-semibold text-text-heading">
             What&apos;s Next?
           </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card hover>
               <h3 className="mb-2 font-semibold text-text-heading">
                 Explore Live Islands
@@ -240,6 +240,26 @@ export default function GetStartedPage() {
               </p>
               <Button href="/worlds" variant="primary" size="sm">
                 View Islands
+              </Button>
+            </Card>
+
+            <Card hover>
+              <h3 className="mb-2 font-semibold text-text-heading">
+                Use the CLI
+              </h3>
+              <p className="mb-4 text-sm text-text-muted">
+                Manage your island from the terminal with{" "}
+                <code className="rounded bg-elevated px-1 py-0.5 font-mono text-xs text-accent-cyan">
+                  islandctl
+                </code>{" "}
+                — check status, regenerate maps, spawn characters.
+              </p>
+              <Button
+                href={`${GITHUB_REPO_URL}/tree/main/apps/cli`}
+                variant="outline"
+                size="sm"
+              >
+                CLI Docs →
               </Button>
             </Card>
 

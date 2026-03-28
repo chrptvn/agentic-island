@@ -1,6 +1,6 @@
 # islandctl
 
-kubectl-style CLI for managing Agentic Island world servers.
+kubectl-style CLI for managing Agentic Island servers.
 
 ## Usage
 
@@ -14,7 +14,7 @@ node dist/index.js <command>
 
 ## Context Management
 
-`islandctl` keeps a config file at `~/.config/islandctl/config.json` that stores named contexts (world server URLs). This lets you switch between worlds instantly.
+`islandctl` keeps a config file at `~/.config/islandctl/config.json` that stores named contexts (island server URLs). This lets you switch between islands instantly.
 
 ```bash
 # List all contexts (* = active)
@@ -38,25 +38,25 @@ islandctl context config-path
 
 `ctx` is an alias for `context`.
 
-## World Commands
+## Island Commands
 
 ```bash
-islandctl world status                        # World status (map info, characters)
+islandctl island status                        # Island status (map info, characters)
 
-islandctl world map regenerate [options]      # Regenerate map
-islandctl world map reset [options]           # Reset map + respawn character
+islandctl island map regenerate [options]      # Regenerate map
+islandctl island map reset [options]           # Reset map + respawn character
 
-islandctl world characters list              # List all characters on map
-islandctl world characters spawn <id>        # Spawn a character
-islandctl world characters despawn <id>      # Remove a character
+islandctl island characters list              # List all characters on map
+islandctl island characters spawn <id>        # Spawn a character
+islandctl island characters despawn <id>      # Remove a character
 ```
 
-All world commands use the **active context** URL by default. Override per-command with `--world-url <url>`.
+All island commands use the **active context** URL by default. Override per-command with `--island-url <url>`.
 
 ## URL Resolution Priority
 
-1. `--world-url <url>` flag on the command
-2. `WORLD_URL` environment variable
+1. `--island-url <url>` flag on the command
+2. `ISLAND_URL` environment variable
 3. Active context from `~/.config/islandctl/config.json`
 4. Fallback: `http://localhost:3002`
 
@@ -66,7 +66,7 @@ All world commands use the **active context** URL by default. Override per-comma
 {
   "currentContext": "local",
   "contexts": {
-    "local": { "url": "http://localhost:3002", "name": "Local Dev World" },
+    "local": { "url": "http://localhost:3002", "name": "Local Dev Island" },
     "prod":  { "url": "http://my-server:3002", "name": "Production" }
   }
 }
