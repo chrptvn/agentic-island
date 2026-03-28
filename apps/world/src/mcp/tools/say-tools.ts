@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { McpSession } from "../mcp-server.js";
 
 const BASE_URL = `http://localhost:${process.env.WORLD_PORT ?? 3002}`;
 
-export function registerSayTools(server: McpServer): void {
+export function registerSayTools(server: McpServer, session: McpSession): void {
   server.tool(
     "say",
     "Make the character say something out loud. The text (max 280 characters) will appear as a speech bubble above the character in the UI for 8 seconds.",
@@ -12,6 +13,7 @@ export function registerSayTools(server: McpServer): void {
       text: z.string().min(1).max(280).describe("What the character says (max 280 characters)"),
     },
     async ({ character_id, text }) => {
+      if (!session.username) return { content: [{ type: "text", text: "Not connected. Call the 'connect' tool first with your username." }], isError: true };
       try {
         const res = await fetch(`${BASE_URL}/api/say`, {
           method: "POST",

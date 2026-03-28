@@ -1,6 +1,37 @@
 # Hub API — Multiplayer Orchestration Server
 
-Central hub that brokers world registration, manages API keys, caches sprites, and broadcasts world state to viewers via WebSocket.
+Central relay that brokers world registration, manages API keys, caches graphics assets, and broadcasts world state to viewers via WebSocket. **Communication layer with NO game logic or rendering.**
+
+## Architectural Role
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ WORLD                                                        │
+│ • Sends: state + tileRegistry (graphics metadata)            │
+│ • Updates throttled to 500ms-2s intervals                   │
+└──────────────────────────────────────────────────────────────┘
+     ↑ WebSocket (/ws/world — INPUT)
+     │
+┌──────────────────────────────────────────────────────────────┐
+│ HUB-API (Relay + Cache)                                      │
+├──────────────────────────────────────────────────────────────┤
+│ • Receives state + graphics from world                       │
+│ • Caches last state for late-joining viewers                 │
+│ • Caches sprite assets (GET /sprites/:worldId/*)            │
+│ • NO transformation of graphics or game logic                │
+│ • NO rendering code — only relay and storage                 │
+│ • Broadcasts state to all subscribed viewers                 │
+└──────────────────────────────────────────────────────────────┘
+     ↓ WebSocket (/ws/viewer — OUTPUT)
+┌──────────────────────────────────────────────────────────────┐
+│ WEB APP (Viewer)                                             │
+│ • Subscribes to world state                                  │
+│ • Downloads sprites from cache                               │
+│ • Renders with GameRenderer                                  │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Key Point:** This is a pure relay and cache layer. Game logic stays in World. Rendering stays in Web App.
 
 ## Architecture
 

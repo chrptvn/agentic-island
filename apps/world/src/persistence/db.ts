@@ -267,6 +267,25 @@ export function saveCharacter(id: string, x: number, y: number, stats: object, p
   ).run(id, x, y, JSON.stringify(stats), JSON.stringify(path), action, tileId, hairTileId ?? null, beardTileId ?? null, shelter ?? null);
 }
 
+export function loadCharacter(id: string): { id: string; x: number; y: number; stats: object; path: object[]; action: string; tileId: string; hairTileId?: string; beardTileId?: string; shelter?: string } | null {
+  const r = db
+    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter FROM characters WHERE id = ?")
+    .get(id) as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null } | undefined;
+  if (!r) return null;
+  return {
+    id: r.id,
+    x: r.x,
+    y: r.y,
+    stats: JSON.parse(r.stats),
+    path: JSON.parse(r.path ?? "[]"),
+    action: r.action ?? "idle",
+    tileId: r.tile_id ?? "human",
+    ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
+    ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
+    ...(r.shelter ? { shelter: r.shelter } : {}),
+  };
+}
+
 export function deleteCharacter(id: string): void {
   db.prepare("DELETE FROM characters WHERE id = ?").run(id);
 }

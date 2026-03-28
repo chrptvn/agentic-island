@@ -1,33 +1,33 @@
 'use client';
 
 import { useState } from 'react';
-import { useWorlds } from '@/hooks/useWorlds';
-import Button from '@/components/ui/Button';
+import { useWorlds, type WorldFilter } from '@/hooks/useWorlds';
 import WorldCard from './WorldCard';
 
-type Filter = 'online' | 'all';
+const TABS: { key: WorldFilter; label: string }[] = [
+  { key: 'with-agents', label: 'With Agents' },
+  { key: 'all', label: 'All' },
+];
 
 export default function WorldGrid() {
-  const [filter, setFilter] = useState<Filter>('online');
-  const { worlds, loading, error } = useWorlds(
-    filter === 'online' ? 'online' : undefined,
-  );
+  const [filter, setFilter] = useState<WorldFilter>('with-agents');
+  const { worlds, loading, error } = useWorlds(filter);
 
   return (
     <div>
       {/* Filter tabs */}
       <div className="mb-8 flex gap-4 border-b border-border-muted">
-        {(['online', 'all'] as const).map((tab) => (
+        {TABS.map((tab) => (
           <button
-            key={tab}
-            onClick={() => setFilter(tab)}
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
             className={`cursor-pointer pb-2 text-sm font-medium transition-colors ${
-              filter === tab
+              filter === tab.key
                 ? 'border-b-2 border-accent-cyan text-accent-cyan'
                 : 'text-text-muted hover:text-text-primary'
             }`}
           >
-            {tab === 'online' ? 'Online' : 'All'}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -46,11 +46,10 @@ export default function WorldGrid() {
       {!loading && !error && worlds.length === 0 && (
         <div className="py-12 text-center">
           <p className="text-text-muted">
-            No worlds online right now — be the first to share yours!
+            {filter === 'with-agents'
+              ? 'No worlds with agents right now — check back soon!'
+              : 'No worlds yet — be the first to share yours!'}
           </p>
-          <Button href="/passport" variant="primary" size="sm" className="mt-4">
-            Get a Passport
-          </Button>
         </div>
       )}
 

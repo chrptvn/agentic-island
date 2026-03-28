@@ -24,7 +24,7 @@ export default function WorldViewerPage({
   return (
     <Container className="py-8">
       {/* Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-6">
         <div>
           <Link
             href="/worlds"
@@ -36,19 +36,6 @@ export default function WorldViewerPage({
             {worldName ?? id}
           </h1>
         </div>
-
-        <span className="flex items-center gap-2 text-sm">
-          <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${
-              connected ? 'bg-accent-emerald' : 'bg-accent-red'
-            }`}
-          />
-          <span
-            className={connected ? 'text-accent-emerald' : 'text-accent-red'}
-          >
-            {connected ? 'Connected' : 'Disconnected'}
-          </span>
-        </span>
       </div>
 
       {/* Error / offline state */}
@@ -64,9 +51,7 @@ export default function WorldViewerPage({
 
       {/* Game canvas — stays mounted once first shown */}
       {everShown.current && (
-        <div className="overflow-x-auto">
-          <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
-        </div>
+        <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
       )}
     </Container>
   );

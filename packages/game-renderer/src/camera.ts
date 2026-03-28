@@ -16,6 +16,8 @@ export interface CameraOptions {
   initialZoom?: number;
   /** Base scale factor for pixel-perfect rendering (default: 2) */
   scaleFactor?: number;
+  /** Virtual margin around the map in tiles (default: 20) */
+  mapMargin?: number;
 }
 
 export class Camera {
@@ -30,6 +32,10 @@ export class Camera {
   readonly maxZoom: number;
   /** Base scale factor (e.g. 2 for 2× pixel-perfect rendering) */
   private readonly scaleFactor: number;
+  /** Virtual margin around the map in tiles */
+  private readonly mapMarginTiles: number;
+  /** Virtual margin in world pixels (set by setMapSize) */
+  private marginPx = 0;
 
   private mapWidthPx = 0;
   private mapHeightPx = 0;
@@ -41,6 +47,7 @@ export class Camera {
     this.maxZoom = options.maxZoom ?? 4.0;
     this.zoom = options.initialZoom ?? 1.0;
     this.scaleFactor = options.scaleFactor ?? 2;
+    this.mapMarginTiles = options.mapMargin ?? 20;
   }
 
   /**
@@ -64,6 +71,7 @@ export class Camera {
   setMapSize(mapWidth: number, mapHeight: number, tileSize: number): void {
     this.mapWidthPx = mapWidth * tileSize;
     this.mapHeightPx = mapHeight * tileSize;
+    this.marginPx = this.mapMarginTiles * tileSize;
     this.clampZoom();
     this.clamp();
   }
@@ -181,7 +189,8 @@ export class Camera {
   }
 
   /**
-   * Reset the camera to show the center of the map at the default zoom.
+   * Reset the camera to show the full map (plus margin) centered in the
+   * viewport. Uses fill-zoom so the entire world is visible by default.
    */
   reset(canvasW: number, canvasH: number): void {
     this.canvasW = canvasW;
@@ -236,9 +245,9 @@ export class Camera {
   }
 
   /**
-   * Clamp camera center so the visible area never extends beyond the map.
-   * The center must stay at least halfVisible pixels from each edge.
-   * If the map is smaller than the canvas on an axis, center on that axis.
+   * Clamp camera center so the visible area stays within the map plus
+   * the virtual margin. The margin allows zooming out to see void space
+   * around the map edges.
    */
   private clamp(): void {
     if (this.mapWidthPx === 0 || this.mapHeightPx === 0) return;
@@ -246,34 +255,39 @@ export class Camera {
     const s = this.scale;
     const halfVisW = this.canvasW / (2 * s);
     const halfVisH = this.canvasH / (2 * s);
+    const m = this.marginPx;
 
-    if (this.mapWidthPx <= halfVisW * 2) {
-      // Map fits inside canvas horizontally — center it
+    const virtualW = this.mapWidthPx + 2 * m;
+    const virtualH = this.mapHeightPx + 2 * m;
+
+    if (virtualW <= halfVisW * 2) {
       this.x = this.mapWidthPx / 2;
     } else {
-      this.x = Math.max(halfVisW, Math.min(this.mapWidthPx - halfVisW, this.x));
+      this.x = Math.max(-m + halfVisW, Math.min(this.mapWidthPx + m - halfVisW, this.x));
     }
 
-    if (this.mapHeightPx <= halfVisH * 2) {
-      // Map fits inside canvas vertically — center it
+    if (virtualH <= halfVisH * 2) {
       this.y = this.mapHeightPx / 2;
     } else {
-      this.y = Math.max(halfVisH, Math.min(this.mapHeightPx - halfVisH, this.y));
+      this.y = Math.max(-m + halfVisH, Math.min(this.mapHeightPx + m - halfVisH, this.y));
     }
   }
 
   /**
-   * Compute the zoom level at which the map exactly fills the canvas on
-   * both axes (no void visible). Uses Math.max so the map covers the
-   * canvas completely — one axis fits exactly, the other may be cropped.
+   * Compute the zoom level at which the map (plus virtual margin) exactly
+   * fills the canvas. The margin ensures the user can always zoom out to
+   * see void space around the map edges.
    */
   private computeFillZoom(): number {
-    if (this.mapWidthPx === 0 || this.mapHeightPx === 0 || this.canvasW === 0 || this.canvasH === 0) {
+    const m = this.marginPx;
+    const vw = this.mapWidthPx + 2 * m;
+    const vh = this.mapHeightPx + 2 * m;
+    if (vw === 0 || vh === 0 || this.canvasW === 0 || this.canvasH === 0) {
       return this._minZoom;
     }
     const fillZoom = Math.max(
-      this.canvasW / (this.mapWidthPx * this.scaleFactor),
-      this.canvasH / (this.mapHeightPx * this.scaleFactor),
+      this.canvasW / (vw * this.scaleFactor),
+      this.canvasH / (vh * this.scaleFactor),
     );
     return Math.max(this._minZoom, Math.min(this.maxZoom, fillZoom));
   }

@@ -1,6 +1,37 @@
 # Core — World Simulation Engine
 
-The game engine that runs the world: terrain generation, character AI, entity lifecycle, crafting, and real-time state management.
+The headless game engine that runs the world: terrain generation, character AI, entity lifecycle, crafting, and real-time state management. **Contains game logic and graphics metadata (tile definitions), but NO rendering code.**
+
+## Architectural Role
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ WORLD (Headless Game Engine)                                 │
+├──────────────────────────────────────────────────────────────┤
+│ • Game Logic — Tick loop, AI, movement, crafting, growth     │
+│ • State Management — World state, characters, entities       │
+│ • Graphics Metadata — tileRegistry, sprite definitions       │
+│ • NO Rendering — No canvas, DOM, or display code             │
+│ • NO Display to User — Sends state + graphics data to Hub    │
+│                                                               │
+│ Output: WorldState (state + tileRegistry) → Hub-API          │
+└──────────────────────────────────────────────────────────────┘
+     ↓ WebSocket (/ws/world)
+┌──────────────────────────────────────────────────────────────┐
+│ HUB-API (Relay)                                              │
+│ • Relays state + graphics to viewers                         │
+│ • Caches sprites for fast serving                            │
+└──────────────────────────────────────────────────────────────┘
+     ↓ WebSocket (/ws/viewer)
+┌──────────────────────────────────────────────────────────────┐
+│ WEB APP (Renderer)                                           │
+│ • Receives state + graphics metadata                         │
+│ • ONLY place where rendering happens                         │
+│ • GameRenderer draws to HTML5 Canvas                         │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Key Point:** This app provides graphics data (sprite definitions) but does NOT render them. Rendering is the web app's responsibility.
 
 ## Architecture
 
@@ -33,7 +64,6 @@ src/
 |-----------|---------|
 | `config/` | Game configuration (tileset, entities, items, recipes, world). See [CONFIG.md](CONFIG.md) |
 | `sprites/` | All sprite assets with attribution. See [sprites/CREDITS.md](sprites/CREDITS.md) |
-| `public/` | Standalone web viewer (index.html + client.js) |
 
 ## Environment Variables
 
@@ -59,4 +89,8 @@ pnpm typecheck  # Type-check without emitting
 ## Dependencies
 
 - `@agentic-island/shared` — Types, protocols, constants
-- `@agentic-island/game-renderer` — Sprite handling
+- `better-sqlite3` — World state persistence
+- `ws` — WebSocket client for Hub connection
+- `@modelcontextprotocol/sdk` — MCP server for AI agents
+- `rot-js` — Procedural dungeon generation
+- `zod` — Schema validation

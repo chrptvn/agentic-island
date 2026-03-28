@@ -2,8 +2,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from "http";
 import { readFile, readdir } from "fs/promises";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
-import { WebSocketServer, type WebSocket } from "ws";
 import { World } from "../world/world.js";
+import { MAP_SIZE_PRESETS, type MapSize } from "../world/map.js";
 import { TILES, TILE_SIZE, TILE_GAP, TILE_SHEET, SHEET_OVERRIDES } from "../world/tile-registry.js";
 import { allItemDefs } from "../world/item-registry.js";
 import { RECIPES } from "../world/craft-registry.js";
@@ -11,14 +11,12 @@ import { BUILD_DEFS } from "../world/entity-registry.js";
 import { handleMcpRequest } from "../mcp/mcp-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PUBLIC_DIR  = join(__dirname, "../..", "public");
 const SPRITE_DIR  = join(__dirname, "../..", "sprites");
 
 const MIME: Record<string, string> = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
   ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
 };
 
 function readBody(req: IncomingMessage): Promise<unknown> {
@@ -115,38 +113,11 @@ async function handleRequest(
     return;
   }
 
-  if (url === "/api/spawn" && method === "POST") {
-    try {
-      const body = await readBody(req) as { x: number; y: number; id?: string };
-      const world = World.getInstance();
-      const character = world.spawnCharacter(body.x, body.y, body.id);
-      jsonOk(res, { message: `Character "${character.id}" spawned at (${body.x}, ${body.y}).`, character });
-    } catch (err) {
-      jsonErr(res, 400, (err as Error).message);
-    }
-    return;
-  }
-
-  if (url === "/api/spawn_random" && method === "POST") {
+  if (url === "/api/kick" && method === "POST") {
     try {
       const body = await readBody(req) as { id: string };
-      const world = World.getInstance();
-      const positions = world.getValidSpawnPositions();
-      if (positions.length === 0) throw new Error("No valid spawn positions available.");
-      const pos = positions[Math.floor(Math.random() * positions.length)];
-      const character = world.spawnCharacter(pos.x, pos.y, body.id);
-      jsonOk(res, { message: `Character "${character.id}" spawned at (${pos.x}, ${pos.y}).`, character });
-    } catch (err) {
-      jsonErr(res, 400, (err as Error).message);
-    }
-    return;
-  }
-
-  if (url === "/api/despawn" && method === "POST") {
-    try {
-      const body = await readBody(req) as { id: string };
-      World.getInstance().despawnCharacter(body.id);
-      jsonOk(res, { message: `Character "${body.id}" despawned.` });
+      World.getInstance().kick(body.id);
+      jsonOk(res, { message: `Character "${body.id}" kicked from the world.` });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
@@ -155,10 +126,14 @@ async function handleRequest(
 
   if (url === "/api/regenerate" && method === "POST") {
     try {
-      const body = await readBody(req) as { width?: number; height?: number; seed?: number; fillProbability?: number; iterations?: number };
+      const body = await readBody(req) as { size?: MapSize; seed?: number };
+      if (body.size && !MAP_SIZE_PRESETS[body.size]) {
+        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(MAP_SIZE_PRESETS).join(", ")}`);
+        return;
+      }
       const world = World.getInstance();
-      const map = world.regenerateMap(body);
-      jsonOk(res, { message: "Map regenerated.", seed: map.seed, width: map.width, height: map.height });
+      const map = world.regenerateMap({ size: body.size, seed: body.seed });
+      jsonOk(res, { message: "Map regenerated.", size: map.size, seed: map.seed, width: map.width, height: map.height });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
@@ -167,16 +142,17 @@ async function handleRequest(
 
   if (url === "/api/reset" && method === "POST") {
     try {
-      const body = await readBody(req) as { width?: number; height?: number; characterId?: string };
+      const body = await readBody(req) as { size?: MapSize; characterId?: string };
+      if (body.size && !MAP_SIZE_PRESETS[body.size]) {
+        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(MAP_SIZE_PRESETS).join(", ")}`);
+        return;
+      }
       const world = World.getInstance();
-      const map = world.regenerateMap({ width: body.width, height: body.height });
+      const map = world.regenerateMap({ size: body.size });
       const characterId = body.characterId ?? "Carl";
-      try { world.despawnCharacter(characterId); } catch { /* not spawned, fine */ }
-      const positions = world.getValidSpawnPositions();
-      if (positions.length === 0) throw new Error("No valid spawn positions after regeneration.");
-      const pos = positions[Math.floor(Math.random() * positions.length)];
-      const character = world.spawnCharacter(pos.x, pos.y, characterId);
-      jsonOk(res, { message: `World reset. "${character.id}" spawned at (${pos.x}, ${pos.y}).`, seed: map.seed, width: map.width, height: map.height, character });
+      try { world.kick(characterId); } catch { /* not spawned, fine */ }
+      const { character, reconnected } = world.connect(characterId);
+      jsonOk(res, { message: `World reset. "${characterId}" spawned at (${character.x}, ${character.y}).`, size: map.size, seed: map.seed, width: map.width, height: map.height, character: { id: characterId, x: character.x, y: character.y }, reconnected });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
@@ -413,30 +389,21 @@ async function handleRequest(
   }
 
 
-  // Static file serving: try sprites/ first, then public/
-  const requestedFile = url === "/" ? "/index.html" : url;
-  const spritePath = join(SPRITE_DIR, requestedFile);
-  const publicPath = join(PUBLIC_DIR, requestedFile);
-
-  for (const filePath of [spritePath, publicPath]) {
+  // Static file serving: sprites only (no local viewer)
+  const requestedFile = url === "/" ? "" : url;
+  if (requestedFile) {
+    const spritePath = join(SPRITE_DIR, requestedFile);
     try {
-      const data = await readFile(filePath);
-      const mime = MIME[extname(filePath)] ?? "application/octet-stream";
+      const data = await readFile(spritePath);
+      const mime = MIME[extname(spritePath)] ?? "application/octet-stream";
       res.writeHead(200, { "Content-Type": mime });
       res.end(data);
       return;
-    } catch { /* try next */ }
+    } catch { /* not found */ }
   }
 
   res.writeHead(404);
   res.end("Not found");
-}
-
-function mapPayload(world: World) {
-  return JSON.stringify({
-    type: "map",
-    data: world.toJSON(),
-  });
 }
 
 export function startHttpServer(initialPort = 3000): Promise<boolean> {
@@ -451,27 +418,9 @@ export function startHttpServer(initialPort = 3000): Promise<boolean> {
       }
     })
   );
-  const wss = new WebSocketServer({ server: httpServer });
-
-  const clients = new Set<WebSocket>();
-
-  wss.on("connection", (ws) => {
-    clients.add(ws);
-    ws.send(mapPayload(world));
-    ws.on("close", () => clients.delete(ws));
-  });
-
-  world.on("map:updated", () => {
-    const msg = mapPayload(world);
-    for (const ws of clients) {
-      if (ws.readyState === ws.OPEN) ws.send(msg);
-    }
-  });
 
   // Poll DB every second to catch map changes made by other processes (e.g. MCP server)
   setInterval(() => world.syncFromDb(), 1000).unref();
-
-  wss.on("error", () => { /* handled by httpServer error handler */ });
 
   return new Promise((resolve, reject) => {
     httpServer.on("error", (err: NodeJS.ErrnoException) => {

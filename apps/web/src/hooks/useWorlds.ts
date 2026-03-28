@@ -3,13 +3,18 @@
 import { useState, useEffect } from 'react';
 import type { WorldMeta } from '@agentic-island/shared';
 
-export function useWorlds(status?: 'online' | 'offline') {
+export type WorldFilter = 'with-agents' | 'all';
+
+export function useWorlds(filter: WorldFilter = 'all') {
   const [worlds, setWorlds] = useState<WorldMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const url = status ? `/api/worlds?status=${status}` : '/api/worlds';
+    const url =
+      filter === 'with-agents'
+        ? '/api/worlds?filter=with-agents'
+        : '/api/worlds';
     fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -18,7 +23,7 @@ export function useWorlds(status?: 'online' | 'offline') {
       .then((data) => setWorlds(data.worlds ?? []))
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, [status]);
+  }, [filter]);
 
   return { worlds, loading, error };
 }

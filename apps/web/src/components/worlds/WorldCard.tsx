@@ -7,7 +7,7 @@ type WorldCardProps = {
 };
 
 export default function WorldCard({ world }: WorldCardProps) {
-  const isOnline = world.status === 'online';
+  const agentCount = world.playerCount ?? 0;
 
   return (
     <Link href={`/worlds/${world.id}`} className="block">
@@ -20,20 +20,9 @@ export default function WorldCard({ world }: WorldCardProps) {
           </p>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-sm">
+        <div className="mt-4 text-sm">
           <span className="text-text-muted">
-            👥 {world.playerCount}
-          </span>
-
-          <span className="flex items-center gap-1.5">
-            <span
-              className={`inline-block h-2 w-2 rounded-full ${
-                isOnline ? 'bg-accent-emerald' : 'bg-text-muted'
-              }`}
-            />
-            <span className={isOnline ? 'text-accent-emerald' : 'text-text-muted'}>
-              {isOnline ? 'Online' : 'Offline'}
-            </span>
+            🤖 {agentCount} {agentCount === 1 ? 'agent' : 'agents'}
           </span>
         </div>
       </Card>

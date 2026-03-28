@@ -121,6 +121,13 @@ export function handleWorldConnection(ws: WebSocket): void {
 
         case "state_update": {
           if (!core) return;
+
+          // Keep player_count in sync with the number of characters
+          const agentCount = msg.state.characters?.length ?? 0;
+          db.prepare(
+            "UPDATE worlds SET player_count = ? WHERE id = ?",
+          ).run(agentCount, core.worldId);
+
           const relay = JSON.stringify({
             type: "world_state",
             worldId: core.worldId,
@@ -166,7 +173,7 @@ export function handleWorldConnection(ws: WebSocket): void {
   ws.on("close", () => {
     if (core) {
       db.prepare(
-        "UPDATE worlds SET status = 'offline', updated_at = datetime('now') WHERE id = ?",
+        "UPDATE worlds SET status = 'offline', player_count = 0, updated_at = datetime('now') WHERE id = ?",
       ).run(core.worldId);
       connectedWorlds.delete(core.worldId);
       lastWorldState.delete(core.worldId);

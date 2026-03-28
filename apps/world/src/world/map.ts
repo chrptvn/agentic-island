@@ -1,6 +1,17 @@
 export type TileType = "grass" | "water";
 
+export type MapSize = "very_small" | "small" | "medium" | "large" | "very_large";
+
+export const MAP_SIZE_PRESETS: Record<MapSize, { width: number; height: number }> = {
+  very_small: { width: 20, height: 14 },
+  small:      { width: 30, height: 20 },
+  medium:     { width: 45, height: 30 },
+  large:      { width: 60, height: 40 },
+  very_large: { width: 80, height: 54 },
+};
+
 export interface MapOptions {
+  size?: MapSize;
   width?: number;
   height?: number;
   seed?: number;
@@ -12,18 +23,21 @@ export interface Tile {
   type: TileType;
 }
 
-const DEFAULT_WIDTH = 30;
-const DEFAULT_HEIGHT = 20;
+const DEFAULT_SIZE: MapSize = "small";
 
 export class WorldMap {
   readonly width: number;
   readonly height: number;
   readonly seed: number;
+  readonly size: MapSize;
   private tiles: Map<string, TileType>;
 
   constructor(options: MapOptions = {}) {
-    this.width = options.width ?? DEFAULT_WIDTH;
-    this.height = options.height ?? DEFAULT_HEIGHT;
+    const size = options.size ?? DEFAULT_SIZE;
+    const preset = MAP_SIZE_PRESETS[size];
+    this.size = size;
+    this.width = options.width ?? preset.width;
+    this.height = options.height ?? preset.height;
     this.seed = options.seed ?? Math.floor(Math.random() * 2 ** 31);
     this.tiles = new Map();
 

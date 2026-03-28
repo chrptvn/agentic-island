@@ -26,7 +26,7 @@ interface AlertCooldowns {
 export interface McpSession {
   server:       McpServer;
   transport:    Transport;
-  characterId:  string | null;
+  username:     string | null;
   lastSnapshot: string;
   alertCooldowns: AlertCooldowns;
   worldListener: (() => void) | null;
@@ -37,9 +37,9 @@ const mcpSessions = new Map<string, McpSession>();
 
 // ─── World push helpers ───────────────────────────────────────────────────────
 
-function attachWorldListener(session: McpSession): void {
+export function attachWorldListener(session: McpSession): void {
   if (session.worldListener) return; // already attached
-  const id = session.characterId;
+  const id = session.username;
   if (!id) return;
 
   const listener = () => {
@@ -119,11 +119,11 @@ function initServer(server: McpServer, session: McpSession): void {
   );
 
   // ── Player tools (character actions, inventory, crafting) ────────────────────
-  registerGenericPersonaTools(server);
-  registerFeedEntityTools(server);
-  registerJournalTools(server);
-  registerSayTools(server);
-  registerPlantTools(server);
+  registerGenericPersonaTools(server, session);
+  registerFeedEntityTools(server, session);
+  registerJournalTools(server, session);
+  registerSayTools(server, session);
+  registerPlantTools(server, session);
 }
 
 /** Create a local HTTP-backed MCP session (original behaviour). */
@@ -138,12 +138,16 @@ function makeHttpSession(): McpSession {
   transport.onclose = () => {
     if (transport.sessionId) mcpSessions.delete(transport.sessionId);
     detachWorldListener(session);
+    if (session.username) {
+      World.getInstance().kick(session.username);
+      session.username = null;
+    }
   };
 
   const session: McpSession = {
     server,
     transport,
-    characterId: null,
+    username: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
@@ -164,7 +168,7 @@ export function makeTunnelSession(transport: Transport): McpSession {
   const session: McpSession = {
     server,
     transport,
-    characterId: null,
+    username: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
@@ -172,6 +176,10 @@ export function makeTunnelSession(transport: Transport): McpSession {
 
   transport.onclose = () => {
     detachWorldListener(session);
+    if (session.username) {
+      World.getInstance().kick(session.username);
+      session.username = null;
+    }
   };
 
   initServer(server, session);

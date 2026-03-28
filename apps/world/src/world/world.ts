@@ -1,11 +1,11 @@
 import { EventEmitter } from "events";
 import { watch } from "fs";
-import { WorldMap, type MapOptions } from "./map.js";
+import { WorldMap, type MapOptions, type MapSize, MAP_SIZE_PRESETS } from "./map.js";
 import {
   loadState, saveState,
   loadOverrides, saveOverride, saveOverridesBatch, clearTileOverride, clearOverrides, loadOverridesVersion,
   loadEntityStats, saveEntityStat, deleteEntityStat, saveEntityStatsBatch, clearEntityStats,
-  loadCharacters, saveCharacter, deleteCharacter, runTransaction,
+  loadCharacters, saveCharacter, deleteCharacter, loadCharacter, runTransaction,
 } from "../persistence/db.js";
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell } from "./autotile.js";
@@ -47,7 +47,13 @@ export class World extends EventEmitter {
   private constructor() {
     super();
     const saved = loadState<MapOptions>(MAP_STATE_KEY);
-    this.map = new WorldMap(saved ?? undefined);
+    if (!saved) {
+      const envSize = process.env.WORLD_SIZE as MapSize | undefined;
+      const size = envSize && MAP_SIZE_PRESETS[envSize] ? envSize : undefined;
+      this.map = new WorldMap(size ? { size } : undefined);
+    } else {
+      this.map = new WorldMap(saved);
+    }
     this.overrides = loadOverrides();
     this.overridesVersion = loadOverridesVersion();
     this.entityStats = loadEntityStats() as Map<string, EntityStats>;
@@ -647,11 +653,109 @@ export class World extends EventEmitter {
     return character;
   }
 
-  despawnCharacter(id: string): void {
+  /**
+   * Remove a character from the active world but keep their data in the DB
+   * so they can reconnect later with the same state.
+   */
+  kick(id: string): void {
     if (!this.characters.has(id)) throw new Error(`No character named "${id}".`);
     this.characters.delete(id);
-    deleteCharacter(id);
     this.emit("map:updated", this.map);
+  }
+
+  /**
+   * Connect (or reconnect) a character to the world.
+   * - If the character exists in the DB, restore their full state.
+   *   If their saved position is occupied, relocate to the nearest spawnable tile.
+   * - If the character is new, create them at a random spawnable position.
+   * - If the character is already active in-memory, just return them.
+   */
+  connect(username: string, _password?: string): { character: CharacterInstance; reconnected: boolean } {
+    const id = username;
+    // Already active — just return
+    const existing = this.characters.get(id);
+    if (existing) return { character: existing, reconnected: true };
+
+    // Try to restore from DB
+    const saved = loadCharacter(id);
+    if (saved) {
+      const stats: CharacterStats = { ...getDefaultCharacterStats(), ...(saved.stats as Partial<CharacterStats>) };
+      if (!stats.equipment) stats.equipment = defaultEquipment();
+
+      // Check if saved position is still spawnable
+      let { x, y } = saved;
+      if (!this._isSpawnable(x, y)) {
+        const alt = this.findNearestSpawnable(x, y);
+        if (!alt) throw new Error("No valid spawn positions available.");
+        x = alt.x;
+        y = alt.y;
+      }
+
+      const character: CharacterInstance = {
+        id, x, y,
+        tileId: saved.tileId,
+        hairTileId: saved.hairTileId,
+        beardTileId: saved.beardTileId,
+        stats,
+        path: [],
+        action: "idle",
+        ...(saved.shelter ? { shelter: saved.shelter } : {}),
+      };
+
+      this.characters.set(id, character);
+      saveCharacter(id, x, y, stats, [], "idle", saved.tileId, saved.hairTileId, saved.beardTileId);
+      this.emit("map:updated", this.map);
+      return { character, reconnected: true };
+    }
+
+    // New character — spawn at random position
+    const positions = this.getValidSpawnPositions();
+    if (positions.length === 0) throw new Error("No valid spawn positions available.");
+    const pos = positions[Math.floor(Math.random() * positions.length)];
+    return { character: this.spawnCharacter(pos.x, pos.y, id), reconnected: false };
+  }
+
+  /** Check if a tile is available for spawning (walkable, no entity, no character). */
+  private _isSpawnable(x: number, y: number): boolean {
+    if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height) return false;
+    const key = `${x},${y}`;
+    const layers = this.overrides.get(key);
+    if (!isWalkableGround(layers?.[1] ?? "")) return false;
+    if (layers?.[3]) return false;
+    // Check for other characters at this position
+    for (const c of this.characters.values()) {
+      if (c.x === x && c.y === y) return false;
+    }
+    return true;
+  }
+
+  /** BFS from (startX, startY) to find the nearest spawnable tile. */
+  findNearestSpawnable(startX: number, startY: number): Point | null {
+    const visited = new Set<string>();
+    const queue: Point[] = [{ x: startX, y: startY }];
+    visited.add(`${startX},${startY}`);
+
+    const dirs = [
+      { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+      { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+    ];
+
+    while (queue.length > 0) {
+      const pos = queue.shift()!;
+      if (this._isSpawnable(pos.x, pos.y)) return pos;
+
+      for (const d of dirs) {
+        const nx = pos.x + d.dx;
+        const ny = pos.y + d.dy;
+        const key = `${nx},${ny}`;
+        if (visited.has(key)) continue;
+        if (nx < 0 || nx >= this.map.width || ny < 0 || ny >= this.map.height) continue;
+        visited.add(key);
+        queue.push({ x: nx, y: ny });
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -2246,6 +2350,7 @@ export class World extends EventEmitter {
 
   private mapConfig(): MapOptions {
     return {
+      size: this.map.size,
       width: this.map.width,
       height: this.map.height,
       seed: this.map.seed,

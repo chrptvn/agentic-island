@@ -7,7 +7,10 @@ import Tooltip, { type TooltipData } from './Tooltip';
 
 const TILE_SIZE = 16;
 const SCALE_FACTOR = 2;
-const PX_PER_TILE = TILE_SIZE * SCALE_FACTOR;
+
+// Fixed viewport resolution (16:9)
+const VIEWPORT_WIDTH = 960;
+const VIEWPORT_HEIGHT = 540;
 
 interface GameViewerProps {
   state: WorldState | null;
@@ -101,11 +104,15 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   const handleMouseLeave = useCallback(() => setTooltip(null), []);
 
-  // Initialize renderer
+  // Initialize renderer with fixed viewport resolution
   useEffect(() => {
     if (!canvasRef.current) return;
+    const canvas = canvasRef.current;
+    canvas.width = VIEWPORT_WIDTH;
+    canvas.height = VIEWPORT_HEIGHT;
+
     const renderer = new GameRenderer({
-      canvas: canvasRef.current,
+      canvas,
       tileSize: TILE_SIZE,
       scaleFactor: SCALE_FACTOR,
     });
@@ -151,30 +158,20 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spriteBaseUrl, hasTileRegistry]);
 
-  // Update state and resize canvas imperatively (avoids React-triggered clears)
+  // Update state — camera initialization is handled by the renderer
   useEffect(() => {
     const renderer = rendererRef.current;
-    const canvas = canvasRef.current;
-    if (!renderer || !canvas || !state) return;
-
-    if (state.map) {
-      const w = state.map.width * PX_PER_TILE;
-      const h = state.map.height * PX_PER_TILE;
-      if (canvas.width !== w || canvas.height !== h) {
-        renderer.resize(w, h);
-      }
-    }
-
+    if (!renderer || !state) return;
     renderer.setState(state);
   }, [state]);
 
   return (
-    <div className="relative inline-block">
+    <div className="relative w-full aspect-[16/9] bg-black rounded-lg overflow-hidden">
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="block max-w-full rounded-lg bg-black cursor-crosshair"
+        className="block w-full h-full cursor-crosshair"
         style={{ imageRendering: 'pixelated' }}
       />
       {speechOverlays.map((bubble) => (

@@ -137,9 +137,6 @@ importers:
 
   apps/world:
     dependencies:
-      '@agentic-island/game-renderer':
-        specifier: workspace:*
-        version: link:../../packages/game-renderer
       '@agentic-island/shared':
         specifier: workspace:*
         version: link:../../packages/shared
