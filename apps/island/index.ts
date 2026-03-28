@@ -6,8 +6,23 @@ import { StateStreamer } from "./src/hub-connector/state-streamer.js";
 import { getIslandConfig } from "./src/island/island-config.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const ENV_PATH = join(__dirname, ".env");
+
+/** Persist a key=value pair into the island's .env file. */
+function saveToEnv(key: string, value: string): void {
+  let lines: string[] = [];
+  try { lines = readFileSync(ENV_PATH, "utf8").split("\n"); } catch { /* no file yet */ }
+  const exists = lines.some(l => l.match(new RegExp(`^${key}=`)));
+  if (exists) {
+    lines = lines.map(l => l.match(new RegExp(`^${key}=`)) ? `${key}=${value}` : l);
+  } else {
+    lines.push(`${key}=${value}`);
+  }
+  writeFileSync(ENV_PATH, lines.join("\n"), "utf8");
+}
 
 const isPrimary = await startHttpServer(parseInt(process.env.ISLAND_PORT ?? "3002", 10));
 
@@ -32,11 +47,36 @@ if (!isPrimary) {
     secured: isSecured,
   });
 
-  connector.onConnected = (id, accessKey) => {
+  connector.onConnected = async (id, accessKey) => {
     console.log(`[island] Connected to Hub — island ID: ${id}`);
-    
-    // Display access key and MCP config for secured islands
+
     if (accessKey) {
+      // New key issued — save it for later retrieval
+      process.env.ISLAND_ACCESS_KEY = accessKey;
+      try { saveToEnv("ISLAND_ACCESS_KEY", accessKey); } catch { /* non-fatal */ }
+    }
+
+    let storedKey = accessKey ?? process.env.ISLAND_ACCESS_KEY;
+
+    // If secured but key is missing locally, auto-regenerate via REST API
+    if (isSecured && !storedKey) {
+      try {
+        const httpBase = hubUrl.replace(/^ws/, "http").replace("/ws/island", "");
+        const res = await fetch(`${httpBase}/api/islands/${id}/regenerate-key`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${API_KEY}` },
+        });
+        if (res.ok) {
+          const json = await res.json() as { accessKey: string };
+          storedKey = json.accessKey;
+          process.env.ISLAND_ACCESS_KEY = storedKey;
+          try { saveToEnv("ISLAND_ACCESS_KEY", storedKey); } catch { /* non-fatal */ }
+        }
+      } catch { /* non-fatal — key display will be skipped */ }
+    }
+
+    const mcpUrl = hubUrl.replace(/^ws/, "http").replace("/ws/island", "") + `/islands/${id}/mcp`;
+    if (isSecured && storedKey) {
       console.log();
       console.log("  ════════════════════════════════════════════════════════");
       console.log("  🔒 Your island is secured. Here's your MCP configuration:");
@@ -44,28 +84,31 @@ if (!isPrimary) {
       console.log("  {");
       console.log(`    "mcpServers": {`);
       console.log(`      "${islandName}": {`);
-      console.log(`        "url": "${hubUrl.replace("/ws/island", "")}/islands/${id}/mcp",`);
+      console.log(`        "url": "${mcpUrl}",`);
       console.log(`        "headers": {`);
-      console.log(`          "Authorization": "Bearer ${accessKey}"`);
+      console.log(`          "Authorization": "Bearer ${storedKey}"`);
       console.log(`        }`);
       console.log(`      }`);
       console.log(`    }`);
       console.log("  }");
-      console.log("  ⚠️  The previous key (if any) is now invalid. Save this key securely!");
       console.log("  ════════════════════════════════════════════════════════");
       console.log();
-    } else if (isSecured) {
-      console.log("[island] Island is secured — use your existing access key to connect");
-      console.log("[island] To regenerate your access key, run: islandctl island get-key");
-    } else {
-      // Unsecured island — show simple MCP config
-      const mcpUrl = hubUrl.replace(/^ws/, "http").replace("/ws/island", "") + `/islands/${id}/mcp`;
+    } else if (!isSecured) {
       console.log();
-      console.log("  🔓 Your island is open. MCP endpoint:");
-      console.log(`     ${mcpUrl}`);
+      console.log("  ════════════════════════════════════════════════════════");
+      console.log("  🔓 Your island is open. Here's your MCP configuration:");
+      console.log();
+      console.log("  {");
+      console.log(`    "mcpServers": {`);
+      console.log(`      "${islandName}": {`);
+      console.log(`        "url": "${mcpUrl}"`);
+      console.log(`      }`);
+      console.log(`    }`);
+      console.log("  }");
+      console.log("  ════════════════════════════════════════════════════════");
       console.log();
     }
-    
+
     // Push initial state immediately so viewers see the island on first connect
     streamer.handleIslandUpdate(island);
   };

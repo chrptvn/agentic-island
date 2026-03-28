@@ -63,8 +63,6 @@ islandctl island map reset [options]           # Reset map + respawn character
 islandctl island characters list              # List all characters on map
 islandctl island characters spawn <id>        # Spawn a character
 islandctl island characters despawn <id>      # Remove a character
-
-islandctl island get-key [--dir <path>]       # Regenerate MCP access key for a secured island
 ```
 
 All island commands use the **active context** URL by default. Override per-command with `--island-url <url>`.

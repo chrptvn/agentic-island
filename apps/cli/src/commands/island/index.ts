@@ -2,7 +2,6 @@ import { Command } from "commander";
 import { registerIslandMapCommand } from "./map.js";
 import { registerIslandCharactersCommand } from "./characters.js";
 import { registerIslandStatusCommand } from "./status.js";
-import { registerGetKeyCommand } from "./get-key.js";
 import { getCurrentContext } from "../../lib/config.js";
 
 export function registerIslandCommand(program: Command): void {
@@ -16,5 +15,4 @@ export function registerIslandCommand(program: Command): void {
   registerIslandStatusCommand(island);
   registerIslandMapCommand(island);
   registerIslandCharactersCommand(island);
-  registerGetKeyCommand(island);
 }
