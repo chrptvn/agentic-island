@@ -149,7 +149,11 @@ export async function sendPassportEmail(
       return { delivered: true, method: "primary" };
     } catch (err) {
       console.error("[mailer] Failed to send passport email via primary SMTP:", err);
-      return { delivered: false, method: "primary" };
+      // Fall through to MinuteMail if recipient is a MinuteMail address
+      if (!isMinutemailAddress(email)) {
+        return { delivered: false, method: "primary" };
+      }
+      console.log("[mailer] Falling back to MinuteMail HTTP ingest");
     }
   }
 
