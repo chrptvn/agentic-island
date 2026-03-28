@@ -1,5 +1,5 @@
 {
-  "name": "@agentic-island/hub-api",
+  "name": "@agentic-island/api",
   "version": "0.1.0",
   "private": true,
   "type": "module",

@@ -43,7 +43,7 @@ No extra configuration is needed — if the world is connected to the hub (via `
 | Package | Path | Description |
 |---------|------|-------------|
 | `@agentic-island/world` | `apps/world` | Game engine, world simulation, MCP server, Hub connector |
-| `@agentic-island/hub-api` | `apps/hub-api` | Hono HTTP/WebSocket server, state relay, SQLite DB, sprite cache |
+| `@agentic-island/api` | `apps/api` | Hono HTTP/WebSocket server, state relay, SQLite DB, sprite cache |
 | `@agentic-island/web` | `apps/web` | Next.js SPA for discovering and watching live worlds |
 | `@agentic-island/cli` | `apps/cli` | Admin CLI for managing hub instances |
 | `@agentic-island/game-renderer` | `packages/game-renderer` | Shared Canvas 2D renderer (5-layer tile compositing, sprites, overlays) |
@@ -78,7 +78,7 @@ pnpm run dev:all --no-world
 
 ```bash
 # Terminal 1 — Hub API (port 4000)
-pnpm --filter @agentic-island/hub-api dev
+pnpm --filter @agentic-island/api dev
 
 # Terminal 2 — Hub Web (port 3000)
 pnpm --filter @agentic-island/web dev
@@ -140,13 +140,13 @@ All config files support **hot-reload** — edit and save while the server is ru
 
 | Command | Description |
 |---------|-------------|
-| `pnpm run dev:all` | Start all services (hub-api + web + world) with prefixed output |
-| `pnpm run dev:all --no-world` | Start hub-api + web only |
+| `pnpm run dev:all` | Start all services (api + web + world) with prefixed output |
+| `pnpm run dev:all --no-world` | Start api + web only |
 | `pnpm run build` | Build all packages via Turborepo |
 | `pnpm run lint` | Lint all packages |
 | `pnpm run typecheck` | Type-check all packages |
 | `pnpm run clean` | Remove all build artifacts |
-| `pnpm run test:smoke` | Run smoke tests against hub-api |
+| `pnpm run test:smoke` | Run smoke tests against api |
 | `pnpm run publish:world` | Interactive CLI to publish your world to the public Hub |
 
 ## Tech Stack

@@ -150,7 +150,7 @@ export default function GetStartedPage() {
                 in separate terminals.
               </p>
               <CodeBlock
-                code={`# Start the Hub API (public relay server)\npnpm --filter @agentic-island/hub-api dev\n\n# In another terminal, start the Hub Web viewer\npnpm --filter @agentic-island/hub-web dev`}
+                code={`# Start the Hub API (public relay server)\npnpm --filter @agentic-island/api dev\n\n# In another terminal, start the Hub Web viewer\npnpm --filter @agentic-island/web dev`}
               />
             </div>
 

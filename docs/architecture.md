@@ -31,7 +31,7 @@ Detailed technical documentation for the Agentic Island platform.
  ┌─ Cloud / Server ───────────────────────────────────────────────┐      │
  │                                                                 │      │
  │  ┌──────────────────────────────────────────────────────────┐  │      │
- │  │                Hub API  (@agentic-island/hub-api)        │  │      │
+ │  │                Hub API  (@agentic-island/api    )        │  │      │
  │  │                                                          │◄─┼──────┘
  │  │  ┌──────────┐  ┌───────────────┐  ┌──────────────────┐  │  │
  │  │  │  Hono    │  │  WS Relay     │  │  Sprite Cache    │  │  │
@@ -93,9 +93,9 @@ The World is the game engine that simulates the world. It runs on the host's mac
 
 ---
 
-### `@agentic-island/hub-api` — Hub Server
+### `@agentic-island/api` — Hub Server
 
-**Path:** `apps/hub-api`
+**Path:** `apps/api`
 
 The Hub is the public-facing server. It accepts connections from World instances, stores world metadata in SQLite, caches sprites on disk, and relays live state to viewer clients over WebSocket.
 

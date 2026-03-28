@@ -8,9 +8,9 @@ WORKDIR /app
 # Copy workspace manifest and lockfile
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy package manifests for workspace packages hub-api depends on
+# Copy package manifests for workspace packages api depends on
 COPY packages/shared/package.json ./packages/shared/
-COPY apps/hub-api/package.json ./apps/hub-api/
+COPY apps/api/package.json ./apps/api/
 
 RUN pnpm install --frozen-lockfile
 
@@ -24,16 +24,16 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/packages/shared/node_modules ./packages/shared/node_modules
-COPY --from=deps /app/apps/hub-api/node_modules ./apps/hub-api/node_modules
+COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 
 # Copy source
 COPY tsconfig.base.json ./
 COPY packages/shared ./packages/shared
-COPY apps/hub-api ./apps/hub-api
+COPY apps/api ./apps/api
 
-# Build shared package first, then hub-api
+# Build shared package first, then api
 RUN pnpm --filter @agentic-island/shared build && \
-    pnpm --filter @agentic-island/hub-api build
+    pnpm --filter @agentic-island/api build
 
 
 # ─── Stage 3: Production runner ──────────────────────────────────────────────
@@ -51,8 +51,8 @@ RUN addgroup --system --gid 1001 nodejs && \
     mkdir -p /data && chown hubapi:nodejs /data
 
 # Copy compiled output and production dependencies
-COPY --from=builder --chown=hubapi:nodejs /app/apps/hub-api/dist ./apps/hub-api/dist
-COPY --from=builder --chown=hubapi:nodejs /app/apps/hub-api/node_modules ./apps/hub-api/node_modules
+COPY --from=builder --chown=hubapi:nodejs /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=hubapi:nodejs /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=builder --chown=hubapi:nodejs /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder --chown=hubapi:nodejs /app/node_modules ./node_modules
 
@@ -60,6 +60,6 @@ USER hubapi
 
 EXPOSE 3001
 
-WORKDIR /app/apps/hub-api
+WORKDIR /app/apps/api
 
 CMD ["node", "dist/index.js"]

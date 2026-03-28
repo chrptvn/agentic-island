@@ -121,7 +121,7 @@ if (servingStatic) {
     }
   });
 
-  console.log(`[hub-api] Serving static files from ${WEB_DIST}`);
+  console.log(`[api] Serving static files from ${WEB_DIST}`);
 }
 
 const PORT = parseInt(process.env.HUB_PORT ?? "3001", 10);
@@ -152,7 +152,7 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`[hub-api] listening on http://localhost:${PORT}`);
+  console.log(`[api] listening on http://localhost:${PORT}`);
 });
 
 const wss = new WebSocketServer({ server });

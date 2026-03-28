@@ -33,7 +33,7 @@ pnpm dev                           # Start Next.js dev server
 
 **agentic-island** (monorepo):
 - `apps/world` — World simulation engine
-- `apps/hub-api` — Multiplayer hub server
+- `apps/api` — Multiplayer hub server
 - `apps/hub-web` — Viewer SPA (Vite + React)
 - `apps/cli` — Admin CLI tool
 - `packages/shared` — Shared types & protocols
@@ -65,7 +65,7 @@ Use clear, descriptive commit messages. Include a scope when relevant:
 
 ```
 feat(world): add berry regrowth mechanic
-fix(hub-api): prevent duplicate world registration
+fix(api): prevent duplicate world registration
 docs: update CONFIG.md with new entity properties
 ```
 

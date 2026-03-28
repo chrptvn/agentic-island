@@ -2,17 +2,17 @@
 # scripts/dev.sh — Start all Agentic Island services for local development.
 #
 # Usage:
-#   ./scripts/dev.sh             # hub-api + web + world
-#   ./scripts/dev.sh --no-world  # hub-api + web only
+#   ./scripts/dev.sh             # api + web + world
+#   ./scripts/dev.sh --no-world  # api + web only
 #
 # Requires: pnpm
 # Services:
-#   hub-api  → http://localhost:3001
-#   web      → http://localhost:3000 (Next.js, proxies /api + /ws to hub-api)
-#   world    → http://localhost:3002
+#   api    → http://localhost:3001
+#   web    → http://localhost:3000 (Next.js, proxies /api + /ws to api)
+#   world  → http://localhost:3002
 #
 # Environment variables:
-#   HUB_API_KEY   API key for the world to authenticate with hub-api
+#   HUB_API_KEY   API key for the world to authenticate with api
 #   ADMIN_KEY     Master admin key for island-cli admin commands
 #   WORLD_NAME    Name of the world (used by world)
 
@@ -49,9 +49,9 @@ pnpm --filter @agentic-island/shared run build 2>&1 | prefix "$BLUE" "build"
 pnpm --filter @agentic-island/game-renderer run build 2>&1 | prefix "$BLUE" "build"
 echo -e "${GREEN}Packages built.${NC}"
 
-# ── Start hub-api ────────────────────────────────────────────────────
-echo -e "${GREEN}Starting hub-api…${NC}"
-pnpm --filter @agentic-island/hub-api run dev 2>&1 | prefix "$GREEN" "hub-api" &
+# ── Start api ────────────────────────────────────────────────────
+echo -e "${GREEN}Starting api…${NC}"
+pnpm --filter @agentic-island/api run dev 2>&1 | prefix "$GREEN" "api" &
 PIDS+=($!)
 sleep 1
 

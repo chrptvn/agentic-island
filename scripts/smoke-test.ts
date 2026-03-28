@@ -15,7 +15,7 @@ function assert(condition: boolean, message: string): void {
 
 async function startHub(): Promise<void> {
   server = spawn("pnpm", ["exec", "tsx", "src/index.ts"], {
-    cwd: "apps/hub-api",
+    cwd: "apps/api",
     env: {
       ...process.env,
       HUB_PORT: String(PORT),
@@ -36,13 +36,13 @@ async function startHub(): Promise<void> {
 }
 
 async function waitForReady(url: string, maxMs: number): Promise<void> {
-  console.log(`  ⏳ Waiting for hub-api on port ${PORT}...`);
+  console.log(`  ⏳ Waiting for api on port ${PORT}...`);
   const deadline = Date.now() + maxMs;
   while (Date.now() < deadline) {
     try {
       const res = await fetch(url);
       if (res.ok) {
-        console.log("  ✓ Hub-api is ready\n");
+        console.log("  ✓ Api is ready\n");
         return;
       }
     } catch {
@@ -50,7 +50,7 @@ async function waitForReady(url: string, maxMs: number): Promise<void> {
     }
     await new Promise((r) => setTimeout(r, 250));
   }
-  throw new Error(`Hub-api did not become ready within ${maxMs}ms`);
+  throw new Error(`Api did not become ready within ${maxMs}ms`);
 }
 
 async function testHealth(): Promise<void> {
