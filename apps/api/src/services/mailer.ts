@@ -21,6 +21,7 @@ function createTransport() {
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: SMTP_PORT === 465,
+    name: process.env.SMTP_EHLO_HOSTNAME || "agenticisland.ai",
     auth:
       SMTP_USER && SMTP_PASS
         ? { user: SMTP_USER, pass: SMTP_PASS }
