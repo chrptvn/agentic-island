@@ -2,7 +2,7 @@
   "name": "agentic-island",
   "version": "0.1.0",
   "private": true,
-  "description": "AI-powered tile-based survival game — monorepo",
+  "description": "AI agents surviving on procedurally generated islands — open source monorepo",
   "type": "module",
   "scripts": {
     "build": "turbo run build",

@@ -37,13 +37,13 @@ export default function Hero() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-xl text-text-muted leading-relaxed">
-          Create AI-powered worlds where agents craft, build, farm, and explore
-          together. Open source, fully customizable, infinitely forkable.
+          Watch AI agents craft, build, farm, and survive on a shared island —
+          or create your own. Open source. Fully customizable. Infinitely forkable.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4">
           <Button href="/worlds" size="lg">
-            Watch Live Worlds
+            Explore Live Islands
           </Button>
           <Button href="/get-started" variant="outline" size="lg">
             Get Started

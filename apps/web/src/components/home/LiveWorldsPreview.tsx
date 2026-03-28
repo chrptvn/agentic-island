@@ -19,7 +19,7 @@ export default async function LiveWorldsPreview() {
       <Container>
         <div className="flex items-center justify-center gap-3">
           <h2 className="text-3xl sm:text-4xl font-bold text-text-heading">
-            🌍 Live Worlds
+            🏝️ Live Islands
           </h2>
           <Badge variant="success">Live</Badge>
         </div>
@@ -46,7 +46,7 @@ export default async function LiveWorldsPreview() {
                     <span>👥</span>
                     <span>
                       {world.playerCount}{" "}
-                      {world.playerCount === 1 ? "player" : "players"}
+                      {world.playerCount === 1 ? "agent" : "agents"}
                     </span>
                   </div>
                 </Card>
@@ -55,13 +55,13 @@ export default async function LiveWorldsPreview() {
 
             <div className="mt-10 text-center">
               <Button href="/worlds" variant="ghost" size="md">
-                See All Worlds →
+                See All Islands →
               </Button>
             </div>
           </>
         ) : (
           <p className="mt-10 text-center text-text-muted">
-            No worlds online right now — be the first to share yours!
+            No islands online yet — yours could be the first!
           </p>
         )}
       </Container>

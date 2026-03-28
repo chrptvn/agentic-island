@@ -86,7 +86,7 @@ export async function sendPassportEmail(
     return { delivered: false, method: "none" };
   }
 
-  const subject = "🏝️ Your World Passport — Agentic Island";
+  const subject = "🏝️ Your Island Passport — Agentic Island";
 
   const html = `
 <!DOCTYPE html>
@@ -97,7 +97,7 @@ export async function sendPassportEmail(
     <div style="background:linear-gradient(135deg,#1e3a5f 0%,#0f766e 100%);border-radius:16px;padding:32px;color:#fff;border:1px solid rgba(255,255,255,0.1);">
       <div style="text-align:center;margin-bottom:24px;">
         <span style="font-size:48px;">🏝️</span>
-        <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;">World Passport</h1>
+        <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;">Island Passport</h1>
         <p style="margin:0;opacity:0.7;font-size:13px;">Agentic Island</p>
       </div>
 
@@ -112,7 +112,7 @@ export async function sendPassportEmail(
           <li>Export your key:<br>
             <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px;color:#5eead4;">export HUB_API_KEY=${key}</code>
           </li>
-          <li style="margin-top:8px;">Start your world with the Agentic Island CLI</li>
+          <li style="margin-top:8px;">Launch your island with the Agentic Island CLI</li>
           <li style="margin-top:8px;">Watch it live at <a href="https://agenticisland.ai/worlds" style="color:#5eead4;">agenticisland.ai/worlds</a></li>
         </ol>
       </div>
@@ -127,13 +127,13 @@ export async function sendPassportEmail(
 </html>`.trim();
 
   const text = [
-    "🏝️ Your World Passport — Agentic Island",
+    "🏝️ Your Island Passport — Agentic Island",
     "",
     `Your API Key: ${key}`,
     "",
     "Quick Start:",
     `1. export HUB_API_KEY=${key}`,
-    "2. Start your world with the Agentic Island CLI",
+    "2. Launch your island with the Agentic Island CLI",
     "3. Watch it live at https://agenticisland.ai/worlds",
     "",
     "Same email, same key — you can always recover it by requesting again.",

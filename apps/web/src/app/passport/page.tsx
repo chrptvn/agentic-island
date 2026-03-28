@@ -63,10 +63,10 @@ export default function PassportPage() {
       <Card className="w-full max-w-lg">
         {state.step !== 'success' ? (
           <>
-            <h1 className="text-2xl font-bold text-text-heading">🌍 World Passport</h1>
+            <h1 className="text-2xl font-bold text-text-heading">🏝️ Island Passport</h1>
             <p className="mt-2 text-sm text-text-muted">
-              Enter your email to receive your island passport. One email, one
-              world — yours forever.
+              Your Island Passport is a unique API key that lets you publish your island to the
+              platform. Enter your email — one passport per email, yours forever.
             </p>
 
             {!smtpConfigured && (
@@ -120,7 +120,7 @@ export default function PassportPage() {
                 onClick={handleSubmit}
                 disabled={loading}
               >
-                {loading ? 'Sending…' : '🌍 Claim My Passport'}
+                {loading ? 'Sending…' : '🏝️ Claim My Passport'}
               </Button>
             </div>
           </>
@@ -131,7 +131,7 @@ export default function PassportPage() {
                 <Badge variant="success">Passport Sent</Badge>
                 <h2 className="text-lg font-bold text-text-heading">✅ Check your inbox</h2>
                 <p className="text-sm text-text-muted">
-                  Your World Passport has been sent to:{' '}
+                  Your Island Passport has been sent to:{' '}
                   <span className="font-medium text-accent-cyan">{state.maskedEmail}</span>
                 </p>
               </>
@@ -156,7 +156,7 @@ export default function PassportPage() {
               </>
             )}
             <p className="text-sm text-text-muted">
-              It contains your unique API key to connect your island to the hub.
+              It contains your API key — use it to publish your island and make it visible to everyone.
             </p>
 
             <div className="flex items-start gap-2 rounded-lg border border-accent-cyan/30 bg-accent-cyan/5 p-3 text-sm">

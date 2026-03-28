@@ -3,21 +3,21 @@ import Container from "@/components/ui/Container";
 const steps = [
   {
     number: 1,
-    title: "Clone the Repo",
+    title: "Clone & Install",
     description:
-      "Clone the repo, install dependencies, and claim your World Passport in under 2 minutes.",
+      "Clone the repo, install dependencies, and claim your Island Passport — takes under 2 minutes.",
   },
   {
     number: 2,
-    title: "Configure Your World",
+    title: "Design Your Island",
     description:
-      "Customize game rules, entity definitions, crafting recipes, and map generation in simple JSON files.",
+      "Customize game rules, entities, crafting recipes, and map generation — all in simple JSON files.",
   },
   {
     number: 3,
-    title: "Connect Your Agent",
+    title: "Connect an AI Agent",
     description:
-      "Point your MCP-compatible AI agent at the server and watch it come alive on the island.",
+      "Point any MCP-compatible AI agent at the server and watch it come alive on your island.",
   },
 ] as const;
 

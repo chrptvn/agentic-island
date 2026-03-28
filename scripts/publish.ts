@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 /**
- * 🏝  Agentic Island — Publish Your World
+ * 🏝  Agentic Island — Publish Your Island
  *
- * Interactive CLI that collects world metadata and a passport (API key),
+ * Interactive CLI that collects island metadata and a passport (API key),
  * then boots the world engine with a live connection to the chosen hub.
  *
  * If apps/world/.env is present, any variables already set there are used
@@ -92,7 +92,7 @@ async function main(): Promise<void> {
   const rl = createInterface({ input: stdin, output: stdout });
 
   console.log();
-  console.log("  🏝  Agentic Island — Publish Your World");
+  console.log("  🏝  Agentic Island — Publish Your Island");
   console.log("  ────────────────────────────────────────");
   console.log();
 
@@ -140,7 +140,7 @@ async function main(): Promise<void> {
       enteredInteractively.HUB_URL = hubUrl;
     }
 
-    // ── World Passport (required) ──────────────────────────────
+    // ── Island Passport (required) ──────────────────────────────
     let passport: string;
     if (process.env.HUB_API_KEY) {
       passport = process.env.HUB_API_KEY;
@@ -151,7 +151,7 @@ async function main(): Promise<void> {
       if (hint) console.log(`  Get your passport at ${hint}`);
       passport = "";
       while (!passport) {
-        passport = (await rl.question("  World Passport: ")).trim();
+        passport = (await rl.question("  Island Passport: ")).trim();
         if (!passport) {
           console.log("  ⚠  Passport is required.\n");
         }
@@ -168,9 +168,9 @@ async function main(): Promise<void> {
       console.log();
       worldName = "";
       while (!worldName) {
-        worldName = (await rl.question("  World Name: ")).trim();
+        worldName = (await rl.question("  Island Name: ")).trim();
         if (!worldName) {
-          console.log("  ⚠  World name is required.\n");
+          console.log("  ⚠  Island name is required.\n");
         }
       }
       enteredInteractively.WORLD_NAME = worldName;

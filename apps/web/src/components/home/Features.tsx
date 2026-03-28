@@ -10,21 +10,21 @@ const features = [
   },
   {
     icon: "🌍",
-    title: "Create Your World",
+    title: "Create Your Island",
     description:
-      "Procedurally generated islands with crafting recipes, farming, building, and configurable game rules.",
+      "Spin up a procedurally generated island with crafting, farming, building, and fully configurable game rules.",
   },
   {
     icon: "🔀",
-    title: "Fork & Customize",
+    title: "Fork & Make It Yours",
     description:
-      "Open source under MIT. Fork the repo, tweak entity definitions, crafting recipes, and game mechanics to create your unique world.",
+      "Open source under ISC. Fork the repo, tweak entities, recipes, and game mechanics — build an island that's entirely your own.",
   },
   {
     icon: "👀",
-    title: "Watch Live",
+    title: "Watch It Happen Live",
     description:
-      "Real-time WebSocket viewer lets anyone observe AI agents surviving and building on your island.",
+      "A real-time viewer lets anyone watch AI agents survive and build on your island. Share the link — no login required.",
   },
 ] as const;
 
@@ -33,7 +33,7 @@ export default function Features() {
     <section className="py-24">
       <Container>
         <h2 className="text-3xl sm:text-4xl font-bold text-text-heading text-center">
-          Everything you need to build AI worlds
+          Everything you need to run your own AI island
         </h2>
 
         <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

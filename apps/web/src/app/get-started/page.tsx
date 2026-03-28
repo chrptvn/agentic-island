@@ -48,7 +48,7 @@ const configFiles = [
   {
     name: "tileset.json",
     description:
-      "Sprite sheet mappings for rendering the world in the browser.",
+      "Sprite sheet mappings for rendering your island in the browser.",
   },
 ];
 
@@ -65,7 +65,7 @@ export default function GetStartedPage() {
             Get Started with Agentic Island
           </h1>
           <p className="mt-4 text-lg text-text-muted sm:text-xl">
-            From fork to live world in under 5 minutes.
+            From fork to live island in under 5 minutes.
           </p>
         </header>
 
@@ -117,11 +117,11 @@ export default function GetStartedPage() {
                 2
               </div>
               <h3 className="mb-2 text-xl font-semibold text-text-heading">
-                Claim Your Passport
+                Claim Your Island Passport
               </h3>
               <p className="mb-4 text-text-muted">
-                Visit the World Passport page to claim yours — enter your email
-                and receive your key by mail.
+                Visit the Island Passport page to claim yours — enter your email
+                and receive your API key by mail.
               </p>
               <div className="mb-4">
                 <Button href="/passport" variant="outline" size="sm">
@@ -143,11 +143,10 @@ export default function GetStartedPage() {
                 3
               </div>
               <h3 className="mb-2 text-xl font-semibold text-text-heading">
-                Start the Hub
+                Start the Platform
               </h3>
               <p className="mb-4 text-text-muted">
-                Launch the Hub API (public relay server) and the Hub Web viewer
-                in separate terminals.
+                Launch the API server and the web viewer in separate terminals.
               </p>
               <CodeBlock
                 code={`# Start the Hub API (public relay server)\npnpm --filter @agentic-island/api dev\n\n# In another terminal, start the Hub Web viewer\npnpm --filter @agentic-island/web dev`}
@@ -160,10 +159,10 @@ export default function GetStartedPage() {
                 4
               </div>
               <h3 className="mb-2 text-xl font-semibold text-text-heading">
-                Start Your World
+                Launch Your Island
               </h3>
               <p className="mb-4 text-text-muted">
-                Configure your Hub connection and launch the game engine.
+                Set your API key, configure the connection, and launch the game engine.
               </p>
               <CodeBlock
                 code={`# Set your Hub connection details\nexport HUB_URL=ws://localhost:3001/ws/world\nexport HUB_API_KEY=ai_your_key_here\n\n# Start the game engine\npnpm --filter @agentic-island/world dev`}
@@ -205,7 +204,7 @@ export default function GetStartedPage() {
             Configuration Guide
           </h2>
           <p className="mb-6 text-text-muted">
-            Customize your world by editing these configuration files in the{" "}
+            Customize your island by editing these configuration files in the{" "}
             <code className="rounded bg-elevated px-1.5 py-0.5 font-mono text-sm text-accent-cyan">
               world/config/
             </code>{" "}
@@ -231,14 +230,14 @@ export default function GetStartedPage() {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card hover>
               <h3 className="mb-2 font-semibold text-text-heading">
-                Watch Live Worlds
+                Explore Live Islands
               </h3>
               <p className="mb-4 text-sm text-text-muted">
-                See AI agents surviving, crafting, and collaborating in
+                Watch AI agents surviving, crafting, and building — in
                 real-time.
               </p>
               <Button href="/worlds" variant="primary" size="sm">
-                View Worlds
+                View Islands
               </Button>
             </Card>
 
@@ -260,7 +259,7 @@ export default function GetStartedPage() {
                 Customize Your Viewer
               </h3>
               <p className="mb-4 text-sm text-text-muted">
-                Fork hub-web to build your own branded world viewer and
+                Fork the web app to build your own branded island viewer and
                 dashboard.
               </p>
               <Button

@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import { useState, useCallback } from "react";
 
 const navLinks = [
-  { href: "/worlds", label: "Worlds" },
+  { href: "/worlds", label: "Islands" },
   { href: "/get-started", label: "Get Started" },
-  { href: "/passport", label: "World Passport" },
+  { href: "/passport", label: "Island Passport" },
 ];
 
 function GitHubIcon({ className }: { className?: string }) {

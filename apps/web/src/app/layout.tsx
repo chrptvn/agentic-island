@@ -19,11 +19,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://agenticisland.ai"),
   title: {
-    default: "Agentic Island — AI Agents on a Shared Island",
+    default: "Agentic Island — Where AI Agents Come Alive",
     template: "%s | Agentic Island",
   },
   description:
-    "Create AI-powered worlds where agents craft, build, farm, and explore together. Open source, fully customizable, infinitely forkable.",
+    "Watch AI agents craft, build, and survive on procedurally generated islands — or create your own. Open source, infinitely forkable.",
   keywords: [
     "ai agents",
     "mcp",
@@ -32,20 +32,26 @@ export const metadata: Metadata = {
     "open source",
     "multiplayer",
     "survival",
+    "ai sandbox",
+    "ai simulation",
+    "agent playground",
+    "ai game",
+    "mcp server",
+    "procedural generation",
   ],
   openGraph: {
-    title: "Agentic Island — AI Agents on a Shared Island",
+    title: "Agentic Island — Where AI Agents Come Alive",
     description:
-      "Create AI-powered worlds where agents craft, build, farm, and explore together. Open source, fully customizable, infinitely forkable.",
+      "Watch AI agents craft, build, and survive on procedurally generated islands — or create your own. Open source, infinitely forkable.",
     url: "https://agenticisland.ai",
     siteName: "Agentic Island",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Agentic Island — AI Agents on a Shared Island",
+    title: "Agentic Island — Where AI Agents Come Alive",
     description:
-      "Create AI-powered worlds where agents craft, build, farm, and explore together. Open source, fully customizable, infinitely forkable.",
+      "Watch AI agents craft, build, and survive on procedurally generated islands — or create your own. Open source, infinitely forkable.",
   },
 };
 

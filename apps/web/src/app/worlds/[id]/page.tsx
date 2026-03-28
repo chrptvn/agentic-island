@@ -30,7 +30,7 @@ export default function WorldViewerPage({
             href="/worlds"
             className="text-sm text-text-muted transition-colors hover:text-accent-cyan"
           >
-            ← Back to Worlds
+            ← Back to Islands
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-text-heading">
             {worldName ?? id}
@@ -43,7 +43,7 @@ export default function WorldViewerPage({
         <Card className="py-16 text-center">
           <p className="text-4xl">😴</p>
           <p className="mt-4 text-lg font-semibold text-text-heading">
-            World Unavailable
+            Island Unavailable
           </p>
           <p className="mt-1 text-sm text-text-muted">{error}</p>
         </Card>

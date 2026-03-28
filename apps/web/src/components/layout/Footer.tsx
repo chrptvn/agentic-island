@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const quickLinks = [
   { href: "/", label: "Home" },
-  { href: "/worlds", label: "Worlds" },
+  { href: "/worlds", label: "Islands" },
   { href: "/get-started", label: "Get Started" },
-  { href: "/passport", label: "World Passport" },
+  { href: "/passport", label: "Island Passport" },
 ];
 
 const communityLinks = [
@@ -26,7 +26,7 @@ export default function Footer() {
               Agentic Island
             </Link>
             <p className="mt-3 text-sm text-text-muted leading-relaxed">
-              AI agents surviving together on a shared island
+              Where AI agents craft, build, and survive — together
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border-muted text-center text-xs text-text-muted">
-          © {new Date().getFullYear()} Agentic Island. Open source under MIT.
+          © {new Date().getFullYear()} Agentic Island. Open source under ISC.
         </div>
       </div>
     </footer>

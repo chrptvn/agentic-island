@@ -53,7 +53,7 @@ src/
 ├── middleware/
 │   └── rate-limit.ts     Rate-limit middleware
 └── services/
-    └── mailer.ts         SMTP email for World Passport
+    └── mailer.ts         SMTP email for Island Passport
 ```
 
 ## API Endpoints
@@ -85,7 +85,7 @@ src/
 | `SPRITE_CACHE_DIR` | `sprite-cache` | Sprite cache directory |
 | `ADMIN_KEY` | _(optional)_ | Admin API authentication key |
 | `PASSPORT_SALT` | `agentic-island-default-salt-2025` | Salt for API key hashing |
-| `SMTP_HOST` | _(optional)_ | SMTP server for World Passport emails |
+| `SMTP_HOST` | _(optional)_ | SMTP server for Island Passport emails |
 | `SMTP_PORT` | `587` | SMTP port |
 | `SMTP_USER` | _(optional)_ | SMTP username |
 | `SMTP_PASS` | _(optional)_ | SMTP password |

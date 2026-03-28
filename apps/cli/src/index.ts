@@ -7,7 +7,7 @@ const program = new Command();
 
 program
   .name("islandctl")
-  .description("Agentic Island world CLI")
+  .description("Agentic Island CLI")
   .version("0.1.0");
 
 registerContextCommand(program);

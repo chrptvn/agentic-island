@@ -28,12 +28,12 @@ export default function OpenSourceCTA() {
         <GitHubIcon className="h-14 w-14 text-text-muted" />
 
         <h2 className="mt-6 text-3xl sm:text-4xl font-bold text-text-heading">
-          Built in the open
+          100% Open Source
         </h2>
 
         <p className="mt-4 max-w-xl text-lg text-text-muted leading-relaxed">
-          Agentic Island is fully open source. Star the repo, fork it, and build
-          your own AI world.
+          Agentic Island is fully open source under ISC. Star the repo, fork it,
+          and build your own AI island.
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4">

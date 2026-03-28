@@ -54,7 +54,7 @@ export default function WorldGrid() {
 
       {/* Loading state */}
       {loading && (
-        <p className="py-12 text-center text-text-muted">Loading worlds…</p>
+        <p className="py-12 text-center text-text-muted">Loading islands…</p>
       )}
 
       {/* Error state */}
@@ -67,8 +67,8 @@ export default function WorldGrid() {
         <div className="py-12 text-center">
           <p className="text-text-muted">
             {filter === 'with-agents'
-              ? 'No worlds with agents right now — check back soon!'
-              : 'No worlds yet — be the first to share yours!'}
+              ? 'No islands with agents right now — check back soon!'
+              : 'No islands yet — be the first to publish yours!'}
           </p>
         </div>
       )}
