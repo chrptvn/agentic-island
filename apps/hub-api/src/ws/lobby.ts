@@ -56,7 +56,7 @@ function rowToMeta(row: WorldRow): WorldMeta {
 
 function getAllWorlds(): WorldMeta[] {
   const rows = db
-    .prepare(`SELECT ${WORLD_COLS} FROM worlds ORDER BY updated_at DESC`)
+    .prepare(`SELECT ${WORLD_COLS} FROM worlds WHERE status = 'online' ORDER BY updated_at DESC`)
     .all() as WorldRow[];
   return rows.map(rowToMeta);
 }

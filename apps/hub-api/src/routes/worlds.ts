@@ -41,7 +41,7 @@ worlds.get("/", (c) => {
       .all() as WorldRow[];
   } else {
     rows = db
-      .prepare(`SELECT ${cols} FROM worlds ORDER BY updated_at DESC`)
+      .prepare(`SELECT ${cols} FROM worlds WHERE status = 'online' ORDER BY updated_at DESC`)
       .all() as WorldRow[];
   }
 

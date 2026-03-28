@@ -7,7 +7,7 @@ import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { saveSprites, saveThumbnail } from "../cache/sprites.js";
 import { deliverTunnelResponse, closeAllSessionsForWorld } from "../mcp-proxy/sessions.js";
-import { broadcastWorldUpdate } from "./lobby.js";
+import { broadcastWorldUpdate, broadcastWorldRemoved } from "./lobby.js";
 
 interface ConnectedWorld {
   ws: WebSocket;
@@ -193,8 +193,8 @@ export function handleWorldConnection(ws: WebSocket): void {
       lastWorldState.delete(core.worldId);
       closeAllSessionsForWorld(core.worldId);
 
-      // Notify lobby viewers that the world went offline
-      broadcastWorldUpdate(core.worldId, true);
+      // Notify lobby viewers that the world is gone
+      broadcastWorldRemoved(core.worldId);
 
       const viewers = worldViewers.get(core.worldId);
       if (viewers) {
