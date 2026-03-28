@@ -1,9 +1,11 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
 import { worldViewers, lastWorldState } from "./world-handler.js";
+import { addLobbyViewer, removeLobbyViewer } from "./lobby.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
   let subscribedWorldId: string | null = null;
+  let inLobby = false;
 
   ws.on("message", (raw) => {
     try {
@@ -42,6 +44,22 @@ export function handleViewerConnection(ws: WebSocket): void {
           }
           break;
         }
+
+        case "subscribe_lobby": {
+          if (!inLobby) {
+            inLobby = true;
+            addLobbyViewer(ws);
+          }
+          break;
+        }
+
+        case "unsubscribe_lobby": {
+          if (inLobby) {
+            inLobby = false;
+            removeLobbyViewer(ws);
+          }
+          break;
+        }
       }
     } catch (err) {
       console.error("[viewer-handler] message error:", err);
@@ -55,6 +73,9 @@ export function handleViewerConnection(ws: WebSocket): void {
         set.delete(ws);
         if (set.size === 0) worldViewers.delete(subscribedWorldId);
       }
+    }
+    if (inLobby) {
+      removeLobbyViewer(ws);
     }
   });
 }

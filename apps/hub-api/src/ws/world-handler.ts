@@ -7,6 +7,7 @@ import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { saveSprites, saveThumbnail } from "../cache/sprites.js";
 import { deliverTunnelResponse, closeAllSessionsForWorld } from "../mcp-proxy/sessions.js";
+import { broadcastWorldUpdate } from "./lobby.js";
 
 interface ConnectedWorld {
   ws: WebSocket;
@@ -124,6 +125,8 @@ export function handleWorldConnection(ws: WebSocket): void {
             status: "ok",
           };
           ws.send(JSON.stringify(ack));
+          // Notify lobby viewers that a world came online
+          broadcastWorldUpdate(worldId, true);
           break;
         }
 
@@ -135,6 +138,9 @@ export function handleWorldConnection(ws: WebSocket): void {
           db.prepare(
             "UPDATE worlds SET player_count = ? WHERE id = ?",
           ).run(agentCount, core.worldId);
+
+          // Notify lobby viewers of metadata changes (throttled)
+          broadcastWorldUpdate(core.worldId);
 
           const relay = JSON.stringify({
             type: "world_state",
@@ -186,6 +192,9 @@ export function handleWorldConnection(ws: WebSocket): void {
       connectedWorlds.delete(core.worldId);
       lastWorldState.delete(core.worldId);
       closeAllSessionsForWorld(core.worldId);
+
+      // Notify lobby viewers that the world went offline
+      broadcastWorldUpdate(core.worldId, true);
 
       const viewers = worldViewers.get(core.worldId);
       if (viewers) {

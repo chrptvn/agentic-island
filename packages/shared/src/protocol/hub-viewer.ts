@@ -13,6 +13,14 @@ export interface ViewerUnsubscribeMessage {
   worldId: string;
 }
 
+export interface ViewerSubscribeLobbyMessage {
+  type: "subscribe_lobby";
+}
+
+export interface ViewerUnsubscribeLobbyMessage {
+  type: "unsubscribe_lobby";
+}
+
 // Hub → Viewer messages
 
 export interface ViewerWorldStateMessage {
@@ -33,6 +41,16 @@ export interface ViewerWorldListMessage {
   worlds: WorldMeta[];
 }
 
+export interface ViewerWorldMetaUpdateMessage {
+  type: "world_meta_update";
+  world: WorldMeta;
+}
+
+export interface ViewerWorldRemovedMessage {
+  type: "world_removed";
+  worldId: string;
+}
+
 export interface ViewerErrorMessage {
   type: "error";
   code: string;
@@ -43,10 +61,14 @@ export interface ViewerErrorMessage {
 
 export type ViewerToHubMessage =
   | ViewerSubscribeMessage
-  | ViewerUnsubscribeMessage;
+  | ViewerUnsubscribeMessage
+  | ViewerSubscribeLobbyMessage
+  | ViewerUnsubscribeLobbyMessage;
 
 export type HubToViewerMessage =
   | ViewerWorldStateMessage
   | ViewerWorldOfflineMessage
   | ViewerWorldListMessage
+  | ViewerWorldMetaUpdateMessage
+  | ViewerWorldRemovedMessage
   | ViewerErrorMessage;

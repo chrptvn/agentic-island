@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useWorlds, type WorldFilter } from '@/hooks/useWorlds';
+import { useState, useMemo } from 'react';
+import { useWorldsStream } from '@/hooks/useWorldsStream';
 import WorldCard from './WorldCard';
+
+type WorldFilter = 'with-agents' | 'all';
 
 const TABS: { key: WorldFilter; label: string }[] = [
   { key: 'with-agents', label: 'With Agents' },
@@ -11,12 +13,23 @@ const TABS: { key: WorldFilter; label: string }[] = [
 
 export default function WorldGrid() {
   const [filter, setFilter] = useState<WorldFilter>('with-agents');
-  const { worlds, loading, error } = useWorlds(filter);
+  const { worlds: allWorlds, connected, error } = useWorldsStream();
+
+  const worlds = useMemo(() => {
+    if (filter === 'with-agents') {
+      return allWorlds.filter(
+        (w) => w.status === 'online' && (w.playerCount ?? 0) > 0,
+      );
+    }
+    return allWorlds;
+  }, [allWorlds, filter]);
+
+  const loading = !connected && allWorlds.length === 0 && !error;
 
   return (
     <div>
       {/* Filter tabs */}
-      <div className="mb-8 flex gap-4 border-b border-border-muted">
+      <div className="mb-8 flex items-center gap-4 border-b border-border-muted">
         {TABS.map((tab) => (
           <button
             key={tab.key}
@@ -30,6 +43,13 @@ export default function WorldGrid() {
             {tab.label}
           </button>
         ))}
+        {/* Connection indicator */}
+        <span
+          className={`ml-auto mb-2 inline-block h-2 w-2 rounded-full ${
+            connected ? 'bg-accent-green' : 'bg-text-muted'
+          }`}
+          title={connected ? 'Live' : 'Reconnecting…'}
+        />
       </div>
 
       {/* Loading state */}
