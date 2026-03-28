@@ -64,18 +64,18 @@ export function handleIslandConnection(ws: WebSocket): void {
           if (msg.island.id) {
             worldId = msg.island.id;
             existing = db
-              .prepare("SELECT id FROM worlds WHERE id = ? AND api_key_id = ?")
+              .prepare("SELECT id FROM islands WHERE id = ? AND api_key_id = ?")
               .get(worldId, keyRow.id) as { id: string } | undefined;
           } else {
             existing = db
-              .prepare("SELECT id FROM worlds WHERE api_key_id = ?")
+              .prepare("SELECT id FROM islands WHERE api_key_id = ?")
               .get(keyRow.id) as { id: string } | undefined;
             worldId = existing?.id ?? randomUUID();
           }
 
           if (existing) {
             db.prepare(
-              `UPDATE worlds SET name = ?, description = ?, config_snapshot = ?,
+              `UPDATE islands SET name = ?, description = ?, config_snapshot = ?,
                status = 'online', last_heartbeat_at = datetime('now'),
                updated_at = datetime('now') WHERE id = ?`,
             ).run(
@@ -86,7 +86,7 @@ export function handleIslandConnection(ws: WebSocket): void {
             );
           } else {
             db.prepare(
-              `INSERT INTO worlds (id, api_key_id, name, description, config_snapshot,
+              `INSERT INTO islands (id, api_key_id, name, description, config_snapshot,
                status, last_heartbeat_at)
                VALUES (?, ?, ?, ?, ?, 'online', datetime('now'))`,
             ).run(
@@ -106,7 +106,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           if (msg.thumbnail) {
             const thumbnailPath = await saveThumbnail(worldId, msg.thumbnail);
             db.prepare(
-              "UPDATE worlds SET thumbnail_path = ? WHERE id = ?",
+              "UPDATE islands SET thumbnail_path = ? WHERE id = ?",
             ).run(thumbnailPath, worldId);
           }
 
@@ -136,7 +136,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Keep player_count in sync with the number of characters
           const agentCount = msg.state.characters?.length ?? 0;
           db.prepare(
-            "UPDATE worlds SET player_count = ? WHERE id = ?",
+            "UPDATE islands SET player_count = ? WHERE id = ?",
           ).run(agentCount, core.worldId);
 
           // Notify lobby viewers of metadata changes (throttled)
@@ -164,7 +164,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           if (!core) return;
           core.lastPing = Date.now();
           db.prepare(
-            "UPDATE worlds SET last_heartbeat_at = datetime('now') WHERE id = ?",
+            "UPDATE islands SET last_heartbeat_at = datetime('now') WHERE id = ?",
           ).run(core.worldId);
           const pong: HubToIslandMessage = {
             type: "pong",
@@ -187,7 +187,7 @@ export function handleIslandConnection(ws: WebSocket): void {
   ws.on("close", () => {
     if (core) {
       db.prepare(
-        "UPDATE worlds SET status = 'offline', player_count = 0, updated_at = datetime('now') WHERE id = ?",
+        "UPDATE islands SET status = 'offline', player_count = 0, updated_at = datetime('now') WHERE id = ?",
       ).run(core.worldId);
       connectedIslands.delete(core.worldId);
       lastIslandState.delete(core.worldId);

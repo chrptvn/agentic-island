@@ -41,13 +41,13 @@ src/
 ├── routes/
 │   ├── health.ts         GET /api/health
 │   ├── keys.ts           POST /api/keys (rate-limited)
-│   ├── worlds.ts         GET /api/islands, GET /api/islands/:id
+│   ├── islands.ts         GET /api/islands, GET /api/islands/:id
 │   └── admin.ts          Admin key/world management (requires ADMIN_KEY)
 ├── ws/
 │   ├── island-handler.ts   /ws/island — Core→Hub state streaming
 │   └── viewer-handler.ts /ws/viewer — Hub→Viewer state broadcasting
 ├── db/
-│   └── index.ts          SQLite (worlds, keys, heartbeats, analytics)
+│   └── index.ts          SQLite (islands, keys, heartbeats, analytics)
 ├── cache/
 │   └── sprites.ts        Sprite asset caching per world
 ├── middleware/
@@ -62,7 +62,7 @@ src/
 |--------|------|------|-------------|
 | GET | `/api/health` | — | Uptime check |
 | POST | `/api/keys` | — | Generate API key (5 req/min/IP) |
-| GET | `/api/islands` | — | List worlds (`?status=online\|offline`) |
+| GET | `/api/islands` | — | List islands (`?status=online\|offline`) |
 | GET | `/api/islands/:id` | — | World details (increments view count) |
 | GET | `/sprites/:worldId/*` | — | Cached sprite assets |
 | GET | `/api/keys` | Admin | List all keys |

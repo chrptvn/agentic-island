@@ -56,14 +56,14 @@ function rowToMeta(row: IslandRow): IslandMeta {
 
 function getAllIslands(): IslandMeta[] {
   const rows = db
-    .prepare(`SELECT ${ISLAND_COLS} FROM worlds WHERE status = 'online' ORDER BY updated_at DESC`)
+    .prepare(`SELECT ${ISLAND_COLS} FROM islands WHERE status = 'online' ORDER BY updated_at DESC`)
     .all() as IslandRow[];
   return rows.map(rowToMeta);
 }
 
 function getIslandById(worldId: string): IslandMeta | null {
   const row = db
-    .prepare(`SELECT ${ISLAND_COLS} FROM worlds WHERE id = ?`)
+    .prepare(`SELECT ${ISLAND_COLS} FROM islands WHERE id = ?`)
     .get(worldId) as IslandRow | undefined;
   return row ? rowToMeta(row) : null;
 }

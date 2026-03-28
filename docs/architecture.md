@@ -105,7 +105,7 @@ The Hub is the public-facing server. It accepts connections from World instances
 |--------|------|-------------|
 | `GET` | `/api/health` | Health check (`{ status: "ok", uptime }`) |
 | `POST` | `/api/keys` | Generate API key (rate-limited: 5/min/IP) |
-| `GET` | `/api/islands` | List worlds (optional `?status=online\|offline`) |
+| `GET` | `/api/islands` | List islands (optional `?status=online\|offline`) |
 | `GET` | `/api/islands/:id` | Get world details (also logs a view) |
 | `GET` | `/sprites/:worldId/:filename` | Serve cached sprite files (1h cache TTL) |
 
@@ -136,7 +136,7 @@ React single-page application for browsing and watching live islands.
 
 | Route | Component | Description |
 |-------|-----------|-------------|
-| `/` | `Home` | Grid of online worlds (fetched via REST) |
+| `/` | `Home` | Grid of online islands (fetched via REST) |
 | `/world/:id` | `WorldView` | Live game viewer (WebSocket + Canvas renderer) |
 | `/get-key` | `GetKey` | API key generation form |
 
@@ -284,7 +284,7 @@ Viewers connect via WebSocket and subscribe to a specific world.
 |------|------|---------|
 | `world_state` | On each World state_update | `worldId`, `state` (WorldState), `spriteBaseUrl` |
 | `world_offline` | World disconnects | `worldId` |
-| `world_list` | On request | `worlds[]` (WorldMeta array) |
+| `world_list` | On request | `islands[]` (IslandMeta array) |
 | `error` | On failure | `code`, `message` |
 
 ## Data Flow
@@ -355,12 +355,12 @@ CREATE TABLE api_keys (
 );
 ```
 
-### `worlds`
+### `islands`
 
-Tracks registered worlds and their connection status.
+Tracks registered islands and their connection status.
 
 ```sql
-CREATE TABLE worlds (
+CREATE TABLE islands (
   id                TEXT PRIMARY KEY,                      -- UUID
   api_key_id        TEXT NOT NULL REFERENCES api_keys(id),
   name              TEXT NOT NULL,
@@ -374,14 +374,14 @@ CREATE TABLE worlds (
 );
 ```
 
-### `world_views`
+### `island_views`
 
 Simple analytics table logging each time a world page is viewed.
 
 ```sql
-CREATE TABLE world_views (
+CREATE TABLE island_views (
   id        INTEGER PRIMARY KEY AUTOINCREMENT,
-  world_id  TEXT REFERENCES worlds(id),
+  island_id  TEXT REFERENCES islands(id),
   viewed_at TEXT DEFAULT (datetime('now'))
 );
 ```
@@ -558,4 +558,4 @@ Session-based MCP server providing both character control and world management t
 - World connections require valid API key in the handshake message
 - Invalid keys result in immediate `error` message and connection close
 - Viewers don't require authentication (read-only access to world state)
-- Hub tracks `last_heartbeat_at` and marks worlds offline when World disconnects
+- Hub tracks `last_heartbeat_at` and marks islands offline when World disconnects

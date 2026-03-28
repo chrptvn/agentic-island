@@ -70,25 +70,25 @@ admin.delete("/keys/:id", (c) => {
 
 admin.get("/islands", (c) => {
   const rows = db
-    .prepare("SELECT * FROM worlds ORDER BY updated_at DESC")
+    .prepare("SELECT * FROM islands ORDER BY updated_at DESC")
     .all();
-  return c.json({ worlds: rows });
+  return c.json({ islands: rows });
 });
 
 admin.get("/islands/:id", (c) => {
   const id = c.req.param("id");
-  const row = db.prepare("SELECT * FROM worlds WHERE id = ?").get(id);
+  const row = db.prepare("SELECT * FROM islands WHERE id = ?").get(id);
   if (!row) return c.json({ error: "Island not found" }, 404);
   return c.json(row);
 });
 
 admin.delete("/islands/:id", (c) => {
   const id = c.req.param("id");
-  const island = db.prepare("SELECT id FROM worlds WHERE id = ?").get(id);
+  const island = db.prepare("SELECT id FROM islands WHERE id = ?").get(id);
   if (!island) return c.json({ error: "Island not found" }, 404);
 
-  db.prepare("DELETE FROM world_views WHERE world_id = ?").run(id);
-  db.prepare("DELETE FROM worlds WHERE id = ?").run(id);
+  db.prepare("DELETE FROM island_views WHERE island_id = ?").run(id);
+  db.prepare("DELETE FROM islands WHERE id = ?").run(id);
   return c.json({ success: true });
 });
 

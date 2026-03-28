@@ -161,7 +161,7 @@ const wss = new WebSocketServer({ server });
 const staleThresholdMs = 90_000;
 const cleanupInterval = setInterval(() => {
   db.prepare(
-    `UPDATE worlds SET status = 'offline', updated_at = datetime('now')
+    `UPDATE islands SET status = 'offline', updated_at = datetime('now')
      WHERE status = 'online'
        AND last_heartbeat_at < datetime('now', ? || ' seconds')`,
   ).run(`-${Math.floor(staleThresholdMs / 1000)}`);

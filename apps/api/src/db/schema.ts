@@ -10,7 +10,7 @@ export function initDb(db: Database.Database): void {
       last_seen_at TEXT
     );
 
-    CREATE TABLE IF NOT EXISTS worlds (
+    CREATE TABLE IF NOT EXISTS islands (
       id TEXT PRIMARY KEY,
       api_key_id TEXT NOT NULL REFERENCES api_keys(id),
       name TEXT NOT NULL,
@@ -24,18 +24,18 @@ export function initDb(db: Database.Database): void {
       updated_at TEXT DEFAULT (datetime('now'))
     );
 
-    CREATE TABLE IF NOT EXISTS world_views (
+    CREATE TABLE IF NOT EXISTS island_views (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      world_id TEXT REFERENCES worlds(id),
+      island_id TEXT REFERENCES islands(id),
       viewed_at TEXT DEFAULT (datetime('now'))
     );
   `);
 
   // Migration: add thumbnail_path column if missing (for existing databases)
   const cols = db
-    .prepare("PRAGMA table_info(worlds)")
+    .prepare("PRAGMA table_info(islands)")
     .all() as { name: string }[];
   if (!cols.some((c) => c.name === "thumbnail_path")) {
-    db.exec("ALTER TABLE worlds ADD COLUMN thumbnail_path TEXT");
+    db.exec("ALTER TABLE islands ADD COLUMN thumbnail_path TEXT");
   }
 }

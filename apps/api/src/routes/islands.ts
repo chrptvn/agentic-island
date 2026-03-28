@@ -36,12 +36,12 @@ islands.get("/", (c) => {
   if (filter === "with-agents") {
     rows = db
       .prepare(
-        `SELECT ${cols} FROM worlds WHERE status = 'online' AND player_count > 0 ORDER BY updated_at DESC`,
+        `SELECT ${cols} FROM islands WHERE status = 'online' AND player_count > 0 ORDER BY updated_at DESC`,
       )
       .all() as IslandRow[];
   } else {
     rows = db
-      .prepare(`SELECT ${cols} FROM worlds WHERE status = 'online' ORDER BY updated_at DESC`)
+      .prepare(`SELECT ${cols} FROM islands WHERE status = 'online' ORDER BY updated_at DESC`)
       .all() as IslandRow[];
   }
 
@@ -51,11 +51,11 @@ islands.get("/", (c) => {
 islands.get("/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare(
-    "SELECT id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at FROM worlds WHERE id = ?"
+    "SELECT id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at FROM islands WHERE id = ?"
   ).get(id) as IslandRow | undefined;
   if (!row) return c.json({ error: "Island not found" }, 404);
 
-  db.prepare("INSERT INTO world_views (world_id) VALUES (?)").run(id);
+  db.prepare("INSERT INTO island_views (island_id) VALUES (?)").run(id);
 
   return c.json(toCamelCase(row));
 });
