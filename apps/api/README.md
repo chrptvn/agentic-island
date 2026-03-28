@@ -17,7 +17,7 @@ Central relay that brokers world registration, manages API keys, caches graphics
 ├──────────────────────────────────────────────────────────────┤
 │ • Receives state + graphics from world                       │
 │ • Caches last state for late-joining viewers                 │
-│ • Caches sprite assets (GET /sprites/:worldId/*)            │
+│ • Caches sprite assets (GET /sprites/:islandId/*)           │
 │ • NO transformation of graphics or game logic                │
 │ • NO rendering code — only relay and storage                 │
 │ • Broadcasts state to all subscribed viewers                 │
@@ -64,7 +64,7 @@ src/
 | POST | `/api/keys` | — | Generate API key (5 req/min/IP) |
 | GET | `/api/islands` | — | List islands (`?status=online\|offline`) |
 | GET | `/api/islands/:id` | — | World details (increments view count) |
-| GET | `/sprites/:worldId/*` | — | Cached sprite assets |
+| GET | `/sprites/:islandId/*` | — | Cached sprite assets |
 | GET | `/api/keys` | Admin | List all keys |
 | DELETE | `/api/keys/:id` | Admin | Revoke key |
 | DELETE | `/api/admin/islands/:id` | Admin | Remove world |

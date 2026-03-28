@@ -23,7 +23,7 @@ Next.js web application for viewing live worlds. **The ONLY place where renderin
 │ • Receives: WorldState + tileRegistry + spriteBaseUrl        │
 │ • React Components: GameViewer, Tooltip, Speech Bubbles      │
 │ • GameRenderer: Canvas rendering, camera, animations        │
-│ • Sprite Loading: Downloads from /sprites/:worldId/*         │
+│ • Sprite Loading: Downloads from /sprites/:islandId/*        │
 │ • Interactive: Camera controls, tooltips on hover            │
 │ • Output: HTML5 Canvas 2D (pixelated, 16px tiles, 2x scale) │
 └──────────────────────────────────────────────────────────────┘
@@ -37,7 +37,7 @@ Next.js web application for viewing live worlds. **The ONLY place where renderin
 src/
 ├── app/
 │   ├── page.tsx              Home page with world listing
-│   ├── worlds/[id]/page.tsx  World viewer page (calls useWorldStream)
+│   ├── worlds/[id]/page.tsx  World viewer page (calls useIslandStream)
 │   └── layout.tsx            Root layout
 ├── components/
 │   ├── game/
@@ -48,7 +48,7 @@ src/
 │   │   └── LiveWorldsPreview.tsx  Grid of worlds
 │   └── ui/                   Shared UI components
 ├── hooks/
-│   ├── useWorldStream.ts     WebSocket subscription to world state
+│   ├── useIslandStream.ts    WebSocket subscription to island state
 │   ├── useWorlds.ts          Fetch world list from Hub-API
 │   └── useDebugInfo.ts       Debug information overlay
 ├── lib/
@@ -63,14 +63,14 @@ src/
 |-----------|---------|
 | `GameViewer` | React wrapper around GameRenderer. Handles speech bubbles + tooltips |
 | `GameRenderer` (from package) | Canvas 2D rendering engine. Draws tiles, entities, characters |
-| `useWorldStream` | React hook for WebSocket connection to `/ws/viewer` |
+| `useIslandStream` | React hook for WebSocket connection to `/ws/viewer` |
 | `Tooltip` | HTML overlay that shows on hover for entities |
 
 ## Graphics Pipeline
 
 1. **World** creates `tileRegistry` (tile definitions + sprite references)
 2. **World** sends `WorldState` (map, entities, characters, tileRegistry) → Hub-API
-3. **Hub-API** relays `WorldState` + adds `spriteBaseUrl: /sprites/{worldId}/`
+3. **Hub-API** relays `WorldState` + adds `spriteBaseUrl: /sprites/{islandId}/`
 4. **Web App** receives via WebSocket, passes to GameRenderer
 5. **GameRenderer** loads sprites from `spriteBaseUrl`
 6. **Canvas** renders tiles, entities, characters to HTML5 Canvas
@@ -80,7 +80,7 @@ src/
 ```
 WebSocket /ws/viewer (Hub-API)
 │
-├─ Receive: { type: 'world_state', state: WorldState, spriteBaseUrl, worldName }
+├─ Receive: { type: 'island_state', state: WorldState, spriteBaseUrl, islandName }
 │
 └─ React State Update
    │
@@ -121,7 +121,7 @@ pnpm lint        # Run ESLint
 
 - `/src/app/islands/[id]/page.tsx` — Main world viewer route
 - `/src/components/game/GameViewer.tsx` — Canvas rendering container
-- `/src/hooks/useWorldStream.ts` — WebSocket connection logic
+- `/src/hooks/useIslandStream.ts` — WebSocket connection logic
 - `/packages/game-renderer/` — Pure rendering library (sprites, camera, input)
 
 ---

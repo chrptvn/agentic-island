@@ -107,7 +107,7 @@ The Hub is the public-facing server. It accepts connections from World instances
 | `POST` | `/api/keys` | Generate API key (rate-limited: 5/min/IP) |
 | `GET` | `/api/islands` | List islands (optional `?status=online\|offline`) |
 | `GET` | `/api/islands/:id` | Get world details (also logs a view) |
-| `GET` | `/sprites/:worldId/:filename` | Serve cached sprite files (1h cache TTL) |
+| `GET` | `/sprites/:islandId/:filename` | Serve cached sprite files (1h cache TTL) |
 
 **WebSocket endpoints:**
 
@@ -149,7 +149,7 @@ React single-page application for browsing and watching live islands.
 **Hooks:**
 
 - `useWorlds(status)` — Fetches world list from `/api/islands`
-- `useWorldStream(worldId)` — Opens WebSocket to `/ws/viewer`, subscribes to world updates
+- `useIslandStream(islandId)` — Opens WebSocket to `/ws/viewer`, subscribes to island updates
 
 **Dev server:** Vite on port 5173, proxies `/api`, `/sprites`, and `/ws` to Hub API at `localhost:4000`.
 
@@ -245,7 +245,7 @@ All messages are JSON-encoded strings over a single WebSocket connection.
 
 | Type | When | Payload |
 |------|------|---------|
-| `handshake_ack` | After handshake | `worldId`, `status` ("ok" or "error"), `error?` |
+| `handshake_ack` | After handshake | `islandId`, `status` ("ok" or "error"), `error?` |
 | `pong` | After ping | `timestamp` (echoed) |
 | `error` | On failure | `code`, `message` |
 
@@ -258,7 +258,7 @@ World                               Hub
   │                                  │  Hub validates key (SHA-256 lookup)
   │                                  │  Hub upserts world in DB
   │                                  │  Hub saves sprites to disk
-  │◄──── handshake_ack ─────────────│  worldId + status: "ok"
+  │◄──── handshake_ack ─────────────│  islandId + status: "ok"
   │                                  │
   │──── state_update ───────────────►│  Hub relays to subscribed viewers
   │──── state_update ───────────────►│
@@ -275,15 +275,15 @@ Viewers connect via WebSocket and subscribe to a specific world.
 
 | Type | Payload |
 |------|---------|
-| `subscribe` | `worldId` |
-| `unsubscribe` | `worldId` |
+| `subscribe` | `islandId` |
+| `unsubscribe` | `islandId` |
 
 **Hub → Viewer messages:**
 
 | Type | When | Payload |
 |------|------|---------|
-| `world_state` | On each World state_update | `worldId`, `state` (WorldState), `spriteBaseUrl` |
-| `world_offline` | World disconnects | `worldId` |
+| `island_state` | On each World state_update | `islandId`, `state` (WorldState), `spriteBaseUrl` |
+| `island_offline` | World disconnects | `islandId` |
 | `world_list` | On request | `islands[]` (IslandMeta array) |
 | `error` | On failure | `code`, `message` |
 
@@ -304,7 +304,7 @@ End-to-end flow from World startup to a viewer rendering the world:
    └─► Hub validates API key (SHA-256 hash lookup in SQLite)
    └─► Hub upserts world record (status: "online")
    └─► Hub saves sprite PNGs to disk cache
-   └─► Hub replies "handshake_ack" with worldId
+   └─► Hub replies "handshake_ack" with islandId
 
 3. World streams state
    └─► Periodically serializes full WorldState (map, entities, characters, overrides)
@@ -318,16 +318,16 @@ End-to-end flow from World startup to a viewer rendering the world:
 
 5. Viewer subscribes to world
    └─► WebSocket to /ws/viewer
-   └─► Sends "subscribe" with worldId
+   └─► Sends "subscribe" with islandId
    └─► Hub adds viewer to worldViewers set
 
 6. Hub relays state to viewer
    └─► On next "state_update" from World, Hub broadcasts
-       { type: "world_state", state, spriteBaseUrl } to all subscribed viewers
+       { type: "island_state", state, spriteBaseUrl } to all subscribed viewers
 
 7. Viewer renders
    └─► GameViewer component receives WorldState
-   └─► Loads sprite sheets from /sprites/:worldId/:filename
+   └─► Loads sprite sheets from /sprites/:islandId/:filename
    └─► GameRenderer composites 5 tile layers + characters + overlays on Canvas
    └─► requestAnimationFrame loop for smooth rendering
 
@@ -391,7 +391,7 @@ CREATE TABLE island_views (
 World uses a separate SQLite database (`agentic-island.db`) for local game state persistence.
 
 ```sql
-CREATE TABLE world_state     (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE island_state    (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE tile_overrides  (x INT, y INT, layer INT DEFAULT 0, tile_id TEXT, PRIMARY KEY (x, y, layer));
 CREATE TABLE entity_stats    (x INT, y INT, stats TEXT NOT NULL, PRIMARY KEY (x, y));
 CREATE TABLE characters      (id TEXT PRIMARY KEY, x INT, y INT, stats TEXT, path TEXT DEFAULT '[]', action TEXT DEFAULT 'idle');
