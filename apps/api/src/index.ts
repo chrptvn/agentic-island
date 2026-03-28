@@ -9,9 +9,9 @@ import { readFile, stat } from "node:fs/promises";
 
 import health from "./routes/health.js";
 import keys from "./routes/keys.js";
-import worlds from "./routes/worlds.js";
+import islands from "./routes/worlds.js";
 import admin from "./routes/admin.js";
-import { handleWorldConnection } from "./ws/world-handler.js";
+import { handleIslandConnection } from "./ws/island-handler.js";
 import { handleViewerConnection } from "./ws/viewer-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
@@ -35,7 +35,7 @@ app.post("/api/keys", rateLimit({ windowMs: 60_000, maxRequests: 5 }));
 
 app.route("/api/health", health);
 app.route("/api/keys", keys);
-app.route("/api/worlds", worlds);
+app.route("/api/worlds", islands);
 app.route("/api/admin", admin);
 
 // Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
@@ -157,7 +157,7 @@ server.listen(PORT, () => {
 
 const wss = new WebSocketServer({ server });
 
-// Mark worlds with a stale heartbeat as offline (missed 2+ heartbeat intervals)
+// Mark islands with a stale heartbeat as offline (missed 2+ heartbeat intervals)
 const staleThresholdMs = 90_000;
 const cleanupInterval = setInterval(() => {
   db.prepare(
@@ -171,11 +171,11 @@ if (cleanupInterval.unref) cleanupInterval.unref();
 wss.on("connection", (ws: WebSocket, req) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
 
-  if (url.pathname === "/ws/world") {
-    handleWorldConnection(ws);
+  if (url.pathname === "/ws/island") {
+    handleIslandConnection(ws);
   } else if (url.pathname === "/ws/viewer") {
     handleViewerConnection(ws);
   } else {
-    ws.close(4000, "Unknown WebSocket path. Use /ws/world or /ws/viewer");
+    ws.close(4000, "Unknown WebSocket path. Use /ws/island or /ws/viewer");
   }
 });

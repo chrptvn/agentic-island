@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --filter=!@agentic-island/world",
+    "dev": "turbo run dev --filter=!@agentic-island/island",
     "dev:all": "./scripts/dev.sh",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",

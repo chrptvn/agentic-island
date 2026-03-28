@@ -42,7 +42,7 @@ No extra configuration is needed — if the world is connected to the hub (via `
 
 | Package | Path | Description |
 |---------|------|-------------|
-| `@agentic-island/world` | `apps/world` | Game engine, world simulation, MCP server, Hub connector |
+| `@agentic-island/island` | `apps/island` | Game engine, world simulation, MCP server, Hub connector |
 | `@agentic-island/api` | `apps/api` | Hono HTTP/WebSocket server, state relay, SQLite DB, sprite cache |
 | `@agentic-island/web` | `apps/web` | Next.js SPA for discovering and watching live islands |
 | `@agentic-island/cli` | `apps/cli` | Admin CLI for managing hub instances |
@@ -83,8 +83,8 @@ pnpm --filter @agentic-island/api dev
 # Terminal 2 — Hub Web (port 3000)
 pnpm --filter @agentic-island/web dev
 
-# Terminal 3 — World game engine (port 3000 standalone, or set WORLD_PORT=3001 alongside the web)
-pnpm --filter @agentic-island/world dev
+# Terminal 3 — World game engine (port 3000 standalone, or set ISLAND_PORT=3001 alongside the web)
+pnpm --filter @agentic-island/island dev
 ```
 
 ### Connect World to Hub
@@ -96,7 +96,7 @@ pnpm --filter @agentic-island/world dev
 ```bash
 HUB_URL=ws://localhost:4000/ws/world \
 HUB_API_KEY=ai_your_key_here \
-pnpm --filter @agentic-island/world dev
+pnpm --filter @agentic-island/island dev
 ```
 
 Your island will appear on the homepage. Open it to watch the game live.
@@ -124,7 +124,7 @@ This interactive CLI will prompt for an island name, optional description, and y
 
 ## Configuration
 
-Your island is fully customizable through JSON config files in `apps/world/config/`:
+Your island is fully customizable through JSON config files in `apps/island/config/`:
 
 | File | Controls |
 |------|----------|

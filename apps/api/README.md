@@ -10,7 +10,7 @@ Central relay that brokers world registration, manages API keys, caches graphics
 │ • Sends: state + tileRegistry (graphics metadata)            │
 │ • Updates throttled to 500ms-2s intervals                   │
 └──────────────────────────────────────────────────────────────┘
-     ↑ WebSocket (/ws/world — INPUT)
+     ↑ WebSocket (/ws/island — INPUT)
      │
 ┌──────────────────────────────────────────────────────────────┐
 │ HUB-API (Relay + Cache)                                      │
@@ -44,7 +44,7 @@ src/
 │   ├── worlds.ts         GET /api/worlds, GET /api/worlds/:id
 │   └── admin.ts          Admin key/world management (requires ADMIN_KEY)
 ├── ws/
-│   ├── world-handler.ts   /ws/world — Core→Hub state streaming
+│   ├── island-handler.ts   /ws/island — Core→Hub state streaming
 │   └── viewer-handler.ts /ws/viewer — Hub→Viewer state broadcasting
 ├── db/
 │   └── index.ts          SQLite (worlds, keys, heartbeats, analytics)
@@ -73,7 +73,7 @@ src/
 
 | Path | Direction | Purpose |
 |------|-----------|---------|
-| `/ws/world | World → Hub | Handshake, state updates, heartbeat |
+| `/ws/island | World → Hub | Handshake, state updates, heartbeat |
 | `/ws/viewer` | Hub → Viewer | World state broadcasts, subscriptions |
 
 ## Environment Variables

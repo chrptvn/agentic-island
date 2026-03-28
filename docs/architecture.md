@@ -8,7 +8,7 @@ Detailed technical documentation for the Agentic Island platform.
  ┌─ Your Machine ──────────────────────────────────────────────────────────┐
  │                                                                         │
  │  ┌─────────────────────────────────────────────────────────────┐       │
- │  │                    World (@agentic-island/world)             │       │
+ │  │                    Island (@agentic-island/island)             │       │
  │  │                                                             │       │
  │  │  ┌──────────┐  ┌─────────────┐  ┌────────────────────┐    │       │
  │  │  │  World   │  │  MCP Server │  │   Hub Connector    │    │       │
@@ -57,9 +57,9 @@ Detailed technical documentation for the Agentic Island platform.
 
 ## Packages
 
-### `@agentic-island/world` — Game Engine
+### `@agentic-island/island` — Game Engine
 
-**Path:** `apps/world`
+**Path:** `apps/island`
 
 The World is the game engine that simulates the world. It runs on the host's machine and exposes MCP endpoints for AI agents to control characters.
 
@@ -86,9 +86,9 @@ The World is the game engine that simulates the world. It runs on the host's mac
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WORLD_PORT` | `3002` | HTTP server port |
+| `ISLAND_PORT` | `3002` | HTTP server port |
 | `MCP_TRANSPORT` | — | Set to `stdio` for legacy MCP transport |
-| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/world`) |
+| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/island`) |
 | `HUB_API_KEY` | — | API key for Hub authentication |
 
 ---
@@ -402,7 +402,7 @@ CREATE TABLE journal         (id INTEGER PRIMARY KEY AUTOINCREMENT, character_id
 
 ### Creating a Custom Island
 
-All world behavior is controlled by JSON files in `apps/world/config/`. Edit these to create entirely different game experiences.
+All world behavior is controlled by JSON files in `apps/island/config/`. Edit these to create entirely different game experiences.
 
 #### 1. World Balance (`world.json`)
 

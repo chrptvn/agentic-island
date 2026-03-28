@@ -1,4 +1,4 @@
-import type { WorldMeta } from '@agentic-island/shared';
+import type { IslandMeta } from '@agentic-island/shared';
 
 // Hub API base URL for server-side calls
 const HUB_API_URL =
@@ -7,15 +7,15 @@ const HUB_API_URL =
 // For client-side: use relative URLs (proxied by Next.js rewrites)
 // For server-side: use absolute HUB_API_URL
 
-export async function fetchWorlds(
+export async function fetchIslands(
   status?: 'online' | 'offline',
-): Promise<WorldMeta[]> {
+): Promise<IslandMeta[]> {
   const url = status ? `/api/worlds?status=${status}` : '/api/worlds';
   const baseUrl = typeof window === 'undefined' ? HUB_API_URL : '';
   const res = await fetch(`${baseUrl}${url}`, { next: { revalidate: 30 } });
   if (!res.ok) return [];
   const data = await res.json();
-  return data.worlds ?? [];
+  return data.islands ?? [];
 }
 
 export async function claimPassport(

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import db from "../db/index.js";
 
-const worlds = new Hono();
+const islands = new Hono();
 
-interface WorldRow {
+interface IslandRow {
   id: string;
   name: string;
   description: string | null;
@@ -14,7 +14,7 @@ interface WorldRow {
   created_at: string;
 }
 
-function toCamelCase(row: WorldRow) {
+function toCamelCase(row: IslandRow) {
   return {
     id: row.id,
     name: row.name,
@@ -27,37 +27,37 @@ function toCamelCase(row: WorldRow) {
   };
 }
 
-worlds.get("/", (c) => {
+islands.get("/", (c) => {
   const filter = c.req.query("filter");
   const cols =
     "id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at";
 
-  let rows: WorldRow[];
+  let rows: IslandRow[];
   if (filter === "with-agents") {
     rows = db
       .prepare(
         `SELECT ${cols} FROM worlds WHERE status = 'online' AND player_count > 0 ORDER BY updated_at DESC`,
       )
-      .all() as WorldRow[];
+      .all() as IslandRow[];
   } else {
     rows = db
       .prepare(`SELECT ${cols} FROM worlds WHERE status = 'online' ORDER BY updated_at DESC`)
-      .all() as WorldRow[];
+      .all() as IslandRow[];
   }
 
-  return c.json({ worlds: rows.map(toCamelCase) });
+  return c.json({ islands: rows.map(toCamelCase) });
 });
 
-worlds.get("/:id", (c) => {
+islands.get("/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare(
     "SELECT id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at FROM worlds WHERE id = ?"
-  ).get(id) as WorldRow | undefined;
-  if (!row) return c.json({ error: "World not found" }, 404);
+  ).get(id) as IslandRow | undefined;
+  if (!row) return c.json({ error: "Island not found" }, 404);
 
   db.prepare("INSERT INTO world_views (world_id) VALUES (?)").run(id);
 
   return c.json(toCamelCase(row));
 });
 
-export default worlds;
+export default islands;

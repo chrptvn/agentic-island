@@ -1,10 +1,10 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
-import { worldViewers, lastWorldState } from "./world-handler.js";
+import { islandViewers, lastIslandState } from "./island-handler.js";
 import { addLobbyViewer, removeLobbyViewer } from "./lobby.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
-  let subscribedWorldId: string | null = null;
+  let subscribedIslandId: string | null = null;
   let inLobby = false;
 
   ws.on("message", (raw) => {
@@ -13,34 +13,34 @@ export function handleViewerConnection(ws: WebSocket): void {
 
       switch (msg.type) {
         case "subscribe": {
-          if (subscribedWorldId) {
-            const prev = worldViewers.get(subscribedWorldId);
+          if (subscribedIslandId) {
+            const prev = islandViewers.get(subscribedIslandId);
             if (prev) {
               prev.delete(ws);
-              if (prev.size === 0) worldViewers.delete(subscribedWorldId);
+              if (prev.size === 0) islandViewers.delete(subscribedIslandId);
             }
           }
 
-          subscribedWorldId = msg.worldId;
-          if (!worldViewers.has(msg.worldId)) {
-            worldViewers.set(msg.worldId, new Set());
+          subscribedIslandId = msg.worldId;
+          if (!islandViewers.has(msg.worldId)) {
+            islandViewers.set(msg.worldId, new Set());
           }
-          worldViewers.get(msg.worldId)!.add(ws);
+          islandViewers.get(msg.worldId)!.add(ws);
 
           // Immediately replay the last cached state so viewer isn't blank
-          const cached = lastWorldState.get(msg.worldId);
+          const cached = lastIslandState.get(msg.worldId);
           if (cached && ws.readyState === 1) ws.send(cached);
           break;
         }
 
         case "unsubscribe": {
-          if (subscribedWorldId) {
-            const set = worldViewers.get(subscribedWorldId);
+          if (subscribedIslandId) {
+            const set = islandViewers.get(subscribedIslandId);
             if (set) {
               set.delete(ws);
-              if (set.size === 0) worldViewers.delete(subscribedWorldId);
+              if (set.size === 0) islandViewers.delete(subscribedIslandId);
             }
-            subscribedWorldId = null;
+            subscribedIslandId = null;
           }
           break;
         }
@@ -67,11 +67,11 @@ export function handleViewerConnection(ws: WebSocket): void {
   });
 
   ws.on("close", () => {
-    if (subscribedWorldId) {
-      const set = worldViewers.get(subscribedWorldId);
+    if (subscribedIslandId) {
+      const set = islandViewers.get(subscribedIslandId);
       if (set) {
         set.delete(ws);
-        if (set.size === 0) worldViewers.delete(subscribedWorldId);
+        if (set.size === 0) islandViewers.delete(subscribedIslandId);
       }
     }
     if (inLobby) {

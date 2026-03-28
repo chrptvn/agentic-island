@@ -2,19 +2,19 @@
 # scripts/dev.sh — Start all Agentic Island services for local development.
 #
 # Usage:
-#   ./scripts/dev.sh             # api + web + world
+#   ./scripts/dev.sh             # api + web + island
 #   ./scripts/dev.sh --no-world  # api + web only
 #
 # Requires: pnpm
 # Services:
 #   api    → http://localhost:3001
 #   web    → http://localhost:3000 (Next.js, proxies /api + /ws to api)
-#   world  → http://localhost:3002
+#   island → http://localhost:3002
 #
 # Environment variables:
 #   HUB_API_KEY   API key for the world to authenticate with api
 #   ADMIN_KEY     Master admin key for island-cli admin commands
-#   WORLD_NAME    Name of the world (used by world)
+#   ISLAND_NAME    Name of the island (used by island)
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -64,7 +64,7 @@ PIDS+=($!)
 if [[ "${1:-}" != "--no-world" ]]; then
   sleep 1
   echo -e "${RED}Starting world…${NC}"
-  WORLD_PORT=3002 pnpm --filter @agentic-island/world run dev 2>&1 | prefix "$RED" "world" &
+  ISLAND_PORT=3002 pnpm --filter @agentic-island/island run dev 2>&1 | prefix "$RED" "island" &
   PIDS+=($!)
 fi
 

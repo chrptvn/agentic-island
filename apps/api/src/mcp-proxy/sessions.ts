@@ -2,57 +2,57 @@ import { randomUUID } from "node:crypto";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import type { WebSocket } from "ws";
-import type { HubToWorldMessage } from "@agentic-island/shared";
+import type { HubToIslandMessage } from "@agentic-island/shared";
 
 const PREFIX = "[mcp-proxy]";
 
 interface ProxySession {
   transport: StreamableHTTPServerTransport;
   worldId: string;
-  worldWs: WebSocket;
+  islandWs: WebSocket;
 }
 
 /** Active proxy sessions keyed by the hub-assigned MCP session ID. */
 const proxySessions = new Map<string, ProxySession>();
 
 /** Reverse index: worldId → Set<sessionId> for bulk cleanup. */
-const worldSessionIndex = new Map<string, Set<string>>();
+const islandSessionIndex = new Map<string, Set<string>>();
 
 /**
- * Create a new proxy session for a world.
+ * Create a new proxy session for an island.
  * Returns the StreamableHTTPServerTransport so the caller can route the
  * HTTP initialize request through it.
  */
 export function createProxySession(
   worldId: string,
-  worldWs: WebSocket,
+  islandWs: WebSocket,
 ): StreamableHTTPServerTransport {
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (sessionId: string) => {
-      console.log(PREFIX, `Session ${sessionId} created for world ${worldId}`);
-      proxySessions.set(sessionId, { transport, worldId, worldWs });
+      console.log(PREFIX, `Session ${sessionId} created for island ${worldId}`);
+      proxySessions.set(sessionId, { transport, worldId, islandWs });
 
-      let worldSessions = worldSessionIndex.get(worldId);
-      if (!worldSessions) {
-        worldSessions = new Set();
-        worldSessionIndex.set(worldId, worldSessions);
+      let islandSessions = islandSessionIndex.get(worldId);
+      if (!islandSessions) {
+        islandSessions = new Set();
+        islandSessionIndex.set(worldId, islandSessions);
       }
-      worldSessions.add(sessionId);
+      islandSessions.add(sessionId);
     },
   });
 
-  // Forward JSON-RPC messages from the MCP client to the world via WS tunnel.
+  // Forward JSON-RPC messages from the MCP client to the island via WS tunnel.
   transport.onmessage = (message: JSONRPCMessage) => {
     const sessionId = transport.sessionId;
     if (!sessionId) return;
 
-    const tunnelMsg: HubToWorldMessage = {
+    const tunnelMsg: HubToIslandMessage = {
       type: "mcp_tunnel_message",
       sessionId,
       message,
     };
-    worldWs.send(JSON.stringify(tunnelMsg));
+    islandWs.send(JSON.stringify(tunnelMsg));
   };
 
   transport.onclose = () => {
@@ -62,19 +62,19 @@ export function createProxySession(
     console.log(PREFIX, `Session ${sessionId} closed`);
     proxySessions.delete(sessionId);
 
-    const worldSessions = worldSessionIndex.get(worldId);
-    if (worldSessions) {
-      worldSessions.delete(sessionId);
-      if (worldSessions.size === 0) worldSessionIndex.delete(worldId);
+    const islandSessions = islandSessionIndex.get(worldId);
+    if (islandSessions) {
+      islandSessions.delete(sessionId);
+      if (islandSessions.size === 0) islandSessionIndex.delete(worldId);
     }
 
-    // Tell the world to clean up its tunnel session
-    const closeMsg: HubToWorldMessage = {
+    // Tell the island to clean up its tunnel session
+    const closeMsg: HubToIslandMessage = {
       type: "mcp_tunnel_close",
       sessionId,
     };
-    if (worldWs.readyState === 1) {
-      worldWs.send(JSON.stringify(closeMsg));
+    if (islandWs.readyState === 1) {
+      islandWs.send(JSON.stringify(closeMsg));
     }
   };
 
@@ -89,8 +89,8 @@ export function getProxySession(sessionId: string): ProxySession | undefined {
 }
 
 /**
- * Deliver a JSON-RPC response/notification from the world to the MCP client.
- * Called when a `mcp_tunnel_response` message arrives from the world WS.
+ * Deliver a JSON-RPC response/notification from the island to the MCP client.
+ * Called when a `mcp_tunnel_response` message arrives from the island WS.
  */
 export function deliverTunnelResponse(sessionId: string, message: unknown): void {
   const session = proxySessions.get(sessionId);
@@ -101,13 +101,13 @@ export function deliverTunnelResponse(sessionId: string, message: unknown): void
 }
 
 /**
- * Close all proxy sessions for a world (e.g. when the world disconnects).
+ * Close all proxy sessions for an island (e.g. when the island disconnects).
  */
-export function closeAllSessionsForWorld(worldId: string): void {
-  const sessionIds = worldSessionIndex.get(worldId);
+export function closeAllSessionsForIsland(worldId: string): void {
+  const sessionIds = islandSessionIndex.get(worldId);
   if (!sessionIds || sessionIds.size === 0) return;
 
-  console.log(PREFIX, `Closing ${sessionIds.size} proxy session(s) for world ${worldId}`);
+  console.log(PREFIX, `Closing ${sessionIds.size} proxy session(s) for island ${worldId}`);
   for (const sessionId of sessionIds) {
     const session = proxySessions.get(sessionId);
     if (session) {
@@ -115,5 +115,5 @@ export function closeAllSessionsForWorld(worldId: string): void {
       session.transport.close().catch(() => {});
     }
   }
-  worldSessionIndex.delete(worldId);
+  islandSessionIndex.delete(worldId);
 }

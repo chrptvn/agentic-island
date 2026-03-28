@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { GameRenderer } from '@agentic-island/game-renderer';
-import type { WorldState } from '@agentic-island/shared';
+import type { IslandState } from '@agentic-island/shared';
 import Tooltip, { type TooltipData } from './Tooltip';
 
 const TILE_SIZE = 16;
@@ -13,7 +13,7 @@ const VIEWPORT_WIDTH = 960;
 const VIEWPORT_HEIGHT = 540;
 
 interface GameViewerProps {
-  state: WorldState | null;
+  state: IslandState | null;
   spriteBaseUrl: string | null;
 }
 
@@ -28,7 +28,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
-  const stateRef = useRef<WorldState | null>(null);
+  const stateRef = useRef<IslandState | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [speechOverlays, setSpeechOverlays] = useState<SpeechOverlay[]>([]);
 

@@ -1,10 +1,10 @@
-import type { WorldConfig } from "./world.js";
+import type { IslandConfig } from "./island.js";
 
-export interface WorldMeta {
+export interface IslandMeta {
   id: string;
   name: string;
   description?: string;
-  configSnapshot?: Partial<WorldConfig>;
+  configSnapshot?: Partial<IslandConfig>;
   thumbnailUrl?: string;
   playerCount: number;
   status: "online" | "offline";

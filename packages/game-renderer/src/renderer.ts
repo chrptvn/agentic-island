@@ -5,7 +5,7 @@
  * all layers plus overlays onto a single <canvas>.
  */
 
-import type { WorldState, TileRegistry } from "@agentic-island/shared";
+import type { IslandState, TileRegistry } from "@agentic-island/shared";
 import { SpriteCache } from "./sprite-loader.js";
 import { renderLayers, type LayerData, type Viewport } from "./layers.js";
 import {
@@ -41,7 +41,7 @@ export class GameRenderer {
   private tileSize: number;
   private scaleFactor: number;
   private animState: AnimationState;
-  private state: WorldState | null = null;
+  private state: IslandState | null = null;
   private running = false;
   private rafId = 0;
 
@@ -100,7 +100,7 @@ export class GameRenderer {
   }
 
   /** Update the world state (called on each WebSocket message). */
-  setState(state: WorldState): void {
+  setState(state: IslandState): void {
     this.state = state;
 
     // Initialize camera position on first state with a map

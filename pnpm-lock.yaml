@@ -92,6 +92,43 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  apps/island:
+    dependencies:
+      '@agentic-island/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.27.1
+        version: 1.27.1(zod@4.3.6)
+      better-sqlite3:
+        specifier: ^12.6.2
+        version: 12.8.0
+      rot-js:
+        specifier: ^2.2.1
+        version: 2.2.1
+      ws:
+        specifier: ^8.19.0
+        version: 8.19.0
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@types/better-sqlite3':
+        specifier: ^7.6.13
+        version: 7.6.13
+      '@types/node':
+        specifier: ^25.3.5
+        version: 25.5.0
+      '@types/ws':
+        specifier: ^8.18.1
+        version: 8.18.1
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   apps/web:
     dependencies:
       '@agentic-island/game-renderer':
@@ -133,43 +170,6 @@ importers:
         version: 4.2.2
       typescript:
         specifier: ^5
-        version: 5.9.3
-
-  apps/world:
-    dependencies:
-      '@agentic-island/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      '@modelcontextprotocol/sdk':
-        specifier: ^1.27.1
-        version: 1.27.1(zod@4.3.6)
-      better-sqlite3:
-        specifier: ^12.6.2
-        version: 12.8.0
-      rot-js:
-        specifier: ^2.2.1
-        version: 2.2.1
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
-      zod:
-        specifier: ^4.3.6
-        version: 4.3.6
-    devDependencies:
-      '@types/better-sqlite3':
-        specifier: ^7.6.13
-        version: 7.6.13
-      '@types/node':
-        specifier: ^25.3.5
-        version: 25.5.0
-      '@types/ws':
-        specifier: ^8.18.1
-        version: 8.18.1
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.9.3
         version: 5.9.3
 
   packages/game-renderer:

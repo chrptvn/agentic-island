@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useWorldsStream } from '@/hooks/useWorldsStream';
+import { useIslandsStream } from '@/hooks/useIslandsStream';
 import WorldCard from './WorldCard';
 
-type WorldFilter = 'with-agents' | 'all';
+type IslandFilter = 'with-agents' | 'all';
 
-const TABS: { key: WorldFilter; label: string }[] = [
+const TABS: { key: IslandFilter; label: string }[] = [
   { key: 'with-agents', label: 'With Agents' },
   { key: 'all', label: 'All' },
 ];
 
 export default function WorldGrid() {
-  const [filter, setFilter] = useState<WorldFilter>('with-agents');
-  const { worlds: allWorlds, connected, error } = useWorldsStream();
+  const [filter, setFilter] = useState<IslandFilter>('with-agents');
+  const { islands: allWorlds, connected, error } = useIslandsStream();
 
   const worlds = useMemo(() => {
     if (filter === 'with-agents') {
@@ -76,8 +76,8 @@ export default function WorldGrid() {
       {/* Grid */}
       {!loading && !error && worlds.length > 0 && (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {worlds.map((world) => (
-            <WorldCard key={world.id} world={world} />
+          {worlds.map((island) => (
+            <WorldCard key={island.id} island={island} />
           ))}
         </div>
       )}

@@ -1,5 +1,5 @@
-import type { WorldState } from "../types/world.js";
-import type { WorldMeta } from "../types/hub.js";
+import type { IslandState } from "../types/island.js";
+import type { IslandMeta } from "../types/hub.js";
 
 // Viewer → Hub messages
 
@@ -23,31 +23,31 @@ export interface ViewerUnsubscribeLobbyMessage {
 
 // Hub → Viewer messages
 
-export interface ViewerWorldStateMessage {
-  type: "world_state";
+export interface ViewerIslandStateMessage {
+  type: "island_state";
   worldId: string;
   worldName: string;
-  state: WorldState;
+  state: IslandState;
   spriteBaseUrl: string;
 }
 
-export interface ViewerWorldOfflineMessage {
-  type: "world_offline";
+export interface ViewerIslandOfflineMessage {
+  type: "island_offline";
   worldId: string;
 }
 
-export interface ViewerWorldListMessage {
-  type: "world_list";
-  worlds: WorldMeta[];
+export interface ViewerIslandListMessage {
+  type: "island_list";
+  islands: IslandMeta[];
 }
 
-export interface ViewerWorldMetaUpdateMessage {
-  type: "world_meta_update";
-  world: WorldMeta;
+export interface ViewerIslandMetaUpdateMessage {
+  type: "island_meta_update";
+  island: IslandMeta;
 }
 
-export interface ViewerWorldRemovedMessage {
-  type: "world_removed";
+export interface ViewerIslandRemovedMessage {
+  type: "island_removed";
   worldId: string;
 }
 
@@ -66,9 +66,9 @@ export type ViewerToHubMessage =
   | ViewerUnsubscribeLobbyMessage;
 
 export type HubToViewerMessage =
-  | ViewerWorldStateMessage
-  | ViewerWorldOfflineMessage
-  | ViewerWorldListMessage
-  | ViewerWorldMetaUpdateMessage
-  | ViewerWorldRemovedMessage
+  | ViewerIslandStateMessage
+  | ViewerIslandOfflineMessage
+  | ViewerIslandListMessage
+  | ViewerIslandMetaUpdateMessage
+  | ViewerIslandRemovedMessage
   | ViewerErrorMessage;

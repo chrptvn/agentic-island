@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { getConnectedWorlds } from "../ws/world-handler.js";
+import { getConnectedIslands } from "../ws/island-handler.js";
 import { createProxySession, getProxySession } from "./sessions.js";
 
 const PREFIX = "[mcp-proxy]";
@@ -29,7 +29,7 @@ function extractWorldId(pathname: string): string | null {
 
 /**
  * Handle MCP proxy requests at `/worlds/:worldId/mcp`.
- * Routes StreamableHTTP MCP traffic to the world via WebSocket tunnel.
+ * Routes StreamableHTTP MCP traffic to the island via WebSocket tunnel.
  */
 export async function handleMcpProxy(
   req: IncomingMessage,
@@ -44,12 +44,12 @@ export async function handleMcpProxy(
     return;
   }
 
-  // Verify the world is connected
-  const connectedWorlds = getConnectedWorlds();
-  const world = connectedWorlds.get(worldId);
-  if (!world) {
+  // Verify the island is connected
+  const connectedIslands = getConnectedIslands();
+  const island = connectedIslands.get(worldId);
+  if (!island) {
     res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: `World "${worldId}" is not online` }));
+    res.end(JSON.stringify({ error: `Island "${worldId}" is not online` }));
     return;
   }
 
@@ -96,7 +96,7 @@ export async function handleMcpProxy(
     return;
   }
 
-  console.log(PREFIX, `New MCP proxy session for world ${worldId}`);
-  const transport = createProxySession(worldId, world.ws);
+  console.log(PREFIX, `New MCP proxy session for island ${worldId}`);
+  const transport = createProxySession(worldId, island.ws);
   await transport.handleRequest(req, res, body);
 }

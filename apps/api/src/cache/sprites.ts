@@ -28,7 +28,7 @@ export async function clearSprites(worldId: string): Promise<void> {
 }
 
 /**
- * Save a world thumbnail to the sprite cache directory.
+ * Save an island thumbnail to the sprite cache directory.
  * Returns the relative URL path for serving the thumbnail.
  */
 export async function saveThumbnail(

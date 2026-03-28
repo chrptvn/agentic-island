@@ -18,7 +18,7 @@ const CONFIG_FILE = join(CONFIG_DIR, "config.json");
 const DEFAULT_CONFIG: IslandConfig = {
   currentContext: "local",
   contexts: {
-    local: { url: "http://localhost:3002", name: "Local Dev World" },
+    local: { url: "http://localhost:3002", name: "Local Dev Island" },
   },
 };
 
@@ -48,10 +48,10 @@ export function getCurrentContext(): { name: string; entry: ContextEntry } | nul
   return { name: config.currentContext, entry };
 }
 
-/** Resolve world URL: flag > env var > config file > fallback */
-export function resolveUrl(opts: { worldUrl?: string }): string {
-  if (opts.worldUrl) return opts.worldUrl.replace(/\/$/, "");
-  if (process.env.WORLD_URL) return process.env.WORLD_URL.replace(/\/$/, "");
+/** Resolve island URL: flag > env var > config file > fallback */
+export function resolveUrl(opts: { islandUrl?: string }): string {
+  if (opts.islandUrl) return opts.islandUrl.replace(/\/$/, "");
+  if (process.env.ISLAND_URL) return process.env.ISLAND_URL.replace(/\/$/, "");
   const ctx = getCurrentContext();
   if (ctx) return ctx.entry.url.replace(/\/$/, "");
   return "http://localhost:3002";

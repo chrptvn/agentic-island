@@ -23,7 +23,7 @@ pnpm dev            # Start core with hot-reload
 ## Project Structure
 
 **agentic-island** (monorepo):
-- `apps/world` — World simulation engine
+- `apps/island` — World simulation engine
 - `apps/api` — Multiplayer hub server
 - `apps/web` — Next.js website & island viewer
 - `apps/cli` — Admin CLI tool
@@ -41,11 +41,11 @@ pnpm dev            # Start core with hot-reload
 
 ## Configuration
 
-Game data lives in `apps/world/config/` as JSON files. See [CONFIG.md](apps/world/CONFIG.md) for schema documentation. Changes are hot-reloaded — no restart needed.
+Game data lives in `apps/island/config/` as JSON files. See [CONFIG.md](apps/island/CONFIG.md) for schema documentation. Changes are hot-reloaded — no restart needed.
 
 ## Sprites
 
-All sprite assets are in `apps/world/sprites/`. See [CREDITS.md](apps/world/sprites/CREDITS.md) for attribution and licensing.
+All sprite assets are in `apps/island/sprites/`. See [CREDITS.md](apps/island/sprites/CREDITS.md) for attribution and licensing.
 
 ## Commit Messages
 

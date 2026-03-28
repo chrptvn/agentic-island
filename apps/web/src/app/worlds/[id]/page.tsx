@@ -4,7 +4,7 @@ import { use, useRef } from 'react';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
-import { useWorldStream } from '@/hooks/useWorldStream';
+import { useIslandStream } from '@/hooks/useIslandStream';
 import GameViewer from '@/components/game/GameViewer';
 
 export default function WorldViewerPage({
@@ -14,7 +14,7 @@ export default function WorldViewerPage({
 }) {
   const { id } = use(params);
   const { state, spriteBaseUrl, worldName, connected, error } =
-    useWorldStream(id);
+    useIslandStream(id);
 
   // Once the viewer has been shown, keep it mounted to avoid
   // unmount→remount sprite-reload flashes on transient disconnects.

@@ -5,7 +5,7 @@
  * Interactive CLI that collects island metadata and a passport (API key),
  * then boots the world engine with a live connection to the chosen hub.
  *
- * If apps/world/.env is present, any variables already set there are used
+ * If apps/island/.env is present, any variables already set there are used
  * directly and their prompts are skipped. After collecting any missing values
  * interactively, the user is offered the option to save them back to .env.
  *
@@ -19,10 +19,10 @@ import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const ENV_PATH = resolve(__dirname, "../apps/world/.env");
+const ENV_PATH = resolve(__dirname, "../apps/island/.env");
 
-const HUB_LOCAL = "ws://localhost:3001/ws/world";
-const HUB_OFFICIAL = "wss://hub.agenticisland.ai/ws/world";
+const HUB_LOCAL = "ws://localhost:3001/ws/island";
+const HUB_OFFICIAL = "wss://hub.agenticisland.ai/ws/island";
 const PASSPORT_URL_LOCAL = "http://localhost:3000";
 const PASSPORT_URL_OFFICIAL = "https://agenticisland.ai";
 
@@ -82,7 +82,7 @@ function parseEnvFile(path: string): Record<string, string> {
 }
 
 async function main(): Promise<void> {
-  // Load apps/world/.env — values from the file override shell env vars so that
+  // Load apps/island/.env — values from the file override shell env vars so that
   // the .env file is the authoritative source of truth for publish:island.
   const fileEnv = parseEnvFile(ENV_PATH);
   for (const [key, value] of Object.entries(fileEnv)) {
@@ -161,8 +161,8 @@ async function main(): Promise<void> {
 
     // ── World Name (required) ──────────────────────────────────
     let worldName: string;
-    if (process.env.WORLD_NAME) {
-      worldName = process.env.WORLD_NAME;
+    if (process.env.ISLAND_NAME) {
+      worldName = process.env.ISLAND_NAME;
       console.log(`  ✓ Name:     ${worldName}  (from .env)`);
     } else {
       console.log();
@@ -173,13 +173,13 @@ async function main(): Promise<void> {
           console.log("  ⚠  Island name is required.\n");
         }
       }
-      enteredInteractively.WORLD_NAME = worldName;
+      enteredInteractively.ISLAND_NAME = worldName;
     }
 
     // ── World Description (optional) ───────────────────────────
     let worldDescription: string;
-    if (process.env.WORLD_DESCRIPTION !== undefined) {
-      worldDescription = process.env.WORLD_DESCRIPTION;
+    if (process.env.ISLAND_DESCRIPTION !== undefined) {
+      worldDescription = process.env.ISLAND_DESCRIPTION;
       if (worldDescription) {
         console.log(`  ✓ Description: ${worldDescription}  (from .env)`);
       }
@@ -187,13 +187,13 @@ async function main(): Promise<void> {
       worldDescription = (
         await rl.question("  Description (optional): ")
       ).trim();
-      enteredInteractively.WORLD_DESCRIPTION = worldDescription;
+      enteredInteractively.ISLAND_DESCRIPTION = worldDescription;
     }
 
     // ── Save to .env? (only if something was entered interactively) ─
     if (Object.keys(enteredInteractively).length > 0) {
       console.log();
-      const save = (await rl.question("  Save to apps/world/.env? [Y/n] ")).trim().toLowerCase();
+      const save = (await rl.question("  Save to apps/island/.env? [Y/n] ")).trim().toLowerCase();
       if (save === "" || save === "y" || save === "yes") {
         saveToEnv(enteredInteractively);
         console.log("  ✓ Saved.");
@@ -209,11 +209,11 @@ async function main(): Promise<void> {
     // ── Set env vars and boot the world engine ─────────────────
     process.env.HUB_API_KEY = passport;
     process.env.HUB_URL = hubUrl;
-    process.env.WORLD_NAME = worldName;
-    process.env.WORLD_DESCRIPTION = worldDescription;
+    process.env.ISLAND_NAME = worldName;
+    process.env.ISLAND_DESCRIPTION = worldDescription;
 
     // Import the world entry point — it reads env vars on load
-    await import("../apps/world/index.js");
+    await import("../apps/island/index.js");
   } catch (err) {
     rl.close();
     if ((err as NodeJS.ErrnoException).code === "ERR_USE_AFTER_CLOSE") {

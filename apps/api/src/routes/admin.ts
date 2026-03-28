@@ -66,7 +66,7 @@ admin.delete("/keys/:id", (c) => {
   return c.json({ success: true });
 });
 
-// --- Worlds ---
+// --- Islands ---
 
 admin.get("/worlds", (c) => {
   const rows = db
@@ -78,14 +78,14 @@ admin.get("/worlds", (c) => {
 admin.get("/worlds/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare("SELECT * FROM worlds WHERE id = ?").get(id);
-  if (!row) return c.json({ error: "World not found" }, 404);
+  if (!row) return c.json({ error: "Island not found" }, 404);
   return c.json(row);
 });
 
 admin.delete("/worlds/:id", (c) => {
   const id = c.req.param("id");
-  const world = db.prepare("SELECT id FROM worlds WHERE id = ?").get(id);
-  if (!world) return c.json({ error: "World not found" }, 404);
+  const island = db.prepare("SELECT id FROM worlds WHERE id = ?").get(id);
+  if (!island) return c.json({ error: "Island not found" }, 404);
 
   db.prepare("DELETE FROM world_views WHERE world_id = ?").run(id);
   db.prepare("DELETE FROM worlds WHERE id = ?").run(id);

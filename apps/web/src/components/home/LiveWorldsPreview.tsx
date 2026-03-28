@@ -1,14 +1,14 @@
-import { fetchWorlds } from "@/lib/api";
+import { fetchIslands } from "@/lib/api";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Container from "@/components/ui/Container";
 
 export default async function LiveWorldsPreview() {
-  let worlds: Awaited<ReturnType<typeof fetchWorlds>> = [];
+  let worlds: Awaited<ReturnType<typeof fetchIslands>> = [];
 
   try {
-    const allWorlds = await fetchWorlds("online");
+    const allWorlds = await fetchIslands("online");
     worlds = allWorlds.slice(0, 3);
   } catch {
     /* API unavailable — handled by empty state below */

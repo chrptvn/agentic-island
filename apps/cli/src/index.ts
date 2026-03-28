@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { registerContextCommand } from "./commands/context.js";
-import { registerWorldCommand } from "./commands/world/index.js";
+import { registerIslandCommand } from "./commands/island/index.js";
 
 const program = new Command();
 
@@ -11,6 +11,6 @@ program
   .version("0.1.0");
 
 registerContextCommand(program);
-registerWorldCommand(program);
+registerIslandCommand(program);
 
 program.parse(process.argv);
