@@ -110,7 +110,7 @@ export async function sendPassportEmail(
         <p style="margin:0 0 12px;"><strong>Quick Start:</strong></p>
         <ol style="margin:0;padding-left:20px;">
           <li>Export your key:<br>
-            <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px;color:#5eead4;">export HUB_API_KEY=${key}</code>
+            <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px;color:#5eead4;">export API_KEY=${key}</code>
           </li>
           <li style="margin-top:8px;">Launch your island with the Agentic Island CLI</li>
           <li style="margin-top:8px;">Watch it live at <a href="https://agenticisland.ai/worlds" style="color:#5eead4;">agenticisland.ai/worlds</a></li>
@@ -132,7 +132,7 @@ export async function sendPassportEmail(
     `Your API Key: ${key}`,
     "",
     "Quick Start:",
-    `1. export HUB_API_KEY=${key}`,
+    `1. export API_KEY=${key}`,
     "2. Launch your island with the Agentic Island CLI",
     "3. Watch it live at https://agenticisland.ai/worlds",
     "",

@@ -14,18 +14,18 @@ const isPrimary = await startHttpServer(parseInt(process.env.ISLAND_PORT ?? "300
 const island = Island.getInstance();
 island.watchConfigs();
 
-// --- Hub Connector (opt-in via HUB_API_KEY env var) ---
-const HUB_API_KEY = process.env.HUB_API_KEY;
+// --- Hub Connector (opt-in via API_KEY env var) ---
+const API_KEY = process.env.API_KEY;
 if (!isPrimary) {
   console.log("[island] Hub connector skipped — another instance owns the HTTP port");
-} else if (HUB_API_KEY) {
+} else if (API_KEY) {
   const hubUrl = process.env.HUB_URL ?? "ws://localhost:3001/ws/island";
   const islandName = process.env.ISLAND_NAME ?? "My Island";
   const islandDescription = process.env.ISLAND_DESCRIPTION ?? "";
 
   const connector = new HubConnector({
     hubUrl,
-    apiKey: HUB_API_KEY,
+    apiKey: API_KEY,
     islandName,
     islandDescription,
   });
@@ -75,6 +75,6 @@ if (!isPrimary) {
 
   console.log(`[island] Hub connector enabled → ${hubUrl}`);
 } else {
-  console.log("[island] Hub connector disabled (set HUB_API_KEY to enable)");
+  console.log("[island] Hub connector disabled (set API_KEY to enable)");
 }
 

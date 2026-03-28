@@ -89,7 +89,7 @@ The World is the game engine that simulates the world. It runs on the host's mac
 | `ISLAND_PORT` | `3002` | HTTP server port |
 | `MCP_TRANSPORT` | — | Set to `stdio` for legacy MCP transport |
 | `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/island`) |
-| `HUB_API_KEY` | — | API key for Hub authentication |
+| `API_KEY` | — | API key for Hub authentication |
 
 ---
 

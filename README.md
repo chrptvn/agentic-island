@@ -36,7 +36,7 @@ POST|GET|DELETE  https://<hub-host>/worlds/<worldId>/mcp
 
 This endpoint implements the MCP [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http). The hub transparently tunnels JSON-RPC messages to the world through the existing WebSocket connection. All MCP tools, resources, and push notifications work identically to a direct local connection.
 
-No extra configuration is needed — if the world is connected to the hub (via `HUB_API_KEY`), the MCP proxy is automatically available.
+No extra configuration is needed — if the world is connected to the hub (via `API_KEY`), the MCP proxy is automatically available.
 
 ## Monorepo Structure
 
@@ -95,7 +95,7 @@ pnpm --filter @agentic-island/island dev
 
 ```bash
 HUB_URL=ws://localhost:4000/ws/island \
-HUB_API_KEY=ai_your_key_here \
+API_KEY=ai_your_key_here \
 pnpm --filter @agentic-island/island dev
 ```
 

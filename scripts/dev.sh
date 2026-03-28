@@ -12,7 +12,7 @@
 #   island → http://localhost:3002
 #
 # Environment variables:
-#   HUB_API_KEY   API key for the world to authenticate with api
+#   API_KEY   API key for the world to authenticate with api
 #   ADMIN_KEY     Master admin key for island-cli admin commands
 #   ISLAND_NAME    Name of the island (used by island)
 

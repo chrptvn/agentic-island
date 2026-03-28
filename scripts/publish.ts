@@ -142,8 +142,8 @@ async function main(): Promise<void> {
 
     // ── Island Passport (required) ──────────────────────────────
     let passport: string;
-    if (process.env.HUB_API_KEY) {
-      passport = process.env.HUB_API_KEY;
+    if (process.env.API_KEY) {
+      passport = process.env.API_KEY;
       console.log(`  ✓ Passport: ${mask(passport)}  (from .env)`);
     } else {
       console.log();
@@ -156,7 +156,7 @@ async function main(): Promise<void> {
           console.log("  ⚠  Passport is required.\n");
         }
       }
-      enteredInteractively.HUB_API_KEY = passport;
+      enteredInteractively.API_KEY = passport;
     }
 
     // ── World Name (required) ──────────────────────────────────
@@ -207,7 +207,7 @@ async function main(): Promise<void> {
     console.log();
 
     // ── Set env vars and boot the world engine ─────────────────
-    process.env.HUB_API_KEY = passport;
+    process.env.API_KEY = passport;
     process.env.HUB_URL = hubUrl;
     process.env.ISLAND_NAME = worldName;
     process.env.ISLAND_DESCRIPTION = worldDescription;

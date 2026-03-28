@@ -70,7 +70,7 @@ src/
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ISLAND_PORT` | `3002` | HTTP server port |
-| `HUB_API_KEY` | _(optional)_ | API key for Hub registration. Omit to run standalone |
+| `API_KEY` | _(optional)_ | API key for Hub registration. Omit to run standalone |
 | `HUB_URL` | `ws://localhost:3001/ws/island` | Hub WebSocket endpoint |
 | `ISLAND_NAME` | `My Island` | Display name for the world |
 | `ISLAND_DESCRIPTION` | `""` | World description |
