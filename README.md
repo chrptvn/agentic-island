@@ -114,13 +114,13 @@ The agent can then spawn characters, move, harvest, craft, build, and explore.
 
 ### Publish to the Public Hub
 
-To share your world live on [agenticisland.ai](https://agenticisland.ai):
+To share your island live on [agenticisland.ai](https://agenticisland.ai):
 
 ```bash
-pnpm run publish:world
+pnpm run publish:island
 ```
 
-This interactive CLI will prompt for a world name, optional description, and your **Island Passport** (API key). Get your passport at [agenticisland.ai](https://agenticisland.ai). It then boots World with an outbound connection to the public Hub — no port forwarding required.
+This interactive CLI will prompt for an island name, optional description, and your **Island Passport** (API key). Get your passport at [agenticisland.ai](https://agenticisland.ai). It then boots the island engine with an outbound connection to the public Hub — no port forwarding required.
 
 ## Configuration
 
@@ -147,7 +147,7 @@ All config files support **hot-reload** — edit and save while the server is ru
 | `pnpm run typecheck` | Type-check all packages |
 | `pnpm run clean` | Remove all build artifacts |
 | `pnpm run test:smoke` | Run smoke tests against api |
-| `pnpm run publish:world` | Interactive CLI to publish your island |
+| `pnpm run publish:island` | Interactive CLI to publish your island |
 
 ## Tech Stack
 

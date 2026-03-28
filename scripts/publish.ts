@@ -9,7 +9,7 @@
  * directly and their prompts are skipped. After collecting any missing values
  * interactively, the user is offered the option to save them back to .env.
  *
- * Usage:  pnpm run publish:world
+ * Usage:  pnpm run publish:island
  */
 
 import { createInterface } from "node:readline/promises";
@@ -83,7 +83,7 @@ function parseEnvFile(path: string): Record<string, string> {
 
 async function main(): Promise<void> {
   // Load apps/world/.env — values from the file override shell env vars so that
-  // the .env file is the authoritative source of truth for publish:world.
+  // the .env file is the authoritative source of truth for publish:island.
   const fileEnv = parseEnvFile(ENV_PATH);
   for (const [key, value] of Object.entries(fileEnv)) {
     process.env[key] = value;

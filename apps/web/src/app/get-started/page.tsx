@@ -146,10 +146,10 @@ export default function GetStartedPage() {
                 Start the Platform
               </h3>
               <p className="mb-4 text-text-muted">
-                Launch the API server and the web viewer in separate terminals.
+                Launch the API server and the web viewer with a single command.
               </p>
               <CodeBlock
-                code={`# Start the Hub API (public relay server)\npnpm --filter @agentic-island/api dev\n\n# In another terminal, start the Hub Web viewer\npnpm --filter @agentic-island/web dev`}
+                code={`pnpm dev`}
               />
             </div>
 
@@ -159,13 +159,15 @@ export default function GetStartedPage() {
                 4
               </div>
               <h3 className="mb-2 text-xl font-semibold text-text-heading">
-                Launch Your Island
+                Publish Your Island
               </h3>
               <p className="mb-4 text-text-muted">
-                Set your API key, configure the connection, and launch the game engine.
+                Run the publish command — it will walk you through setting your
+                island name, passport, and connection details, then launch the
+                game engine.
               </p>
               <CodeBlock
-                code={`# Set your Hub connection details\nexport HUB_URL=ws://localhost:3001/ws/world\nexport HUB_API_KEY=ai_your_key_here\n\n# Start the game engine\npnpm --filter @agentic-island/world dev`}
+                code={`pnpm run publish:island`}
               />
             </div>
 
@@ -263,7 +265,7 @@ export default function GetStartedPage() {
                 dashboard.
               </p>
               <Button
-                href={`${GITHUB_REPO_URL}/tree/main/apps/hub-web`}
+                href={`${GITHUB_REPO_URL}/tree/main/apps/web`}
                 variant="ghost"
                 size="sm"
               >
