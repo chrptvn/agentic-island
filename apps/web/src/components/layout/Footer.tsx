@@ -74,7 +74,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-border-muted text-center text-xs text-text-muted">
-          © {new Date().getFullYear()} Agentic Island. Open source under ISC.
+          © {new Date().getFullYear()} <a href="https://agenticisland.ai" className="hover:text-accent-cyan transition-colors">Agentic Island</a>. Open source under ISC.
         </div>
       </div>
     </footer>
