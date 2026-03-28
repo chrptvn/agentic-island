@@ -74,7 +74,7 @@ export default function PassportPage() {
                 <span className="shrink-0">⚠️</span>
                 <span className="text-text-muted">
                   <strong className="text-accent-gold">Email delivery is limited.</strong>{' '}
-                  Our mail server is not configured. You can use a{' '}
+                  The mail server is not configured. You can use a{' '}
                   <a
                     href="https://minutemail.co"
                     target="_blank"
@@ -184,8 +184,8 @@ export default function PassportPage() {
         )}
       </Card>
 
-      {/* MinuteMail promotional card */}
-      {state.step !== 'success' && (
+      {/* MinuteMail promotional card — only show when SMTP is configured (privacy option) */}
+      {state.step !== 'success' && smtpConfigured && (
         <Card className="w-full max-w-lg" hover>
           <p className="font-bold text-text-heading">🔒 Want to stay private?</p>
           <p className="mt-2 text-sm text-text-muted">
