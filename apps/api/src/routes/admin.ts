@@ -68,21 +68,21 @@ admin.delete("/keys/:id", (c) => {
 
 // --- Islands ---
 
-admin.get("/worlds", (c) => {
+admin.get("/islands", (c) => {
   const rows = db
     .prepare("SELECT * FROM worlds ORDER BY updated_at DESC")
     .all();
   return c.json({ worlds: rows });
 });
 
-admin.get("/worlds/:id", (c) => {
+admin.get("/islands/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare("SELECT * FROM worlds WHERE id = ?").get(id);
   if (!row) return c.json({ error: "Island not found" }, 404);
   return c.json(row);
 });
 
-admin.delete("/worlds/:id", (c) => {
+admin.delete("/islands/:id", (c) => {
   const id = c.req.param("id");
   const island = db.prepare("SELECT id FROM worlds WHERE id = ?").get(id);
   if (!island) return c.json({ error: "Island not found" }, 404);

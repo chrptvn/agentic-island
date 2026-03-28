@@ -36,12 +36,12 @@ const nextConfig: NextConfig = {
         destination: `${hubApiUrl}/ws/:path*`,
       },
       {
-        source: "/worlds/:worldId/mcp",
-        destination: `${hubApiUrl}/worlds/:worldId/mcp`,
+        source: "/islands/:worldId/mcp",
+        destination: `${hubApiUrl}/islands/:worldId/mcp`,
       },
       {
-        source: "/worlds/:worldId/mcp/:path*",
-        destination: `${hubApiUrl}/worlds/:worldId/mcp/:path*`,
+        source: "/islands/:worldId/mcp/:path*",
+        destination: `${hubApiUrl}/islands/:worldId/mcp/:path*`,
       },
     ];
   },

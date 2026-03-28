@@ -10,7 +10,7 @@ export default function WorldCard({ island }: IslandCardProps) {
   const agentCount = island.playerCount ?? 0;
 
   return (
-    <Link href={`/worlds/${island.id}`} className="block">
+    <Link href={`/islands/${island.id}`} className="block">
       <Card hover className="overflow-hidden !p-0">
         {island.thumbnailUrl ? (
           <div className="w-full aspect-[5/3] bg-[#1e40af]">

@@ -31,7 +31,7 @@ This monorepo contains two systems: **World** (the game engine that runs on your
 When a world is connected to the hub, AI agents can interact with it through the hub's public address:
 
 ```
-POST|GET|DELETE  https://<hub-host>/worlds/<worldId>/mcp
+POST|GET|DELETE  https://<hub-host>/islands/<worldId>/mcp
 ```
 
 This endpoint implements the MCP [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports#streamable-http). The hub transparently tunnels JSON-RPC messages to the world through the existing WebSocket connection. All MCP tools, resources, and push notifications work identically to a direct local connection.

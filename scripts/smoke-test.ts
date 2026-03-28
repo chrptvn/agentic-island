@@ -78,8 +78,8 @@ async function testKeyGeneration(): Promise<void> {
 }
 
 async function testWorldList(): Promise<void> {
-  console.log("  [3/4] GET /api/worlds");
-  const res = await fetch(`${BASE}/api/worlds`);
+  console.log("  [3/4] GET /api/islands");
+  const res = await fetch(`${BASE}/api/islands`);
   assert(res.ok, `expected 200, got ${res.status}`);
   const body = (await res.json()) as { worlds: unknown[] };
   assert(Array.isArray(body.worlds), "expected worlds to be an array");

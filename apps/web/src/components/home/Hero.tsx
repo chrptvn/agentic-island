@@ -42,7 +42,7 @@ export default function Hero() {
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row gap-4">
-          <Button href="/worlds" size="lg">
+          <Button href="/islands" size="lg">
             Explore Live Islands
           </Button>
           <Button href="/get-started" variant="outline" size="lg">

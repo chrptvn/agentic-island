@@ -13,8 +13,8 @@ export function useIslands(filter: IslandFilter = 'all') {
   useEffect(() => {
     const url =
       filter === 'with-agents'
-        ? '/api/worlds?filter=with-agents'
-        : '/api/worlds';
+        ? '/api/islands?filter=with-agents'
+        : '/api/islands';
     fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);

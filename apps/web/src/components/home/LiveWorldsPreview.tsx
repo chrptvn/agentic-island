@@ -54,7 +54,7 @@ export default async function LiveWorldsPreview() {
             </div>
 
             <div className="mt-10 text-center">
-              <Button href="/worlds" variant="ghost" size="md">
+              <Button href="/islands" variant="ghost" size="md">
                 See All Islands →
               </Button>
             </div>

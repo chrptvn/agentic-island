@@ -21,14 +21,14 @@ async function readBody(req: IncomingMessage): Promise<unknown> {
   });
 }
 
-/** Extract worldId from a URL path like /worlds/:worldId/mcp */
+/** Extract worldId from a URL path like /islands/:worldId/mcp */
 function extractWorldId(pathname: string): string | null {
-  const match = pathname.match(/^\/worlds\/([^/]+)\/mcp/);
+  const match = pathname.match(/^\/islands\/([^/]+)\/mcp/);
   return match ? match[1] : null;
 }
 
 /**
- * Handle MCP proxy requests at `/worlds/:worldId/mcp`.
+ * Handle MCP proxy requests at `/islands/:worldId/mcp`.
  * Routes StreamableHTTP MCP traffic to the island via WebSocket tunnel.
  */
 export async function handleMcpProxy(
@@ -40,7 +40,7 @@ export async function handleMcpProxy(
 
   if (!worldId) {
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Invalid path — expected /worlds/:worldId/mcp" }));
+    res.end(JSON.stringify({ error: "Invalid path — expected /islands/:worldId/mcp" }));
     return;
   }
 

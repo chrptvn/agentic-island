@@ -10,7 +10,7 @@ const HUB_API_URL =
 export async function fetchIslands(
   status?: 'online' | 'offline',
 ): Promise<IslandMeta[]> {
-  const url = status ? `/api/worlds?status=${status}` : '/api/worlds';
+  const url = status ? `/api/islands?status=${status}` : '/api/islands';
   const baseUrl = typeof window === 'undefined' ? HUB_API_URL : '';
   const res = await fetch(`${baseUrl}${url}`, { next: { revalidate: 30 } });
   if (!res.ok) return [];

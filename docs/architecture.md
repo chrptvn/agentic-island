@@ -105,8 +105,8 @@ The Hub is the public-facing server. It accepts connections from World instances
 |--------|------|-------------|
 | `GET` | `/api/health` | Health check (`{ status: "ok", uptime }`) |
 | `POST` | `/api/keys` | Generate API key (rate-limited: 5/min/IP) |
-| `GET` | `/api/worlds` | List worlds (optional `?status=online\|offline`) |
-| `GET` | `/api/worlds/:id` | Get world details (also logs a view) |
+| `GET` | `/api/islands` | List worlds (optional `?status=online\|offline`) |
+| `GET` | `/api/islands/:id` | Get world details (also logs a view) |
 | `GET` | `/sprites/:worldId/:filename` | Serve cached sprite files (1h cache TTL) |
 
 **WebSocket endpoints:**
@@ -148,7 +148,7 @@ React single-page application for browsing and watching live islands.
 
 **Hooks:**
 
-- `useWorlds(status)` — Fetches world list from `/api/worlds`
+- `useWorlds(status)` — Fetches world list from `/api/islands`
 - `useWorldStream(worldId)` — Opens WebSocket to `/ws/viewer`, subscribes to world updates
 
 **Dev server:** Vite on port 5173, proxies `/api`, `/sprites`, and `/ws` to Hub API at `localhost:4000`.
@@ -313,7 +313,7 @@ End-to-end flow from World startup to a viewer rendering the world:
 
 4. Viewer opens Hub Web
    └─► Browser loads React SPA from Hub Web
-   └─► Home page fetches GET /api/worlds?status=online
+   └─► Home page fetches GET /api/islands?status=online
    └─► User clicks a world card
 
 5. Viewer subscribes to world

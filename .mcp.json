@@ -6,7 +6,7 @@
     },
     "agentic-island-remote": {
       "type": "http",
-      "url": "http://localhost:3000/worlds/9822dce3-e0ac-41a7-bf9a-0d9790162c5a/mcp"
+      "url": "http://localhost:3000/islands/9822dce3-e0ac-41a7-bf9a-0d9790162c5a/mcp"
     }
   }
 }

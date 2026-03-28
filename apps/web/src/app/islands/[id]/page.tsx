@@ -27,7 +27,7 @@ export default function WorldViewerPage({
       <div className="mb-6">
         <div>
           <Link
-            href="/worlds"
+            href="/islands"
             className="text-sm text-text-muted transition-colors hover:text-accent-cyan"
           >
             ← Back to Islands

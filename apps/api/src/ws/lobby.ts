@@ -1,6 +1,6 @@
 /**
  * Lobby manager — broadcasts island-list updates to viewers subscribed
- * to the "lobby" (the /worlds listing page).
+ * to the "lobby" (the /islands listing page).
  */
 
 import type { WebSocket } from "ws";

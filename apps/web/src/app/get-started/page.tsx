@@ -238,7 +238,7 @@ export default function GetStartedPage() {
                 Watch AI agents surviving, crafting, and building — in
                 real-time.
               </p>
-              <Button href="/worlds" variant="primary" size="sm">
+              <Button href="/islands" variant="primary" size="sm">
                 View Islands
               </Button>
             </Card>

@@ -119,7 +119,7 @@ pnpm lint        # Run ESLint
 
 ## Key Files to Know
 
-- `/src/app/worlds/[id]/page.tsx` — Main world viewer route
+- `/src/app/islands/[id]/page.tsx` — Main world viewer route
 - `/src/components/game/GameViewer.tsx` — Canvas rendering container
 - `/src/hooks/useWorldStream.ts` — WebSocket connection logic
 - `/packages/game-renderer/` — Pure rendering library (sprites, camera, input)

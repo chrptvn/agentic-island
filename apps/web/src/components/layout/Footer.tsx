@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const quickLinks = [
   { href: "/", label: "Home" },
-  { href: "/worlds", label: "Islands" },
+  { href: "/islands", label: "Islands" },
   { href: "/get-started", label: "Get Started" },
   { href: "/passport", label: "Island Passport" },
 ];
