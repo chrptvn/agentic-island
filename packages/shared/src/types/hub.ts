@@ -5,6 +5,7 @@ export interface WorldMeta {
   name: string;
   description?: string;
   configSnapshot?: Partial<WorldConfig>;
+  thumbnailUrl?: string;
   playerCount: number;
   status: "online" | "offline";
   lastHeartbeatAt?: string;

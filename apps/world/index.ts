@@ -45,6 +45,14 @@ if (!isPrimary) {
   // Package all sprites from the unified sprites/ directory
   const sprites = await packageSprites(join(__dirname, "sprites")).catch(() => []);
 
+  // Generate a pixel-art thumbnail from the world's terrain
+  const thumbnailData = world.getThumbnailBase64();
+  const thumbnail = {
+    filename: "thumbnail.png",
+    mimeType: "image/png",
+    data: thumbnailData,
+  };
+
   // Wire state streaming
   const streamer = new StateStreamer({ minIntervalMs: 500 });
   streamer.onStateReady((state) => {
@@ -62,8 +70,8 @@ if (!isPrimary) {
   }, 2_000);
   if (stateInterval.unref) stateInterval.unref();
 
-  // Connect with sprites and config
-  connector.connect(sprites, getWorldConfig() as unknown as Record<string, unknown>);
+  // Connect with sprites, config, and thumbnail
+  connector.connect(sprites, getWorldConfig() as unknown as Record<string, unknown>, thumbnail);
 
   console.log(`[world] Hub connector enabled → ${hubUrl}`);
 } else {

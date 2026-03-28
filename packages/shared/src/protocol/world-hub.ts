@@ -13,6 +13,7 @@ export interface WorldHandshakeMessage {
     config: Partial<WorldConfig>;
   };
   sprites: SpriteAsset[];
+  thumbnail?: SpriteAsset;
 }
 
 export interface WorldStateUpdateMessage {

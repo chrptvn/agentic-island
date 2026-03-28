@@ -16,6 +16,7 @@ export function initDb(db: Database.Database): void {
       name TEXT NOT NULL,
       description TEXT,
       config_snapshot TEXT,
+      thumbnail_path TEXT,
       player_count INTEGER DEFAULT 0,
       status TEXT DEFAULT 'offline',
       last_heartbeat_at TEXT,
@@ -29,4 +30,12 @@ export function initDb(db: Database.Database): void {
       viewed_at TEXT DEFAULT (datetime('now'))
     );
   `);
+
+  // Migration: add thumbnail_path column if missing (for existing databases)
+  const cols = db
+    .prepare("PRAGMA table_info(worlds)")
+    .all() as { name: string }[];
+  if (!cols.some((c) => c.name === "thumbnail_path")) {
+    db.exec("ALTER TABLE worlds ADD COLUMN thumbnail_path TEXT");
+  }
 }

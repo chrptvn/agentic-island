@@ -5,7 +5,7 @@ import type {
 } from "@agentic-island/shared";
 import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
-import { saveSprites } from "../cache/sprites.js";
+import { saveSprites, saveThumbnail } from "../cache/sprites.js";
 import { deliverTunnelResponse, closeAllSessionsForWorld } from "../mcp-proxy/sessions.js";
 
 interface ConnectedWorld {
@@ -99,6 +99,14 @@ export function handleWorldConnection(ws: WebSocket): void {
 
           if (msg.sprites?.length) {
             await saveSprites(worldId, msg.sprites);
+          }
+
+          // Save thumbnail alongside sprites
+          if (msg.thumbnail) {
+            const thumbnailPath = await saveThumbnail(worldId, msg.thumbnail);
+            db.prepare(
+              "UPDATE worlds SET thumbnail_path = ? WHERE id = ?",
+            ).run(thumbnailPath, worldId);
           }
 
           // Close any existing connection for this worldId (last-writer-wins)

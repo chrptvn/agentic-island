@@ -7,6 +7,7 @@ interface WorldRow {
   id: string;
   name: string;
   description: string | null;
+  thumbnail_path: string | null;
   player_count: number;
   status: string;
   last_heartbeat_at: string | null;
@@ -18,6 +19,7 @@ function toCamelCase(row: WorldRow) {
     id: row.id,
     name: row.name,
     description: row.description,
+    thumbnailUrl: row.thumbnail_path ?? undefined,
     playerCount: row.player_count,
     status: row.status,
     lastHeartbeatAt: row.last_heartbeat_at,
@@ -28,7 +30,7 @@ function toCamelCase(row: WorldRow) {
 worlds.get("/", (c) => {
   const filter = c.req.query("filter");
   const cols =
-    "id, name, description, player_count, status, last_heartbeat_at, created_at";
+    "id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at";
 
   let rows: WorldRow[];
   if (filter === "with-agents") {
@@ -49,7 +51,7 @@ worlds.get("/", (c) => {
 worlds.get("/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare(
-    "SELECT id, name, description, player_count, status, last_heartbeat_at, created_at FROM worlds WHERE id = ?"
+    "SELECT id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at FROM worlds WHERE id = ?"
   ).get(id) as WorldRow | undefined;
   if (!row) return c.json({ error: "World not found" }, 404);
 

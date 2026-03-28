@@ -27,6 +27,22 @@ export async function clearSprites(worldId: string): Promise<void> {
   await rm(dir, { recursive: true, force: true });
 }
 
+/**
+ * Save a world thumbnail to the sprite cache directory.
+ * Returns the relative URL path for serving the thumbnail.
+ */
+export async function saveThumbnail(
+  worldId: string,
+  thumbnail: SpriteAsset,
+): Promise<string> {
+  const dir = join(CACHE_DIR, worldId);
+  await mkdir(dir, { recursive: true });
+  const dest = join(dir, "thumbnail.png");
+  const buf = Buffer.from(thumbnail.data, "base64");
+  await writeFile(dest, buf);
+  return `/sprites/${worldId}/thumbnail.png`;
+}
+
 export function getSpriteCacheDir(): string {
   return CACHE_DIR;
 }

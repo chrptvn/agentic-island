@@ -17,6 +17,7 @@ import { resolveTargetFilter } from "./goal-executor.js";
 import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js";
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getWorldConfig, reloadWorldConfig, CONFIG_PATH_WORLD } from "./world-config.js";
+import { generateThumbnail } from "./thumbnail.js";
 
 const MAP_STATE_KEY = "map_config";
 
@@ -43,6 +44,7 @@ export class World extends EventEmitter {
   private regrowTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
   private growthTimers:  Map<string, ReturnType<typeof setTimeout>> = new Map();
   private pathProgress:  Map<string, number> = new Map();
+  private grassGrid: boolean[][] = [];
 
   private constructor() {
     super();
@@ -338,6 +340,7 @@ export class World extends EventEmitter {
   /** Compute and persist the grass-island layer-1 tiles + vegetation layer 2/3. */
   private applyIslandOverrides(): void {
     const { overrides: islandTiles, grassGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
+    this.grassGrid = grassGrid;
 
     const { tileOverrides: vegTiles, entityStats: vegStats } =
       buildVegetationLayer(this.map.width, this.map.height, this.map.seed, grassGrid);
@@ -357,6 +360,19 @@ export class World extends EventEmitter {
       this.entityStats.set(`${x},${y}`, stats);
     }
     this.overridesVersion = loadOverridesVersion();
+  }
+
+  /**
+   * Generate a base64-encoded PNG thumbnail of the current world map.
+   * If the grassGrid is not cached (e.g. loaded from DB), it is regenerated
+   * deterministically from the map seed.
+   */
+  getThumbnailBase64(): string {
+    if (this.grassGrid.length === 0) {
+      const { grassGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
+      this.grassGrid = grassGrid;
+    }
+    return generateThumbnail(this.grassGrid, this.overrides, this.map.width, this.map.height);
   }
 
   /** Place a specific tile at (x, y) on the given layer. */

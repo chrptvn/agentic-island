@@ -50,12 +50,13 @@ export class HubConnector {
   connect(
     sprites: SpritePayload[],
     worldConfig: Record<string, unknown>,
+    thumbnail?: SpritePayload,
   ): void {
     if (this.destroyed) {
       console.warn(PREFIX, "Cannot connect — connector has been destroyed");
       return;
     }
-    this.attemptConnect(sprites, worldConfig);
+    this.attemptConnect(sprites, worldConfig, thumbnail);
   }
 
   sendStateUpdate(state: WorldState): void {
@@ -110,6 +111,7 @@ export class HubConnector {
   private attemptConnect(
     sprites: SpritePayload[],
     worldConfig: Record<string, unknown>,
+    thumbnail?: SpritePayload,
   ): void {
     if (this.destroyed) return;
 
@@ -130,6 +132,7 @@ export class HubConnector {
           config: worldConfig,
         },
         sprites,
+        ...(thumbnail ? { thumbnail } : {}),
       };
       ws.send(JSON.stringify(handshake));
     });
@@ -205,7 +208,7 @@ export class HubConnector {
         console.log(PREFIX, "Replaced by newer connection — not reconnecting.");
         return;
       }
-      this.scheduleReconnect(sprites, worldConfig);
+      this.scheduleReconnect(sprites, worldConfig, thumbnail);
     });
 
     ws.on("error", (err: Error) => {
@@ -218,6 +221,7 @@ export class HubConnector {
   private scheduleReconnect(
     sprites: SpritePayload[],
     worldConfig: Record<string, unknown>,
+    thumbnail?: SpritePayload,
   ): void {
     if (this.destroyed) return;
 
@@ -228,7 +232,7 @@ export class HubConnector {
 
     this.reconnectTimeout = setTimeout(() => {
       this.reconnectTimeout = null;
-      this.attemptConnect(sprites, worldConfig);
+      this.attemptConnect(sprites, worldConfig, thumbnail);
     }, this.reconnectDelay);
 
     // Exponential backoff with jitter
