@@ -109,7 +109,9 @@ export function useWorldsStream(): WorldsStream {
       dead = true;
       if (timer) clearTimeout(timer);
       if (ws) {
-        ws.send(JSON.stringify({ type: 'unsubscribe_lobby' }));
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'unsubscribe_lobby' }));
+        }
         ws.close();
       }
     };
