@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { adminAuth } from "../middleware/admin-auth.js";
 import { generatePassportKey } from "../lib/passport.js";
+import { isValidEmail } from "../lib/validation.js";
 
 const admin = new Hono();
 
@@ -23,7 +24,7 @@ admin.post("/keys", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = (body as { email?: string }).email;
 
-  if (!email || typeof email !== "string" || !email.includes("@")) {
+  if (!email || typeof email !== "string" || !isValidEmail(email)) {
     return c.json({ error: "A valid email address is required." }, 400);
   }
 
@@ -52,7 +53,16 @@ admin.delete("/keys/:id", (c) => {
   const key = db.prepare("SELECT id FROM api_keys WHERE id = ?").get(id);
   if (!key) return c.json({ error: "Key not found" }, 404);
 
-  db.prepare("DELETE FROM api_keys WHERE id = ?").run(id);
+  const deleteKey = db.transaction(() => {
+    // Clean up island_views for all islands owned by this key
+    db.prepare(
+      "DELETE FROM island_views WHERE island_id IN (SELECT id FROM islands WHERE api_key_id = ?)",
+    ).run(id);
+    db.prepare("DELETE FROM islands WHERE api_key_id = ?").run(id);
+    db.prepare("DELETE FROM api_keys WHERE id = ?").run(id);
+  });
+  deleteKey();
+
   return c.json({ success: true });
 });
 
@@ -77,8 +87,12 @@ admin.delete("/islands/:id", (c) => {
   const island = db.prepare("SELECT id FROM islands WHERE id = ?").get(id);
   if (!island) return c.json({ error: "Island not found" }, 404);
 
-  db.prepare("DELETE FROM island_views WHERE island_id = ?").run(id);
-  db.prepare("DELETE FROM islands WHERE id = ?").run(id);
+  const deleteIsland = db.transaction(() => {
+    db.prepare("DELETE FROM island_views WHERE island_id = ?").run(id);
+    db.prepare("DELETE FROM islands WHERE id = ?").run(id);
+  });
+  deleteIsland();
+
   return c.json({ success: true });
 });
 

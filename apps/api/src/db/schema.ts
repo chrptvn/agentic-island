@@ -12,7 +12,7 @@ export function initDb(db: Database.Database): void {
 
     CREATE TABLE IF NOT EXISTS islands (
       id TEXT PRIMARY KEY,
-      api_key_id TEXT NOT NULL REFERENCES api_keys(id),
+      api_key_id TEXT NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       description TEXT,
       config_snapshot TEXT,
@@ -26,9 +26,22 @@ export function initDb(db: Database.Database): void {
 
     CREATE TABLE IF NOT EXISTS island_views (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      island_id TEXT REFERENCES islands(id),
+      island_id TEXT REFERENCES islands(id) ON DELETE CASCADE,
       viewed_at TEXT DEFAULT (datetime('now'))
     );
+
+    -- Indexes for commonly queried columns
+    CREATE INDEX IF NOT EXISTS idx_islands_api_key_id
+      ON islands(api_key_id);
+
+    CREATE INDEX IF NOT EXISTS idx_islands_status_updated_at
+      ON islands(status, updated_at);
+
+    CREATE INDEX IF NOT EXISTS idx_islands_updated_at
+      ON islands(updated_at);
+
+    CREATE INDEX IF NOT EXISTS idx_island_views_island_id
+      ON island_views(island_id);
   `);
 
   // Migration: add thumbnail_path column if missing (for existing databases)

@@ -14,7 +14,7 @@ export function rateLimit(options: RateLimitOptions) {
     for (const [key, val] of hits) {
       if (val.resetAt <= now) hits.delete(key);
     }
-  }, 60_000);
+  }, 60_000).unref();
 
   return async (c: Context, next: Next) => {
     const ip =

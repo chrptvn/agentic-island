@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
 import { generatePassportKey } from "../lib/passport.js";
+import { isValidEmail } from "../lib/validation.js";
 
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
@@ -16,7 +17,7 @@ keys.post("/", async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const email = (body as { email?: string }).email;
 
-  if (!email || typeof email !== "string" || !email.includes("@")) {
+  if (!email || typeof email !== "string" || !isValidEmail(email)) {
     return c.json({ error: "A valid email address is required." }, 400);
   }
 

@@ -25,10 +25,15 @@ await initPassportSalt();
 
 const app = new Hono();
 
+// Restrictive CORS for API routes — configurable via CORS_ORIGINS env var
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()).filter(Boolean)
+  : null; // null = no restriction (backwards-compatible default)
+
 app.use(
-  "*",
+  "/api/*",
   cors({
-    origin: "*",
+    origin: corsOrigins ?? "*",
     allowMethods: ["GET", "POST", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization"],
     maxAge: 3600,

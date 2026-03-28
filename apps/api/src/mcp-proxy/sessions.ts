@@ -52,7 +52,18 @@ export function createProxySession(
       sessionId,
       message,
     };
-    islandWs.send(JSON.stringify(tunnelMsg));
+    try {
+      islandWs.send(JSON.stringify(tunnelMsg));
+    } catch (err) {
+      console.warn(PREFIX, `Failed to send tunnel message for session ${sessionId} (island ${islandId}):`, err);
+      proxySessions.delete(sessionId);
+      const islandSessions = islandSessionIndex.get(islandId);
+      if (islandSessions) {
+        islandSessions.delete(sessionId);
+        if (islandSessions.size === 0) islandSessionIndex.delete(islandId);
+      }
+      transport.close().catch(() => {});
+    }
   };
 
   transport.onclose = () => {
@@ -74,7 +85,11 @@ export function createProxySession(
       sessionId,
     };
     if (islandWs.readyState === 1) {
-      islandWs.send(JSON.stringify(closeMsg));
+      try {
+        islandWs.send(JSON.stringify(closeMsg));
+      } catch (err) {
+        console.warn(PREFIX, `Failed to send tunnel close for session ${sessionId} (island ${islandId}):`, err);
+      }
     }
   };
 
