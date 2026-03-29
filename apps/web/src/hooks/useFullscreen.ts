@@ -28,26 +28,14 @@ function supportsNativeFullscreen(el: HTMLElement): boolean {
       .webkitRequestFullscreen === 'function';
 }
 
-function tryLockLandscape() {
-  try {
-    const orientation = screen.orientation as ScreenOrientation & {
-      lock?: (orientation: string) => Promise<void>;
-    };
-    orientation.lock?.('landscape')?.catch(() => {});
-  } catch {
-    // orientation lock not supported
-  }
+function lockBodyScroll() {
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
 }
 
-function tryUnlockOrientation() {
-  try {
-    const orientation = screen.orientation as ScreenOrientation & {
-      unlock?: () => void;
-    };
-    orientation.unlock?.();
-  } catch {
-    // orientation unlock not supported
-  }
+function unlockBodyScroll() {
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
 }
 
 export function useFullscreen(
@@ -62,8 +50,8 @@ export function useFullscreen(
 
     const activatePseudo = () => {
       el.classList.add(PSEUDO_FULLSCREEN_CLASS);
+      lockBodyScroll();
       setPseudoFullscreen(true);
-      tryLockLandscape();
     };
 
     // Try native fullscreen; fall back to pseudo if it rejects (e.g. iOS
@@ -71,15 +59,12 @@ export function useFullscreen(
     if (supportsNativeFullscreen(el)) {
       const webkitEl = el as unknown as { webkitRequestFullscreen?: () => void };
       if (typeof el.requestFullscreen === 'function') {
-        el.requestFullscreen()
-          .then(() => tryLockLandscape())
-          .catch(() => activatePseudo());
+        el.requestFullscreen().catch(() => activatePseudo());
       } else if (webkitEl.webkitRequestFullscreen) {
         webkitEl.webkitRequestFullscreen();
         // webkit variant doesn't return a promise — check after a tick
         setTimeout(() => {
           if (!getFullscreenElement()) activatePseudo();
-          else tryLockLandscape();
         }, 100);
       } else {
         activatePseudo();
@@ -103,10 +88,9 @@ export function useFullscreen(
 
     if (pseudoFullscreen && ref.current) {
       ref.current.classList.remove(PSEUDO_FULLSCREEN_CLASS);
+      unlockBodyScroll();
       setPseudoFullscreen(false);
     }
-
-    tryUnlockOrientation();
   }, [pseudoFullscreen, ref]);
 
   const toggleFullscreen = useCallback(() => {
@@ -119,9 +103,7 @@ export function useFullscreen(
 
   useEffect(() => {
     const onFullscreenChange = () => {
-      const active = !!getFullscreenElement();
-      setNativeFullscreen(active);
-      if (!active) tryUnlockOrientation();
+      setNativeFullscreen(!!getFullscreenElement());
     };
 
     document.addEventListener('fullscreenchange', onFullscreenChange);

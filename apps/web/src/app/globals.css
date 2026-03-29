@@ -97,6 +97,8 @@
   background: black !important;
   /* Prevent page scroll behind the fullscreen overlay */
   overflow: hidden !important;
+  /* Prevent pinch-zoom / double-tap-zoom on iOS */
+  touch-action: manipulation !important;
 }
 
 /* Hide aspect ratio constraint in fullscreen (native & pseudo) */
