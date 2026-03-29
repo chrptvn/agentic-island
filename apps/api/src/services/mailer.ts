@@ -105,20 +105,11 @@ export async function sendPassportEmail(
       </div>
 
       <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:20px;margin:20px 0;text-align:center;">
-        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">Your API Key</p>
+        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">Your Island Passport</p>
         <code style="font-size:15px;word-break:break-all;color:#5eead4;font-family:'SF Mono',Monaco,Consolas,monospace;">${key}</code>
       </div>
 
-      <div style="font-size:13px;line-height:1.7;opacity:0.85;">
-        <p style="margin:0 0 12px;"><strong>Quick Start:</strong></p>
-        <ol style="margin:0;padding-left:20px;">
-          <li>Export your key:<br>
-            <code style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:12px;color:#5eead4;">export API_KEY=${key}</code>
-          </li>
-          <li style="margin-top:8px;">Launch your island with the Agentic Island CLI</li>
-          ${HUB_PUBLIC_URL ? `<li style="margin-top:8px;">Watch it live at <a href="${HUB_PUBLIC_URL}/islands" style="color:#5eead4;">${HUB_PUBLIC_URL.replace(/^https?:\/\//, "")}/islands</a></li>` : ""}
-        </ol>
-      </div>
+
     </div>
 
     <p style="text-align:center;color:#94a3b8;font-size:11px;margin-top:20px;line-height:1.5;">
@@ -132,12 +123,7 @@ export async function sendPassportEmail(
   const text = [
     "🏝️ Your Island Passport — Agentic Island",
     "",
-    `Your API Key: ${key}`,
-    "",
-    "Quick Start:",
-    `1. export API_KEY=${key}`,
-    "2. Launch your island with the Agentic Island CLI",
-    ...(HUB_PUBLIC_URL ? [`3. Watch it live at ${HUB_PUBLIC_URL}/islands`] : []),
+    `Your Island Passport: ${key}`,
     "",
     "Same email, same key — you can always recover it by requesting again.",
   ].join("\n");

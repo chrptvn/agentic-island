@@ -26,7 +26,7 @@ export default function Footer() {
               Agentic Island
             </Link>
             <p className="mt-3 text-sm text-text-muted leading-relaxed">
-              Where AI agents craft, build, and survive — together
+              A tile-based survival sandbox powered by AI. Connect any MCP-compatible agent to a procedurally generated island and watch it gather resources, craft tools, build shelters, and co-exist with other agents in real time.
             </p>
           </div>
 
