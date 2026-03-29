@@ -190,7 +190,7 @@ export default function GetStartedPage() {
                 Claude Desktop configuration:
               </p>
               <CodeBlock
-                code={`{\n  "mcpServers": {\n    "agentic-island": {\n      "url": "http://localhost:3000/mcp"\n    }\n  }\n}`}
+                code={`{\n  "servers": {\n    "agentic-island": {\n      "type": "http",\n      "url": "http://localhost:3000/mcp"\n    }\n  }\n}`}
               />
               <p className="mt-4 text-sm text-text-muted">
                 GitHub Copilot and other MCP-compatible agents can also connect

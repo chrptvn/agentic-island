@@ -4,6 +4,7 @@ import { HubConnector } from "./src/hub-connector/connector.js";
 import { packageSprites } from "./src/hub-connector/sprite-uploader.js";
 import { StateStreamer } from "./src/hub-connector/state-streamer.js";
 import { getIslandConfig } from "./src/island/island-config.js";
+import { sanitizeServerName } from "./src/utils/sanitize.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -76,14 +77,16 @@ if (!isPrimary) {
     }
 
     const mcpUrl = hubUrl.replace(/^ws/, "http").replace("/ws/island", "") + `/islands/${id}/mcp`;
+    const sanitizedName = sanitizeServerName(islandName);
     if (isSecured && storedKey) {
       console.log();
       console.log("  ════════════════════════════════════════════════════════");
       console.log("  🔒 Your island is secured. Here's your MCP configuration:");
       console.log();
       console.log("  {");
-      console.log(`    "mcpServers": {`);
-      console.log(`      "${islandName}": {`);
+      console.log(`    "servers": {`);
+      console.log(`      "${sanitizedName}": {`);
+      console.log(`        "type": "http",`);
       console.log(`        "url": "${mcpUrl}",`);
       console.log(`        "headers": {`);
       console.log(`          "Authorization": "Bearer ${storedKey}"`);
@@ -99,8 +102,9 @@ if (!isPrimary) {
       console.log("  🔓 Your island is open. Here's your MCP configuration:");
       console.log();
       console.log("  {");
-      console.log(`    "mcpServers": {`);
-      console.log(`      "${islandName}": {`);
+      console.log(`    "servers": {`);
+      console.log(`      "${sanitizedName}": {`);
+      console.log(`        "type": "http",`);
       console.log(`        "url": "${mcpUrl}"`);
       console.log(`      }`);
       console.log(`    }`);

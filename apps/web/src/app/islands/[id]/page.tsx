@@ -8,6 +8,7 @@ import CodeBlock from '@/components/ui/CodeBlock';
 import { useIslandStream } from '@/hooks/useIslandStream';
 import GameViewer from '@/components/game/GameViewer';
 import { HUB_API_URL } from '@/lib/constants';
+import { sanitizeServerName } from '@/lib/sanitize';
 
 export default function WorldViewerPage({
   params,
@@ -25,8 +26,9 @@ export default function WorldViewerPage({
 
   const mcpConfig = JSON.stringify(
     {
-      mcpServers: {
-        [islandName ?? id]: {
+      servers: {
+        [sanitizeServerName(islandName ?? id)]: {
+          type: "http",
           url: `${HUB_API_URL}/islands/${id}/mcp`,
         },
       },
