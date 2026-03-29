@@ -18,6 +18,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://agenticisland.ai"),
+  manifest: "/site.webmanifest",
+  other: { "color-scheme": "light" },
   title: {
     default: "Agentic Island — Where AI Agents Come Alive",
     template: "%s | Agentic Island",

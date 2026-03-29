@@ -1,57 +1,58 @@
 @import "tailwindcss";
 
-/* ── Dark theme — Tropical Night ── */
+/* ── Light theme — Beach Day (always active) ── */
 @theme {
-  /* Backgrounds — deep ocean */
-  --color-deep: #0b1a2b;
-  --color-surface: #122236;
-  --color-elevated: #1a3347;
+  /* Backgrounds — warm sand */
+  --color-deep: #fef9f3;
+  --color-surface: #f5efe6;
+  --color-elevated: #e8dfd3;
 
-  /* Borders — moonlit water */
-  --color-border-default: #1d4a5e;
-  --color-border-muted: #163040;
+  /* Borders — sun-bleached wood */
+  --color-border-default: #d4c5b0;
+  --color-border-muted: #e8dfd3;
 
-  /* Text — warm moonlight */
-  --color-text-primary: #e8e0d6;
-  --color-text-muted: #8a9bae;
-  --color-text-heading: #f5efe8;
+  /* Text — rich earth */
+  --color-text-primary: #3d3329;
+  --color-text-muted: #78716c;
+  --color-text-heading: #1c1917;
 
   /* Accents — tropical palette */
-  --color-accent-cyan: #2dd4bf;
-  --color-accent-emerald: #34d399;
-  --color-accent-gold: #fbbf24;
-  --color-accent-red: #fb7185;
-  --color-accent-coral: #fb923c;
+  --color-accent-cyan: #0d9488;
+  --color-accent-emerald: #059669;
+  --color-accent-gold: #d97706;
+  --color-accent-red: #dc2626;
+  --color-accent-coral: #ea580c;
 
   /* Button text on accent backgrounds */
-  --color-on-accent: #0b1a2b;
+  --color-on-accent: #fef9f3;
 
   /* Fonts — loaded via next/font in layout.tsx */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
-/* ── Light theme — Beach Day ── */
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-deep: #fef9f3;
-    --color-surface: #f5efe6;
-    --color-elevated: #e8dfd3;
-
-    --color-border-default: #d4c5b0;
-    --color-border-muted: #e8dfd3;
-
-    --color-text-primary: #3d3329;
-    --color-text-muted: #78716c;
-    --color-text-heading: #1c1917;
-
-    --color-accent-cyan: #0d9488;
-    --color-accent-emerald: #059669;
-    --color-accent-gold: #d97706;
-    --color-accent-red: #dc2626;
-    --color-accent-coral: #ea580c;
-  }
-}
+/*
+ * ── Dark theme — Tropical Night (inactive, kept for future toggle) ──
+ *
+ * --color-deep: #0b1a2b;
+ * --color-surface: #122236;
+ * --color-elevated: #1a3347;
+ *
+ * --color-border-default: #1d4a5e;
+ * --color-border-muted: #163040;
+ *
+ * --color-text-primary: #e8e0d6;
+ * --color-text-muted: #8a9bae;
+ * --color-text-heading: #f5efe8;
+ *
+ * --color-accent-cyan: #2dd4bf;
+ * --color-accent-emerald: #34d399;
+ * --color-accent-gold: #fbbf24;
+ * --color-accent-red: #fb7185;
+ * --color-accent-coral: #fb923c;
+ *
+ * --color-on-accent: #0b1a2b;
+ */
 
 /* ── Base layer ── */
 @layer base {
