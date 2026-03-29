@@ -28,6 +28,14 @@ function supportsNativeFullscreen(el: HTMLElement): boolean {
       .webkitRequestFullscreen === 'function';
 }
 
+// iOS Safari's Fullscreen API resolves successfully on <div> elements but
+// never visually enters fullscreen. Detect iOS to skip native and use pseudo.
+function isIOS(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
 function lockBodyScroll() {
   document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
@@ -54,8 +62,13 @@ export function useFullscreen(
       setPseudoFullscreen(true);
     };
 
-    // Try native fullscreen; fall back to pseudo if it rejects (e.g. iOS
-    // Safari where requestFullscreen exists but only works on <video>).
+    // iOS: skip native fullscreen entirely — it resolves but does nothing.
+    if (isIOS()) {
+      activatePseudo();
+      return;
+    }
+
+    // Try native fullscreen; fall back to pseudo if it rejects.
     if (supportsNativeFullscreen(el)) {
       const webkitEl = el as unknown as { webkitRequestFullscreen?: () => void };
       if (typeof el.requestFullscreen === 'function') {
