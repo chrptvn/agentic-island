@@ -10,7 +10,6 @@ interface FullscreenAPI {
   isPseudoFullscreen: boolean;
 }
 
-const PSEUDO_FULLSCREEN_CLASS = 'pseudo-fullscreen';
 
 function getFullscreenElement(): Element | null {
   if (typeof document === 'undefined') return null;
@@ -79,7 +78,6 @@ export function useFullscreen(
 
     const activatePseudo = () => {
       syncViewportHeight();
-      el.classList.add(PSEUDO_FULLSCREEN_CLASS);
       lockBodyScroll();
       setPseudoFullscreen(true);
 
@@ -126,7 +124,6 @@ export function useFullscreen(
     }
 
     if (pseudoFullscreen && ref.current) {
-      ref.current.classList.remove(PSEUDO_FULLSCREEN_CLASS);
       unlockBodyScroll();
       clearViewportHeight();
       setPseudoFullscreen(false);

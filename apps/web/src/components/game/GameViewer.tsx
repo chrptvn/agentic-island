@@ -283,9 +283,11 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     <div
       ref={containerRef}
       className={`relative bg-black overflow-hidden game-viewer-container ${
-        isFullscreen
-          ? 'w-full h-full'
-          : 'w-full aspect-[16/9] rounded-lg'
+        isPseudoFullscreen
+          ? 'pseudo-fullscreen'
+          : isFullscreen
+            ? 'w-full h-full'
+            : 'w-full aspect-[16/9] rounded-lg'
       }`}
     >
       <canvas
