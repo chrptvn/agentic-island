@@ -43,6 +43,10 @@ prefix() {
   sed -u "s/^/${color}[${label}]${NC} /"
 }
 
+# ── Auto-generate .env files if missing ──────────────────────────────
+echo -e "${BLUE}Checking .env files…${NC}"
+pnpm tsx scripts/setup-env.ts 2>&1 | prefix "$BLUE" "setup"
+
 # ── Build shared packages first ──────────────────────────────────────
 echo -e "${BLUE}Building shared packages…${NC}"
 pnpm --filter @agentic-island/shared run build 2>&1 | prefix "$BLUE" "build"
