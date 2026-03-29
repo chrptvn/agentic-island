@@ -36,6 +36,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const spritesLoadedRef = useRef(false);
   const stateRef = useRef<IslandState | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+  const tooltipRef = useRef<TooltipData | null>(null);
   const [speechOverlays, setSpeechOverlays] = useState<SpeechOverlay[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
@@ -127,7 +128,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     return () => ro.disconnect();
   }, []);
 
-  // Compute speech bubble positions from character data + camera state
+  // Compute speech bubble positions from character data + camera state.
+  // Also recompute tile-anchored tooltip position (mobile tap-to-inspect).
   const updateSpeechOverlays = useCallback(() => {
     const renderer = rendererRef.current;
     const canvas = canvasRef.current;
@@ -155,6 +157,19 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     }
 
     setSpeechOverlays(overlays);
+
+    // Reposition tile-anchored tooltip (moves with camera)
+    const tip = tooltipRef.current;
+    if (tip && tip.anchorTileX !== undefined && tip.anchorTileY !== undefined) {
+      const screen = renderer.tileToScreen(tip.anchorTileX, tip.anchorTileY);
+      const newX = rect.left + screen.x * cssScaleX;
+      const newY = rect.top + screen.y * cssScaleY;
+      if (Math.abs(newX - tip.mouseX) > 1 || Math.abs(newY - tip.mouseY) > 1) {
+        const updated = { ...tip, mouseX: newX, mouseY: newY };
+        tooltipRef.current = updated;
+        setTooltip(updated);
+      }
+    }
   }, []);
 
   const handleMouseMove = useCallback(
@@ -191,7 +206,10 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     [],
   );
 
-  const handleMouseLeave = useCallback(() => setTooltip(null), []);
+  const handleMouseLeave = useCallback(() => {
+    tooltipRef.current = null;
+    setTooltip(null);
+  }, []);
 
   // Tap-to-inspect on mobile: show tooltip on tap, dismiss on tap empty space
   const handleTap = useCallback(
@@ -218,13 +236,18 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         s.entities.find((en) => en.x === tileX && en.y === tileY) ?? null;
 
       if (character || entity) {
-        setTooltip({
+        const data: TooltipData = {
           mouseX: touch.clientX,
           mouseY: touch.clientY,
           character,
           entity,
-        });
+          anchorTileX: tileX,
+          anchorTileY: tileY,
+        };
+        tooltipRef.current = data;
+        setTooltip(data);
       } else {
+        tooltipRef.current = null;
         setTooltip(null);
       }
     },

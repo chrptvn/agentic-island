@@ -36,6 +36,9 @@ export interface TooltipData {
   mouseY: number;
   character: CharacterState | null;
   entity: EntityInstance | null;
+  /** When set, the tooltip is anchored to a tile and moves with the camera. */
+  anchorTileX?: number;
+  anchorTileY?: number;
 }
 
 function StatBar({
