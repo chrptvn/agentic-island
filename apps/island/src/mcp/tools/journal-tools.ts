@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
+import { requireSession } from "./character-tools.js";
 import { writeJournalEntry, readJournalEntries } from "../../persistence/db.js";
 
 export function registerJournalTools(server: McpServer, session: McpSession): void {
@@ -8,11 +9,13 @@ export function registerJournalTools(server: McpServer, session: McpSession): vo
     "write_journal",
     "Write an entry to the character's knowledge base. Use this ONLY to record reusable game knowledge: crafting recipes you've discovered, resource locations, survival tips, tool capabilities, or any trick worth remembering. Do NOT use it as a narrative diary — do not record events like 'I built a campfire' or 'I moved north'.",
     {
-      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       content: z.string().min(1).describe("The text content to record in the journal"),
     },
-    async ({ character_id, content }) => {
-      if (!session.username) return { content: [{ type: "text", text: "Not connected. Call the 'connect' tool first with your username." }], isError: true };
+    async ({ session_token, content }) => {
+      const check = requireSession(session, session_token);
+      if (typeof check !== "string") return check;
+      const character_id = check;
       try {
         const entry = writeJournalEntry(character_id, content);
         return {
@@ -33,10 +36,12 @@ export function registerJournalTools(server: McpServer, session: McpSession): vo
     "read_journal",
     "Read all knowledge base entries for the character, ordered oldest to newest. Use this to recall crafting recipes, survival tips, or resource discoveries you previously recorded.",
     {
-      character_id: z.string().min(1).describe("The character's unique id (e.g. 'Carl')"),
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ character_id }) => {
-      if (!session.username) return { content: [{ type: "text", text: "Not connected. Call the 'connect' tool first with your username." }], isError: true };
+    async ({ session_token }) => {
+      const check = requireSession(session, session_token);
+      if (typeof check !== "string") return check;
+      const character_id = check;
       try {
         const entries = readJournalEntries(character_id);
         return {

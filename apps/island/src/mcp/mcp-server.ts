@@ -27,6 +27,7 @@ export interface McpSession {
   server:       McpServer;
   transport:    Transport;
   username:     string | null;
+  sessionToken: string | null;
   lastSnapshot: string;
   alertCooldowns: AlertCooldowns;
   worldListener: (() => void) | null;
@@ -148,6 +149,7 @@ function makeHttpSession(): McpSession {
     server,
     transport,
     username: null,
+    sessionToken: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
@@ -169,6 +171,7 @@ export function makeTunnelSession(transport: Transport): McpSession {
     server,
     transport,
     username: null,
+    sessionToken: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,

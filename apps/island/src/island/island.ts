@@ -686,7 +686,7 @@ export class Island extends EventEmitter {
    * - If the character is new, create them at a random spawnable position.
    * - If the character is already active in-memory, just return them.
    */
-  connect(username: string, _password?: string): { character: CharacterInstance; reconnected: boolean } {
+  connect(username: string): { character: CharacterInstance; reconnected: boolean } {
     const id = username;
     // Already active — just return
     const existing = this.characters.get(id);
