@@ -221,6 +221,11 @@ export class GameRenderer {
     }
   }
 
+  /** Access the underlying canvas element (e.g. for video recording). */
+  getCanvas(): HTMLCanvasElement {
+    return this.canvas;
+  }
+
   /** Clean up resources. */
   destroy(): void {
     this.stop();

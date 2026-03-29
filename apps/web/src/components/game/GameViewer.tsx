@@ -4,6 +4,10 @@ import { useRef, useEffect, useState, useCallback } from 'react';
 import { GameRenderer } from '@agentic-island/game-renderer';
 import type { IslandState } from '@agentic-island/shared';
 import Tooltip, { type TooltipData } from './Tooltip';
+import RecordingOverlay from './RecordingOverlay';
+import RecordingControls from './RecordingControls';
+import SaveDialog from './SaveDialog';
+import { useRecording } from '@/hooks/useRecording';
 
 const TILE_SIZE = 16;
 const SCALE_FACTOR = 2;
@@ -31,12 +35,44 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const stateRef = useRef<IslandState | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [speechOverlays, setSpeechOverlays] = useState<SpeechOverlay[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  const [recState, recActions] = useRecording();
+
+  // Keep stable refs for recording callbacks so the renderer init effect
+  // doesn't re-run when recActions identity changes.
+  const recActionsRef = useRef(recActions);
+  recActionsRef.current = recActions;
 
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
+  // Push every new state into the recording buffer.
+  // Use ref to avoid re-running on every render (recActions is a new object each render).
+  useEffect(() => {
+    if (state) recActionsRef.current.pushState(state);
+  }, [state]);
+
   const hasTileRegistry = !!state?.tileRegistry;
+
+  // Track container size for overlay positioning
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setContainerSize({
+          width: entry.contentRect.width,
+          height: entry.contentRect.height,
+        });
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Compute speech bubble positions from character data + camera state
   const updateSpeechOverlays = useCallback(() => {
@@ -118,8 +154,19 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     });
     rendererRef.current = renderer;
 
-    // Update HTML speech overlays on every rendered frame
-    renderer.onFrame = updateSpeechOverlays;
+    // Update HTML speech overlays on every rendered frame.
+    // During recording playback, also advance the renderer state.
+    // Use ref for recording callback to avoid effect re-runs.
+    renderer.onFrame = () => {
+      updateSpeechOverlays();
+      // During recording, feed the playback state to the renderer each frame
+      const displayState = recActionsRef.current.getDisplayState();
+      if (displayState) renderer.setState(displayState);
+      recActionsRef.current.onFrame();
+    };
+
+    // Give the recording system a ref to the canvas
+    recActionsRef.current.setCanvas(canvas);
 
     renderer.start();
 
@@ -127,6 +174,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       renderer.destroy();
       rendererRef.current = null;
       spritesLoadedRef.current = false;
+      recActionsRef.current.setCanvas(null);
     };
   }, [updateSpeechOverlays]);
 
@@ -158,15 +206,24 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [spriteBaseUrl, hasTileRegistry]);
 
-  // Update state — camera initialization is handled by the renderer
+  // Update state — use buffered state when paused/recording, live state otherwise
   useEffect(() => {
     const renderer = rendererRef.current;
-    if (!renderer || !state) return;
-    renderer.setState(state);
-  }, [state]);
+    if (!renderer) return;
+
+    const displayState = recActions.getDisplayState();
+    const effectiveState = displayState ?? state;
+    if (effectiveState) renderer.setState(effectiveState);
+  }, [state, recActions, recState.playheadOffset, recState.mode, recState.isLive]);
+
+  const isRecordingActive =
+    recState.mode === 'preview' || recState.mode === 'recording';
 
   return (
-    <div className="relative w-full aspect-[16/9] bg-black rounded-lg overflow-hidden">
+    <div
+      ref={containerRef}
+      className="relative w-full aspect-[16/9] bg-black rounded-lg overflow-hidden"
+    >
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
@@ -190,6 +247,62 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         </div>
       ))}
       <Tooltip data={tooltip} />
+
+      {/* Record button (shown in idle mode) */}
+      {recState.mode === 'idle' && recState.supported && (
+        <button
+          onClick={recActions.openRecordMode}
+          className="absolute right-3 top-3 z-20 rounded-lg bg-black/50 p-2 text-white/70 transition-all hover:bg-black/70 hover:text-white"
+          title="Record clip"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <path d="m22 8-6 4 6 4V8Z" />
+            <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
+          </svg>
+        </button>
+      )}
+
+      {/* Recording overlay (crop window) */}
+      {isRecordingActive && recState.cropRect && (
+        <RecordingOverlay
+          cropRect={recState.cropRect}
+          containerWidth={containerSize.width}
+          containerHeight={containerSize.height}
+          canvasWidth={VIEWPORT_WIDTH}
+          canvasHeight={VIEWPORT_HEIGHT}
+          isRecording={recState.mode === 'recording'}
+        />
+      )}
+
+      {/* Recording controls */}
+      <RecordingControls
+        mode={recState.mode}
+        resolution={recState.resolution}
+        isLive={recState.isLive}
+        playheadOffset={recState.playheadOffset}
+        bufferDuration={recState.bufferDuration}
+        elapsed={recState.elapsed}
+        onSelectResolution={recActions.selectResolution}
+        onToggleLive={recActions.toggleLive}
+        onSetPlayheadOffset={recActions.setPlayheadOffset}
+        onStartRecording={recActions.startRecording}
+        onStopRecording={recActions.stopRecording}
+        onCancel={recActions.cancel}
+      />
+
+      {/* Save dialog */}
+      {recState.mode === 'saving' && recState.blob && (
+        <SaveDialog blob={recState.blob} onDismiss={recActions.dismiss} />
+      )}
     </div>
   );
 }
