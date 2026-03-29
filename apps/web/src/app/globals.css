@@ -85,12 +85,18 @@
 /* iOS CSS-based fullscreen fallback */
 .pseudo-fullscreen {
   position: fixed !important;
-  inset: 0 !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
   z-index: 9999 !important;
   width: 100vw !important;
+  /* JS-computed height (most reliable on iOS), with CSS fallbacks */
   height: 100vh !important;
-  /* dvh accounts for mobile Safari address bar; overrides vh where supported */
   height: 100dvh !important;
+  height: -webkit-fill-available !important;
+  height: var(--pseudo-fs-height, 100dvh) !important;
+  margin: 0 !important;
   border-radius: 0 !important;
   /* Safe area insets for notched phones */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);

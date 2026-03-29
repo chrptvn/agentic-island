@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface FullscreenAPI {
   isFullscreen: boolean;
@@ -28,12 +28,18 @@ function supportsNativeFullscreen(el: HTMLElement): boolean {
       .webkitRequestFullscreen === 'function';
 }
 
-// iOS Safari's Fullscreen API resolves successfully on <div> elements but
-// never visually enters fullscreen. Detect iOS to skip native and use pseudo.
+// Detect iOS/iPadOS — native fullscreen never works on these.
+// Covers: iPhone UA, iPad UA, iPad in desktop mode (MacIntel + touch),
+// and the "standalone" property which only exists on iOS WebKit.
 function isIOS(): boolean {
   if (typeof navigator === 'undefined') return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (/iPad|iPhone|iPod/.test(navigator.userAgent)) return true;
+  // iPad in desktop mode reports as Mac but has touch
+  if (navigator.maxTouchPoints > 1 &&
+    (/Macintosh|MacIntel/.test(navigator.userAgent) || navigator.platform === 'MacIntel')) return true;
+  // "standalone" property is iOS-only (PWA home screen detection)
+  if ('standalone' in navigator) return true;
+  return false;
 }
 
 function lockBodyScroll() {
@@ -46,23 +52,44 @@ function unlockBodyScroll() {
   document.body.style.overflow = '';
 }
 
+// Set a CSS variable with the real viewport height from JS.
+// iOS Safari's 100vh/100dvh can be unreliable with the dynamic address bar;
+// window.innerHeight always reflects the actual visible area.
+function syncViewportHeight() {
+  document.documentElement.style.setProperty(
+    '--pseudo-fs-height',
+    `${window.innerHeight}px`,
+  );
+}
+
+function clearViewportHeight() {
+  document.documentElement.style.removeProperty('--pseudo-fs-height');
+}
+
 export function useFullscreen(
   ref: React.RefObject<HTMLElement | null>,
 ): FullscreenAPI {
   const [nativeFullscreen, setNativeFullscreen] = useState(false);
   const [pseudoFullscreen, setPseudoFullscreen] = useState(false);
+  const resizeListenerRef = useRef<(() => void) | null>(null);
 
   const enterFullscreen = useCallback(() => {
     const el = ref.current;
     if (!el) return;
 
     const activatePseudo = () => {
+      syncViewportHeight();
       el.classList.add(PSEUDO_FULLSCREEN_CLASS);
       lockBodyScroll();
       setPseudoFullscreen(true);
+
+      // Keep viewport height in sync (address bar show/hide triggers resize)
+      const onResize = () => syncViewportHeight();
+      window.addEventListener('resize', onResize);
+      resizeListenerRef.current = onResize;
     };
 
-    // iOS: skip native fullscreen entirely — it resolves but does nothing.
+    // iOS: skip native fullscreen entirely — it doesn't work on non-<video>.
     if (isIOS()) {
       activatePseudo();
       return;
@@ -75,7 +102,6 @@ export function useFullscreen(
         el.requestFullscreen().catch(() => activatePseudo());
       } else if (webkitEl.webkitRequestFullscreen) {
         webkitEl.webkitRequestFullscreen();
-        // webkit variant doesn't return a promise — check after a tick
         setTimeout(() => {
           if (!getFullscreenElement()) activatePseudo();
         }, 100);
@@ -102,7 +128,13 @@ export function useFullscreen(
     if (pseudoFullscreen && ref.current) {
       ref.current.classList.remove(PSEUDO_FULLSCREEN_CLASS);
       unlockBodyScroll();
+      clearViewportHeight();
       setPseudoFullscreen(false);
+
+      if (resizeListenerRef.current) {
+        window.removeEventListener('resize', resizeListenerRef.current);
+        resizeListenerRef.current = null;
+      }
     }
   }, [pseudoFullscreen, ref]);
 
@@ -125,6 +157,15 @@ export function useFullscreen(
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', onFullscreenChange);
+    };
+  }, []);
+
+  // Cleanup resize listener on unmount
+  useEffect(() => {
+    return () => {
+      if (resizeListenerRef.current) {
+        window.removeEventListener('resize', resizeListenerRef.current);
+      }
     };
   }, []);
 
