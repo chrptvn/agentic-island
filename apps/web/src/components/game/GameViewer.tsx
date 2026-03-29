@@ -193,6 +193,44 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   const handleMouseLeave = useCallback(() => setTooltip(null), []);
 
+  // Tap-to-inspect on mobile: show tooltip on tap, dismiss on tap empty space
+  const handleTap = useCallback(
+    (e: React.TouchEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current;
+      const renderer = rendererRef.current;
+      const s = stateRef.current;
+      if (!canvas || !renderer || !s) return;
+
+      const touch = e.changedTouches[0];
+      if (!touch) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const { tileX, tileY } = renderer.screenToTile(
+        (touch.clientX - rect.left) * scaleX,
+        (touch.clientY - rect.top) * scaleY,
+      );
+
+      const character =
+        s.characters.find((c) => c.x === tileX && c.y === tileY) ?? null;
+      const entity =
+        s.entities.find((en) => en.x === tileX && en.y === tileY) ?? null;
+
+      if (character || entity) {
+        setTooltip({
+          mouseX: touch.clientX,
+          mouseY: touch.clientY,
+          character,
+          entity,
+        });
+      } else {
+        setTooltip(null);
+      }
+    },
+    [],
+  );
+
   // Initialize renderer with fixed viewport resolution
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -294,6 +332,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onTouchEnd={handleTap}
         className="block w-full h-full cursor-crosshair"
         style={{ imageRendering: 'pixelated' }}
       />
@@ -311,7 +350,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
           />
         </div>
       ))}
-      <Tooltip data={tooltip} />
+      <Tooltip data={tooltip} portalContainer={isFullscreen ? containerRef.current : null} />
 
       {/* Fullscreen toggle button */}
       {recState.mode === 'idle' && (

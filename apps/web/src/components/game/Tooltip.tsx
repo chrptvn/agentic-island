@@ -190,12 +190,12 @@ function EntityBox({ entity }: { entity: EntityInstance }) {
   );
 }
 
-export default function Tooltip({ data }: { data: TooltipData | null }) {
+export default function Tooltip({ data, portalContainer }: { data: TooltipData | null; portalContainer?: HTMLElement | null }) {
   if (!data || typeof document === 'undefined') return null;
 
   return createPortal(
     <div
-      className="pointer-events-none fixed z-50 min-w-[180px] max-w-xs rounded-lg border border-border-default bg-surface/90 p-3 font-mono text-xs text-text-primary shadow-lg backdrop-blur-sm"
+      className="pointer-events-none fixed z-[10000] min-w-[180px] max-w-xs rounded-lg border border-border-default bg-surface/90 p-3 font-mono text-xs text-text-primary shadow-lg backdrop-blur-sm"
       style={{ left: data.mouseX + 12, top: data.mouseY + 12 }}
     >
       {data.character && <CharacterBox character={data.character} />}
@@ -204,6 +204,6 @@ export default function Tooltip({ data }: { data: TooltipData | null }) {
       )}
       {data.entity && <EntityBox entity={data.entity} />}
     </div>,
-    document.body,
+    portalContainer ?? document.body,
   );
 }
