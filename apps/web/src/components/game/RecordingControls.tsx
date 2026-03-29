@@ -16,6 +16,8 @@ interface RecordingControlsProps {
   onStartRecording: () => void;
   onStopRecording: () => void;
   onCancel: () => void;
+  isMobile?: boolean;
+  isFullscreen?: boolean;
 }
 
 function formatTime(ms: number): string {
@@ -40,9 +42,11 @@ const CATEGORY_LABELS: Record<string, string> = {
 function ResolutionPicker({
   onSelect,
   onCancel,
+  isMobile,
 }: {
   onSelect: (r: Resolution) => void;
   onCancel: () => void;
+  isMobile?: boolean;
 }) {
   const grouped = RESOLUTION_PRESETS.reduce(
     (acc, r) => {
@@ -73,7 +77,7 @@ function ResolutionPicker({
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
                 {CATEGORY_LABELS[category] ?? category}
               </p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-2'} gap-2`}>
                 {resolutions.map((r) => (
                   <button
                     key={r.label}
@@ -143,12 +147,15 @@ export default function RecordingControls({
   onStartRecording,
   onStopRecording,
   onCancel,
+  isMobile,
+  isFullscreen,
 }: RecordingControlsProps) {
   if (mode === 'selecting') {
     return (
       <ResolutionPicker
         onSelect={onSelectResolution}
         onCancel={onCancel}
+        isMobile={isMobile}
       />
     );
   }
@@ -173,7 +180,7 @@ export default function RecordingControls({
           </div>
           <button
             onClick={onCancel}
-            className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-white/20"
+            className={`rounded-lg bg-white/10 px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:bg-white/20${isMobile ? ' min-h-[44px] min-w-[44px]' : ''}`}
           >
             Cancel
           </button>
@@ -203,7 +210,7 @@ export default function RecordingControls({
                   isLive
                     ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
                     : 'bg-white/10 text-text-primary hover:bg-white/20'
-                }`}
+                }${isMobile ? ' min-h-[44px]' : ''}`}
               >
                 {isLive ? '● LIVE — Click to pause' : '⏸ PAUSED — Scrub timeline'}
               </button>
@@ -213,7 +220,7 @@ export default function RecordingControls({
             {mode === 'preview' && (
               <button
                 onClick={onStartRecording}
-                className="flex items-center gap-2 rounded-full bg-red-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-red-600 hover:shadow-red-500/25"
+                className={`flex items-center gap-2 rounded-full bg-red-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-red-600 hover:shadow-red-500/25${isMobile ? ' min-h-[44px]' : ''}`}
               >
                 <span className="h-3 w-3 rounded-full bg-white" />
                 {isLive ? 'Start Recording' : 'Record from here'}
@@ -224,7 +231,7 @@ export default function RecordingControls({
             {mode === 'recording' && (
               <button
                 onClick={onStopRecording}
-                className="flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black shadow-lg transition-all hover:bg-gray-200"
+                className={`flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-bold text-black shadow-lg transition-all hover:bg-gray-200${isMobile ? ' min-h-[44px]' : ''}`}
               >
                 <span className="h-3 w-3 rounded-sm bg-red-500" />
                 Stop Recording

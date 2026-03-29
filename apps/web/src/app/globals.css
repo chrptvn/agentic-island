@@ -81,3 +81,28 @@
   box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-emerald) 40%, transparent),
     0 0 4px color-mix(in srgb, var(--color-accent-emerald) 20%, transparent);
 }
+
+/* iOS CSS-based fullscreen fallback */
+.pseudo-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  /* dvh accounts for mobile Safari address bar; overrides vh where supported */
+  height: 100dvh !important;
+  border-radius: 0 !important;
+  /* Safe area insets for notched phones */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: black !important;
+  /* Prevent page scroll behind the fullscreen overlay */
+  overflow: hidden !important;
+}
+
+/* Hide aspect ratio constraint in fullscreen (native & pseudo) */
+:fullscreen .game-viewer-container,
+.pseudo-fullscreen.game-viewer-container {
+  aspect-ratio: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+}

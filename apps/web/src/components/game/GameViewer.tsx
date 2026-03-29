@@ -8,6 +8,8 @@ import RecordingOverlay from './RecordingOverlay';
 import RecordingControls from './RecordingControls';
 import SaveDialog from './SaveDialog';
 import { useRecording } from '@/hooks/useRecording';
+import { useFullscreen } from '@/hooks/useFullscreen';
+import { useIsMobile } from '@/hooks/useIsMobile';
 
 const TILE_SIZE = 16;
 const SCALE_FACTOR = 2;
@@ -38,6 +40,9 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  const isMobile = useIsMobile();
+  const { isFullscreen, toggleFullscreen, isPseudoFullscreen } = useFullscreen(containerRef);
+
   const [recState, recActions] = useRecording();
 
   // Keep stable refs for recording callbacks so the renderer init effect
@@ -56,6 +61,54 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   }, [state]);
 
   const hasTileRegistry = !!state?.tileRegistry;
+
+  // Resize canvas when entering/exiting fullscreen, and auto-cancel recording
+  // on exit to avoid resolution mismatch. Merged into a single effect to
+  // guarantee cancel happens before resize.
+  useEffect(() => {
+    const renderer = rendererRef.current;
+    if (!renderer) return;
+
+    if (isFullscreen) {
+      renderer.resize(window.innerWidth, window.innerHeight);
+      recActionsRef.current.setCanvas(canvasRef.current);
+    } else {
+      // Cancel recording before resizing to avoid brief cropRect mismatch
+      if (recState.mode === 'recording' || recState.mode === 'preview') {
+        recActionsRef.current.cancel();
+      }
+      renderer.resize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
+      recActionsRef.current.setCanvas(canvasRef.current);
+    }
+  }, [isFullscreen, recState.mode]);
+
+  // Handle window resize while in fullscreen (e.g. orientation change).
+  // During active recording, cancel instead of resizing to avoid crop mismatch.
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const onResize = () => {
+      const renderer = rendererRef.current;
+      if (!renderer) return;
+
+      if (recState.mode === 'recording') {
+        recActionsRef.current.cancel();
+      }
+      renderer.resize(window.innerWidth, window.innerHeight);
+      recActionsRef.current.setCanvas(canvasRef.current);
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [isFullscreen, recState.mode]);
+
+  const handleRecordPress = useCallback(() => {
+    if (isMobile && isFullscreen) {
+      recActions.openRecordModeMobile(window.innerWidth, window.innerHeight);
+    } else {
+      recActions.openRecordMode();
+    }
+  }, [isMobile, isFullscreen, recActions]);
 
   // Track container size for overlay positioning
   useEffect(() => {
@@ -219,10 +272,21 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const isRecordingActive =
     recState.mode === 'preview' || recState.mode === 'recording';
 
+  const canvasWidth = isFullscreen ? window.innerWidth : VIEWPORT_WIDTH;
+  const canvasHeight = isFullscreen ? window.innerHeight : VIEWPORT_HEIGHT;
+
+  // On mobile, only show record button when in fullscreen
+  const showRecordButton =
+    recState.mode === 'idle' && recState.supported && (!isMobile || isFullscreen);
+
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[16/9] bg-black rounded-lg overflow-hidden"
+      className={`relative bg-black overflow-hidden game-viewer-container ${
+        isFullscreen
+          ? 'w-full h-full'
+          : 'w-full aspect-[16/9] rounded-lg'
+      }`}
     >
       <canvas
         ref={canvasRef}
@@ -239,7 +303,6 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         >
           <p className="font-bold text-accent-cyan text-[10px] mb-0.5">{bubble.id}</p>
           <p>{bubble.text}</p>
-          {/* Tail triangle */}
           <div
             className="absolute left-1/2 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-border-default"
             style={{ bottom: -6 }}
@@ -248,11 +311,40 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       ))}
       <Tooltip data={tooltip} />
 
-      {/* Record button (shown in idle mode) */}
-      {recState.mode === 'idle' && recState.supported && (
+      {/* Fullscreen toggle button */}
+      {recState.mode === 'idle' && (
         <button
-          onClick={recActions.openRecordMode}
-          className="absolute right-3 top-3 z-20 rounded-lg bg-black/50 p-2 text-white/70 transition-all hover:bg-black/70 hover:text-white"
+          onClick={toggleFullscreen}
+          className={`absolute left-3 top-3 z-20 rounded-lg bg-black/50 p-2 text-white/70 transition-all hover:bg-black/70 hover:text-white ${
+            isMobile ? 'min-h-[44px] min-w-[44px] flex items-center justify-center' : ''
+          }`}
+          title={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+        >
+          {isFullscreen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <polyline points="4 14 10 14 10 20" />
+              <polyline points="20 10 14 10 14 4" />
+              <line x1="14" y1="10" x2="21" y2="3" />
+              <line x1="3" y1="21" x2="10" y2="14" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+              <polyline points="15 3 21 3 21 9" />
+              <polyline points="9 21 3 21 3 15" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+              <line x1="3" y1="21" x2="10" y2="14" />
+            </svg>
+          )}
+        </button>
+      )}
+
+      {/* Record button (shown in idle mode; on mobile, only when fullscreen) */}
+      {showRecordButton && (
+        <button
+          onClick={handleRecordPress}
+          className={`absolute right-3 top-3 z-20 rounded-lg bg-black/50 p-2 text-white/70 transition-all hover:bg-black/70 hover:text-white ${
+            isMobile ? 'min-h-[44px] min-w-[44px] flex items-center justify-center' : ''
+          }`}
           title="Record clip"
         >
           <svg
@@ -277,8 +369,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
           cropRect={recState.cropRect}
           containerWidth={containerSize.width}
           containerHeight={containerSize.height}
-          canvasWidth={VIEWPORT_WIDTH}
-          canvasHeight={VIEWPORT_HEIGHT}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
           isRecording={recState.mode === 'recording'}
         />
       )}
@@ -297,6 +389,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         onStartRecording={recActions.startRecording}
         onStopRecording={recActions.stopRecording}
         onCancel={recActions.cancel}
+        isMobile={isMobile}
+        isFullscreen={isFullscreen}
       />
 
       {/* Save dialog */}

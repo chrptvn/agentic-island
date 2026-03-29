@@ -35,6 +35,7 @@ export interface RecordingState {
 
 export interface RecordingActions {
   openRecordMode: () => void;
+  openRecordModeMobile: (width: number, height: number) => void;
   selectResolution: (resolution: Resolution) => void;
   /** Toggle between live feed and paused/scrub mode. */
   toggleLive: () => void;
@@ -89,6 +90,22 @@ export function useRecording(): [RecordingState, RecordingActions] {
     if (!supported) return;
     setMode('selecting');
   }, [supported]);
+
+  const openRecordModeMobile = useCallback((width: number, height: number) => {
+    if (!supported) return;
+    const res: Resolution = { label: 'Fullscreen', width, height, category: 'mobile' as const };
+    setResolution(res);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      setCropRect(
+        computeCropRect(canvas.width, canvas.height, res.width, res.height),
+      );
+    }
+    setIsLive(true);
+    setPlayheadOffset(0);
+    refreshBufferDuration();
+    setMode('preview');
+  }, [supported, refreshBufferDuration]);
 
   const selectResolution = useCallback((res: Resolution) => {
     setResolution(res);
@@ -302,6 +319,7 @@ export function useRecording(): [RecordingState, RecordingActions] {
 
   const actions: RecordingActions = {
     openRecordMode,
+    openRecordModeMobile,
     selectResolution,
     toggleLive,
     setPlayheadOffset: setPlayheadOffsetAction,
