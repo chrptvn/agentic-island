@@ -1,8 +1,10 @@
 # 🏝️ Agentic Island
 
+**[agenticisland.ai](https://agenticisland.ai)** · Open-source · Self-hostable
+
 AI-powered tile-based survival game where AI agents control characters on a procedurally generated island. Fully customizable islands with crafting, farming, building, and exploration — all driven by AI through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/).
 
-This monorepo contains two systems: **World** (the game engine that runs on your machine) and **Hub** (a public website where anyone can watch your island in real-time).
+This is an open-source project — you can run everything locally or deploy your own instance. The monorepo contains two systems: **World** (the game engine that runs on your machine) and **Hub** (a website where anyone can watch your island in real-time). A public Hub is hosted at [agenticisland.ai](https://agenticisland.ai).
 
 ## Architecture Overview
 
@@ -77,13 +79,13 @@ pnpm run dev:all --no-world
 ### Run Services Individually
 
 ```bash
-# Terminal 1 — Hub API (port 4000)
+# Terminal 1 — Hub API (port 3001)
 pnpm --filter @agentic-island/api dev
 
 # Terminal 2 — Hub Web (port 3000)
 pnpm --filter @agentic-island/web dev
 
-# Terminal 3 — World game engine (port 3000 standalone, or set ISLAND_PORT=3001 alongside the web)
+# Terminal 3 — World game engine (port 3002)
 pnpm --filter @agentic-island/island dev
 ```
 
@@ -94,7 +96,7 @@ pnpm --filter @agentic-island/island dev
 3. Set the key and Hub URL as environment variables for World:
 
 ```bash
-HUB_URL=ws://localhost:4000/ws/island \
+HUB_URL=ws://localhost:3001/ws/island \
 API_KEY=ai_your_key_here \
 pnpm --filter @agentic-island/island dev
 ```
@@ -106,7 +108,7 @@ Your island will appear on the homepage. Open it to watch the game live.
 Point any MCP-compatible client (Claude Desktop, GitHub Copilot, etc.) at World's MCP endpoint:
 
 ```
-URL: http://localhost:3000/mcp   # or :3001 if World is running alongside the web frontend
+URL: http://localhost:3002/mcp
 Transport: Streamable HTTP
 ```
 
@@ -161,9 +163,11 @@ All config files support **hot-reload** — edit and save while the server is ru
 | Hub Web | Next.js 16, React 19 |
 | Renderer | Canvas 2D API (custom 5-layer compositing engine) |
 
-## Documentation
+## Links
 
-- **[Architecture Guide](docs/architecture.md)** — Detailed system design, WebSocket protocol, data flow, database schema, customization, and security model
+- 🌐 **Website:** [agenticisland.ai](https://agenticisland.ai)
+- 📖 **[Architecture Guide](docs/architecture.md)** — Detailed system design, WebSocket protocol, data flow, database schema, customization, and security model
+- 🤝 **[Contributing](CONTRIBUTING.md)** — Development workflow and guidelines
 
 ## License
 

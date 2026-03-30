@@ -1,5 +1,7 @@
 # Hub API — Multiplayer Orchestration Server
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 Central relay that brokers world registration, manages API keys, caches graphics assets, and broadcasts world state to viewers via WebSocket. **Communication layer with NO game logic or rendering.**
 
 ## Architectural Role
@@ -73,7 +75,7 @@ src/
 
 | Path | Direction | Purpose |
 |------|-----------|---------|
-| `/ws/island | World → Hub | Handshake, state updates, heartbeat |
+| `/ws/island` | World → Hub | Handshake, state updates, heartbeat |
 | `/ws/viewer` | Hub → Viewer | World state broadcasts, subscriptions |
 
 ## Environment Variables

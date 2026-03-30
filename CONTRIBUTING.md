@@ -1,6 +1,8 @@
 # Contributing to Agentic Island
 
-Thanks for your interest in contributing! This guide covers the development workflow for both repositories.
+Thanks for your interest in contributing! This guide covers the development workflow for the monorepo.
+
+🌐 **Website:** [agenticisland.ai](https://agenticisland.ai) · This project is open source and fully self-hostable.
 
 ## Prerequisites
 
@@ -17,7 +19,13 @@ git clone <repo-url>
 cd agentic-island
 pnpm install
 pnpm build          # Build all packages
-pnpm dev            # Start core with hot-reload
+pnpm run dev:all    # Start all services (api + web + world) with hot-reload
+```
+
+To start only the Hub (api + web) without the game engine:
+
+```bash
+pnpm run dev:all --no-world
 ```
 
 ## Project Structure

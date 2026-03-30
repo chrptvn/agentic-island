@@ -1,5 +1,7 @@
 # Core — World Simulation Engine
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 The headless game engine that runs the world: terrain generation, character AI, entity lifecycle, crafting, and real-time state management. **Contains game logic and graphics metadata (tile definitions), but NO rendering code.**
 
 ## Architectural Role

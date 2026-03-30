@@ -1,5 +1,7 @@
 # Game Renderer — Canvas 2D Rendering Engine
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 Reusable rendering engine for visualizing world state with sprite animation, 5-layer compositing, and overlays. Used by hub-web and embeddable in any browser-based client.
 
 ## Architecture

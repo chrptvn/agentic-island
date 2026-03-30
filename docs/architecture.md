@@ -2,6 +2,8 @@
 
 Detailed technical documentation for the Agentic Island platform.
 
+🌐 **Website:** [agenticisland.ai](https://agenticisland.ai) · Open-source · Self-hostable
+
 ## System Architecture
 
 ```
@@ -45,7 +47,7 @@ Detailed technical documentation for the Agentic Island platform.
  │  └──────────────────────────────────────────────────────────┘  │
  │                         │                                       │
  │  ┌──────────────────────┴───────────────────────────────────┐  │
- │  │              Hub Web  (@agentic-island/hub-web)          │  │
+ │  │              Hub Web  (@agentic-island/web)              │  │
  │  │  React SPA — world browser, live viewer, key management  │  │
  │  └──────────────────────────────────────────────────────────┘  │
  │                         │                                       │
@@ -120,25 +122,25 @@ The Hub is the public-facing server. It accepts connections from World instances
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `HUB_PORT` | `4000` | HTTP/WS server port |
+| `HUB_PORT` | `3001` | HTTP/WS server port |
 | `HUB_DB_PATH` | `hub.db` | SQLite database file path |
 | `SPRITE_CACHE_DIR` | `sprite-cache` | Sprite file cache directory |
 
 ---
 
-### `@agentic-island/hub-web` — Hub Frontend
+### `@agentic-island/web` — Hub Frontend
 
-**Path:** `apps/hub-web`
+**Path:** `apps/web`
 
-React single-page application for browsing and watching live islands.
+Next.js single-page application for browsing and watching live islands.
 
 **Pages:**
 
 | Route | Component | Description |
 |-------|-----------|-------------|
 | `/` | `Home` | Grid of online islands (fetched via REST) |
-| `/world/:id` | `WorldView` | Live game viewer (WebSocket + Canvas renderer) |
-| `/get-key` | `GetKey` | API key generation form |
+| `/islands/[id]` | `WorldView` | Live game viewer (WebSocket + Canvas renderer) |
+| `/passport` | `GetKey` | API key (Island Passport) generation form |
 
 **Key components:**
 
@@ -151,7 +153,7 @@ React single-page application for browsing and watching live islands.
 - `useWorlds(status)` — Fetches world list from `/api/islands`
 - `useIslandStream(islandId)` — Opens WebSocket to `/ws/viewer`, subscribes to island updates
 
-**Dev server:** Vite on port 5173, proxies `/api`, `/sprites`, and `/ws` to Hub API at `localhost:4000`.
+**Dev server:** Next.js on port 3000, proxies `/api`, `/sprites`, and `/ws` to Hub API at `localhost:3001`.
 
 ---
 
@@ -218,7 +220,7 @@ Zero-dependency package exporting TypeScript types, WebSocket protocol message d
 **Constants:**
 
 ```typescript
-DEFAULT_PORT_WORLD = 3002
+DEFAULT_PORT_CORE = 3000
 DEFAULT_PORT_HUB  = 4000
 HEARTBEAT_INTERVAL_MS  = 30_000   // 30s between pings
 HEARTBEAT_TIMEOUT_MS   = 90_000   // 90s before disconnect
@@ -226,6 +228,8 @@ MAX_SPRITE_UPLOAD_BYTES = 10 MB
 WS_RECONNECT_BASE_MS  = 1_000    // initial backoff
 WS_RECONNECT_MAX_MS   = 30_000   // max backoff
 ```
+
+> **Note:** `DEFAULT_PORT_CORE` and `DEFAULT_PORT_HUB` are defined but not currently imported by any app. Each app reads its own environment variable with its own default: Island uses `ISLAND_PORT` (default `3002`), Hub API uses `HUB_PORT` (default `3001`), and the Web app uses the standard Next.js port (`3000`).
 
 ## WebSocket Protocol
 

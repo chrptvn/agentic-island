@@ -1,5 +1,7 @@
 # Shared — Types & Protocols
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 Centralized TypeScript type definitions, message protocols, and constants used across all apps for type safety and consistency.
 
 ## Exports

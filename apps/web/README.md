@@ -1,5 +1,7 @@
 # Web Viewer — Client-Side Rendering
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 Next.js web application for viewing live worlds. **The ONLY place where rendering to HTML5 Canvas happens.** Receives world state + graphics metadata from Hub-API and displays them interactively.
 
 ## Architectural Role

@@ -1,5 +1,7 @@
 # islandctl
 
+Part of [Agentic Island](https://agenticisland.ai) · Open-source · Self-hostable
+
 kubectl-style CLI for managing Agentic Island servers.
 
 ## Installation

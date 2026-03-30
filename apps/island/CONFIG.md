@@ -1,6 +1,6 @@
 # Game Configuration
 
-All game data lives in JSON files under `apps/core/config/`. Changes are hot-reloaded at runtime — no restart needed.
+All game data lives in JSON files under `apps/island/config/`. Changes are hot-reloaded at runtime — no restart needed.
 
 ## Files Overview
 
