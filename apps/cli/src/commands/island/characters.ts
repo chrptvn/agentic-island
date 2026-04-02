@@ -26,7 +26,7 @@ export function registerIslandCharactersCommand(program: Command): void {
   chars
     .command("list")
     .description("List all characters currently on the map")
-    .option("--island-url <url>", "Island URL")
+    .option("--island-url <url>", "Override the target world URL (e.g. http://localhost:3002)")
     .action((opts) => {
       const config = resolveIslandConfig(opts);
       islandRequest<Record<string, CharacterEntry>>(config, "GET", "/api/characters").then(
@@ -50,11 +50,19 @@ export function registerIslandCharactersCommand(program: Command): void {
     });
 
   chars
-    .command("spawn <id>")
-    .description("Spawn a character at a random valid position")
-    .option("--x <n>", "X coordinate", parseInt)
-    .option("--y <n>", "Y coordinate", parseInt)
-    .option("--island-url <url>", "Island URL")
+    .command("spawn")
+    .argument("<id>", "Unique character ID to spawn")
+    .description("Spawn a character on the map; spawns at a random position unless --x and --y are both given")
+    .option("--x <n>", "Tile X coordinate for explicit placement (requires --y)", parseInt)
+    .option("--y <n>", "Tile Y coordinate for explicit placement (requires --x)", parseInt)
+    .option("--island-url <url>", "Override the target world URL (e.g. http://localhost:3002)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl island characters spawn bob
+  $ islandctl island characters spawn bob --x 10 --y 5`,
+    )
     .action((id, opts) => {
       const config = resolveIslandConfig(opts);
       const hasCoords = opts.x !== undefined && opts.y !== undefined;
@@ -67,9 +75,16 @@ export function registerIslandCharactersCommand(program: Command): void {
     });
 
   chars
-    .command("despawn <id>")
+    .command("despawn")
+    .argument("<id>", "ID of the character to remove")
     .description("Remove a character from the map")
-    .option("--island-url <url>", "Island URL")
+    .option("--island-url <url>", "Override the target world URL (e.g. http://localhost:3002)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl island characters despawn bob`,
+    )
     .action((id, opts) => {
       const config = resolveIslandConfig(opts);
       islandRequest<{ message: string }>(config, "POST", "/api/despawn", { id }).then((res) => {

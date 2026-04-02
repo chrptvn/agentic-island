@@ -14,7 +14,13 @@ export function registerIslandStatusCommand(program: Command): void {
   program
     .command("status")
     .description("Show current world status (map info, characters)")
-    .option("--island-url <url>", "Island URL")
+    .option("--island-url <url>", "Override the target world URL (e.g. http://localhost:3002)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl island status`,
+    )
     .action((opts) => {
       const config = resolveIslandConfig(opts);
       islandRequest<IslandStatus>(config, "GET", "/api/status").then((s) => {

@@ -9,7 +9,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "tsc",
-    "install:global": "tsc && npm install -g .",
+    "install:global": "tsc && chmod +x dist/index.js && npm install -g .",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

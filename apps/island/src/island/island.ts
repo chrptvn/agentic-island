@@ -1621,14 +1621,22 @@ export class Island extends EventEmitter {
     saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter);
 
     // Auto-remove container tile when all items have been taken
+    // (skip removal for multi-tile entities like tents — they should persist)
     if (stats.inventory.length === 0) {
       const key = `${x},${y}`;
-      const layers = this.overrides.get(key) ?? [];
-      layers[3] = "";
-      this.overrides.set(key, layers);
-      clearTileOverride(x, y, 3);
-      this.entityStats.delete(key);
-      deleteEntityStat(x, y);
+      const tileId = this.overrides.get(key)?.[3] ?? "";
+      const def = tileId ? ENTITY_DEF_BY_ID.get(tileId) : undefined;
+      if (def?.tileType === "quad" || def?.tileType === "two-tile") {
+        // Keep multi-tile entities on the map; just persist cleared inventory
+        saveEntityStat(x, y, stats);
+      } else {
+        const layers = this.overrides.get(key) ?? [];
+        layers[3] = "";
+        this.overrides.set(key, layers);
+        clearTileOverride(x, y, 3);
+        this.entityStats.delete(key);
+        deleteEntityStat(x, y);
+      }
     } else {
       saveEntityStat(x, y, stats);
     }
@@ -2281,9 +2289,7 @@ export class Island extends EventEmitter {
 
     // ── Process character deaths → spawn skull containers ────────────────────
     for (const deadChar of deadCharacters) {
-      const deathKey = `${deadChar.x},${deadChar.y}`;
-
-      // Combine inventory + equipped items into the skull's container inventory
+      // Combine inventory + equipped items
       const containerInv: { item: string; qty: number }[] = [
         ...(deadChar.stats.inventory as { item: string; qty: number }[]),
       ];
@@ -2291,17 +2297,39 @@ export class Island extends EventEmitter {
         if (eq) containerInv.push({ item: eq.item, qty: eq.qty });
       }
 
-      // Place skull entity on the map (layer 3)
-      const layers = this.overrides.get(deathKey) ?? [];
-      while (layers.length <= 3) layers.push("");
-      layers[3] = "skull";
-      this.overrides.set(deathKey, layers);
-      overrideWrites.push({ x: deadChar.x, y: deadChar.y, layer: 3, tileId: "skull" });
+      if (deadChar.shelter) {
+        // ── Death inside tent: transfer inventory to the tent ──────────────
+        const tentKey = deadChar.shelter;
+        const [tentX, tentY] = tentKey.split(",").map(Number);
+        const tentStats = this.entityStats.get(tentKey) as
+          | (EntityStats & { inventory?: { item: string; qty: number }[] })
+          | undefined;
+        if (tentStats) {
+          const existing = tentStats.inventory ?? [];
+          for (const drop of containerInv) {
+            const slot = existing.find(s => s.item === drop.item);
+            if (slot) slot.qty += drop.qty;
+            else existing.push({ item: drop.item, qty: drop.qty });
+          }
+          tentStats.inventory = existing;
+          statWrites.push({ x: tentX, y: tentY, stats: tentStats as EntityStats });
+        }
+      } else {
+        // ── Death outside tent: spawn skull as before ──────────────────────
+        const deathKey = `${deadChar.x},${deadChar.y}`;
 
-      // Set skull entity stats (container inventory)
-      const skullStats = { inventory: containerInv } as unknown as EntityStats;
-      this.entityStats.set(deathKey, skullStats);
-      statWrites.push({ x: deadChar.x, y: deadChar.y, stats: skullStats });
+        // Place skull entity on the map (layer 3)
+        const layers = this.overrides.get(deathKey) ?? [];
+        while (layers.length <= 3) layers.push("");
+        layers[3] = "skull";
+        this.overrides.set(deathKey, layers);
+        overrideWrites.push({ x: deadChar.x, y: deadChar.y, layer: 3, tileId: "skull" });
+
+        // Set skull entity stats (container inventory)
+        const skullStats = { inventory: containerInv } as unknown as EntityStats;
+        this.entityStats.set(deathKey, skullStats);
+        statWrites.push({ x: deadChar.x, y: deadChar.y, stats: skullStats });
+      }
 
       // Remove character from memory
       this.characters.delete(deadChar.id);

@@ -786,6 +786,8 @@
         "maxHealth": 100
       },
       "blocks": true,
+      "container": true,
+      "maxItems": 100,
       "build": {
         "costs": {
           "green_fabric": 3,
@@ -809,6 +811,8 @@
         "maxHealth": 100
       },
       "blocks": true,
+      "container": true,
+      "maxItems": 100,
       "build": {
         "costs": {
           "cream_fabric": 3,

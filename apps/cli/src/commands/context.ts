@@ -6,7 +6,7 @@ export function registerContextCommand(program: Command): void {
   const ctx = program
     .command("context")
     .alias("ctx")
-    .description("Manage world contexts (like kubectl config)");
+    .description("Manage world contexts");
 
   ctx
     .command("list")
@@ -43,8 +43,16 @@ export function registerContextCommand(program: Command): void {
     });
 
   ctx
-    .command("use <name>")
+    .command("use")
+    .argument("<name>", "Name of the context to activate")
     .description("Switch to a context")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl context use local
+  $ islandctl context use staging`,
+    )
     .action((name: string) => {
       const config = getConfig();
       if (!config.contexts[name]) {
@@ -58,9 +66,18 @@ export function registerContextCommand(program: Command): void {
     });
 
   ctx
-    .command("add <name> <url>")
+    .command("add")
+    .argument("<name>", "Short identifier for the context (e.g. local, staging, prod)")
+    .argument("<url>", "Base URL of the island server (e.g. http://localhost:3002)")
     .description("Add or update a context")
-    .option("-n, --display-name <displayName>", "Human-readable name for the context")
+    .option("-n, --display-name <displayName>", "Human-readable label for the context")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl context add local http://localhost:3002
+  $ islandctl context add staging https://staging.example.com -n "Staging"`,
+    )
     .action((name: string, url: string, opts: { displayName?: string }) => {
       const config = getConfig();
       const existed = !!config.contexts[name];
@@ -71,7 +88,8 @@ export function registerContextCommand(program: Command): void {
     });
 
   ctx
-    .command("remove <name>")
+    .command("remove")
+    .argument("<name>", "Name of the context to delete")
     .alias("rm")
     .description("Remove a context")
     .action((name: string) => {
