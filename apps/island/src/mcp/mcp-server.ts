@@ -44,7 +44,7 @@ const allMcpSessions = new Set<McpSession>();
 
 // ─── Idle disconnect ──────────────────────────────────────────────────────────
 
-const IDLE_TIMEOUT_MS       = 60_000; // 1 minute
+const IDLE_TIMEOUT_MS       = (Number(process.env.IDLE_TIMEOUT_MINUTES) || 3) * 60_000;
 const IDLE_CHECK_INTERVAL_MS = 10_000; // check every 10 seconds
 
 function checkIdleSessions(): void {
