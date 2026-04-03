@@ -40,6 +40,23 @@ function autotileWaterCell(
 }
 
 /**
+ * Returns the layer-1 grass autotile ID for a grass cell at (x, y).
+ * Uses the full 8-neighbor bitmask → 48-tile Pipoya mapping.
+ *
+ * "Same terrain" for grass = neighbor is also grass (not water/sand/OOB).
+ * Out-of-bounds = different terrain (returns false).
+ *
+ * @param isGrass  Predicate: is the cell at (nx, ny) a grass cell?
+ */
+function autotileGrassCell(
+  x: number,
+  y: number,
+  isGrass: (nx: number, ny: number) => boolean,
+): string {
+  return getAutotileId("grass_at", x, y, isGrass);
+}
+
+/**
  * Returns the layer-1 sand autotile ID for a sand cell at (x, y).
  * The sand tilesheet transitions against grass: "same" = sand, "different" = grass.
  *
@@ -225,37 +242,39 @@ export function buildIslandLayer1(
 
   fillGaps(); // ── 6. After lake
 
-  // ── 7. Generate sand beach fringe ─────────────────────────────────────────
+  // ── 7. Generate sand beach fringe (DISABLED — kept for future re-enabling) ──
   // Convert grass cells that are cardinally adjacent to water → sand
   const terrain: TerrainCell[][] = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) => (grid[y][x] ? "grass" : "water") as TerrainCell)
   );
 
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (terrain[y][x] !== "grass") continue;
-      let adjacentWater = false;
-      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-        const nx = x + dx, ny = y + dy;
-        if (nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water") {
-          adjacentWater = true;
-          break;
-        }
-      }
-      if (adjacentWater && rng() < 0.85) {
-        terrain[y][x] = "sand";
-      }
-    }
-  }
+  // Sand generation disabled per user request.
+  // To re-enable, uncomment the block below:
+  // for (let y = 0; y < h; y++) {
+  //   for (let x = 0; x < w; x++) {
+  //     if (terrain[y][x] !== "grass") continue;
+  //     let adjacentWater = false;
+  //     for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+  //       const nx = x + dx, ny = y + dy;
+  //       if (nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water") {
+  //         adjacentWater = true;
+  //         break;
+  //       }
+  //     }
+  //     if (adjacentWater && rng() < 0.85) {
+  //       terrain[y][x] = "sand";
+  //     }
+  //   }
+  // }
 
   // ── 8. Build tile overrides ───────────────────────────────────────────────
   // For water autotile: bit=1 means neighbor is water (same terrain)
   const isWater = (nx: number, ny: number): boolean =>
     nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water";
 
-  // For sand autotile: bit=1 means neighbor is sand or water (not grass)
-  const isSandOrWater = (nx: number, ny: number): boolean =>
-    nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] !== "grass";
+  // For grass autotile: bit=1 means neighbor is grass (same terrain)
+  const isGrass = (nx: number, ny: number): boolean =>
+    nx >= 0 && nx < w && ny >= 0 && ny < h && terrain[ny][nx] === "grass";
 
   const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
 
@@ -263,8 +282,12 @@ export function buildIslandLayer1(
     for (let x = 0; x < w; x++) {
       const t = terrain[y][x];
       if (t === "grass") {
-        result.push({ x, y, layer: 1, tileId: "grass" });
+        const tileId = autotileGrassCell(x, y, isGrass);
+        result.push({ x, y, layer: 1, tileId });
       } else if (t === "sand") {
+        // Sand autotile (disabled but kept for when sand is re-enabled)
+        const isSandOrWater = (nx: number, ny: number): boolean =>
+          nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] !== "grass";
         const tileId = autotileSandCell(x, y, isSandOrWater);
         result.push({ x, y, layer: 1, tileId });
       } else {
@@ -280,8 +303,7 @@ export function buildIslandLayer1(
     }
   }
 
-  // grassGrid: true for grass AND sand (both are walkable land for vegetation/pathfinding)
-  // However, sand cells should not spawn vegetation, so provide the original grass-only grid.
+  // grassGrid tracks original grass cells for vegetation spawning
   return { overrides: result, grassGrid: grid };
 }
 
@@ -338,7 +360,7 @@ export function isPathTileId(tileId: string): boolean {
 
 /** Returns true if the tile ID represents walkable ground (grass, sand, or any path tile). */
 export function isWalkableGround(tileId: string): boolean {
-  return tileId === "grass" || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
+  return tileId === "grass" || tileId.startsWith("grass_at_") || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
 }
 
 /**
@@ -346,7 +368,7 @@ export function isWalkableGround(tileId: string): boolean {
  * Used by island.ts to classify cells for game logic.
  */
 export function terrainFromLayer1(l1: string): "grass" | "sand" | "water" {
-  if (l1 === "grass") return "grass";
+  if (l1 === "grass" || l1.startsWith("grass_at_")) return "grass";
   if (l1.startsWith("sand_at_")) return "sand";
   return "water";
 }

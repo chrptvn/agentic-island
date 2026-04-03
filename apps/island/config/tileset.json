@@ -3408,6 +3408,438 @@
       "description": "Water autotile grid position (7,5)"
     },
     {
+      "id": "grass_at_0_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,0)"
+    },
+    {
+      "id": "grass_at_1_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,0)"
+    },
+    {
+      "id": "grass_at_2_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,0)"
+    },
+    {
+      "id": "grass_at_3_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,0)"
+    },
+    {
+      "id": "grass_at_4_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,0)"
+    },
+    {
+      "id": "grass_at_5_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,0)"
+    },
+    {
+      "id": "grass_at_6_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,0)"
+    },
+    {
+      "id": "grass_at_7_0",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 0,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,0)"
+    },
+    {
+      "id": "grass_at_0_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,1)"
+    },
+    {
+      "id": "grass_at_1_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,1)"
+    },
+    {
+      "id": "grass_at_2_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,1)"
+    },
+    {
+      "id": "grass_at_3_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,1)"
+    },
+    {
+      "id": "grass_at_4_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,1)"
+    },
+    {
+      "id": "grass_at_5_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,1)"
+    },
+    {
+      "id": "grass_at_6_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,1)"
+    },
+    {
+      "id": "grass_at_7_1",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 1,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,1)"
+    },
+    {
+      "id": "grass_at_0_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,2)"
+    },
+    {
+      "id": "grass_at_1_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,2)"
+    },
+    {
+      "id": "grass_at_2_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,2)"
+    },
+    {
+      "id": "grass_at_3_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,2)"
+    },
+    {
+      "id": "grass_at_4_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,2)"
+    },
+    {
+      "id": "grass_at_5_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,2)"
+    },
+    {
+      "id": "grass_at_6_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,2)"
+    },
+    {
+      "id": "grass_at_7_2",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 2,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,2)"
+    },
+    {
+      "id": "grass_at_0_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,3)"
+    },
+    {
+      "id": "grass_at_1_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,3)"
+    },
+    {
+      "id": "grass_at_2_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,3)"
+    },
+    {
+      "id": "grass_at_3_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,3)"
+    },
+    {
+      "id": "grass_at_4_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,3)"
+    },
+    {
+      "id": "grass_at_5_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,3)"
+    },
+    {
+      "id": "grass_at_6_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,3)"
+    },
+    {
+      "id": "grass_at_7_3",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 3,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,3)"
+    },
+    {
+      "id": "grass_at_0_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,4)"
+    },
+    {
+      "id": "grass_at_1_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,4)"
+    },
+    {
+      "id": "grass_at_2_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,4)"
+    },
+    {
+      "id": "grass_at_3_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,4)"
+    },
+    {
+      "id": "grass_at_4_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,4)"
+    },
+    {
+      "id": "grass_at_5_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,4)"
+    },
+    {
+      "id": "grass_at_6_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,4)"
+    },
+    {
+      "id": "grass_at_7_4",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 4,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,4)"
+    },
+    {
+      "id": "grass_at_0_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 0,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (0,5)"
+    },
+    {
+      "id": "grass_at_1_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 1,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (1,5)"
+    },
+    {
+      "id": "grass_at_2_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 2,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (2,5)"
+    },
+    {
+      "id": "grass_at_3_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 3,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (3,5)"
+    },
+    {
+      "id": "grass_at_4_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 4,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (4,5)"
+    },
+    {
+      "id": "grass_at_5_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 5,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (5,5)"
+    },
+    {
+      "id": "grass_at_6_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 6,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (6,5)"
+    },
+    {
+      "id": "grass_at_7_5",
+      "sheet": "pipoya/terrain-grass.png",
+      "col": 7,
+      "row": 5,
+      "layer": 1,
+      "category": "terrain",
+      "description": "Grass autotile grid position (7,5)"
+    },
+    {
       "id": "sand_at_0_0",
       "sheet": "pipoya/terrain-sand.png",
       "col": 0,
