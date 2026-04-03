@@ -88,6 +88,7 @@ export class VideoRecorder {
   private resolution: Resolution;
   private crop: CropRect;
   private sourceCanvas: HTMLCanvasElement | null = null;
+  private overlayCanvas: HTMLCanvasElement | null = null;
 
   get isRecording(): boolean {
     return this._isRecording;
@@ -160,6 +161,21 @@ export class VideoRecorder {
       x, y, width, height, // source crop
       0, 0, dw, dh,        // destination (full recording canvas)
     );
+
+    // Composite speech-bubble overlay on top with smoothing for crisp text
+    if (this.overlayCanvas && this.overlayCanvas.width > 0) {
+      this.recCtx.imageSmoothingEnabled = true;
+      this.recCtx.imageSmoothingQuality = "high";
+      this.recCtx.drawImage(
+        this.overlayCanvas,
+        x * (this.overlayCanvas.width / this.sourceCanvas.width),
+        y * (this.overlayCanvas.height / this.sourceCanvas.height),
+        width * (this.overlayCanvas.width / this.sourceCanvas.width),
+        height * (this.overlayCanvas.height / this.sourceCanvas.height),
+        0, 0, dw, dh,
+      );
+      this.recCtx.imageSmoothingEnabled = false;
+    }
   }
 
   /**
@@ -188,6 +204,11 @@ export class VideoRecorder {
     });
   }
 
+  /** Set the overlay canvas (speech bubbles) to composite on top of game frames. */
+  setOverlayCanvas(canvas: HTMLCanvasElement | null): void {
+    this.overlayCanvas = canvas;
+  }
+
   /** Update the crop rectangle (e.g. if user repositions). */
   setCrop(crop: CropRect): void {
     this.crop = crop;
@@ -206,6 +227,7 @@ export class VideoRecorder {
     }
     this.recorder = null;
     this.sourceCanvas = null;
+    this.overlayCanvas = null;
     this.chunks = [];
   }
 

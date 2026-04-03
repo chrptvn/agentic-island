@@ -53,6 +53,7 @@ export interface RecordingActions {
   /** Call on each rendered frame (drives video capture + playback). */
   onFrame: () => void;
   setCanvas: (canvas: HTMLCanvasElement | null) => void;
+  setOverlayCanvas: (canvas: HTMLCanvasElement | null) => void;
 }
 
 const STATE_BUFFER_SIZE = 120;
@@ -61,6 +62,7 @@ export function useRecording(): [RecordingState, RecordingActions] {
   const bufferRef = useRef(new StateBuffer(STATE_BUFFER_SIZE));
   const recorderRef = useRef<VideoRecorder | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Playback state stored in refs so onFrame can access without stale closures
@@ -165,6 +167,7 @@ export function useRecording(): [RecordingState, RecordingActions] {
     if (!canvas || !resolution || !cropRect) return;
 
     const rec = new VideoRecorder(resolution, cropRect);
+    rec.setOverlayCanvas(overlayCanvasRef.current);
     rec.start(canvas);
     recorderRef.current = rec;
     isRecordingRef.current = true;
@@ -305,6 +308,13 @@ export function useRecording(): [RecordingState, RecordingActions] {
     [resolution],
   );
 
+  const setOverlayCanvas = useCallback(
+    (canvas: HTMLCanvasElement | null) => {
+      overlayCanvasRef.current = canvas;
+    },
+    [],
+  );
+
   const state: RecordingState = {
     mode,
     resolution,
@@ -331,6 +341,7 @@ export function useRecording(): [RecordingState, RecordingActions] {
     getDisplayState,
     onFrame,
     setCanvas,
+    setOverlayCanvas,
   };
 
   return [state, actions];

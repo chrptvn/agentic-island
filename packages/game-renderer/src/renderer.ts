@@ -5,7 +5,7 @@
  * all layers plus overlays onto a single <canvas>.
  */
 
-import type { IslandState, TileRegistry } from "@agentic-island/shared";
+import type { IslandState, TileRegistry, CharacterState } from "@agentic-island/shared";
 import { SpriteCache } from "./sprite-loader.js";
 import { renderLayers, type LayerData, type Viewport } from "./layers.js";
 import {
@@ -14,6 +14,7 @@ import {
   createAnimationState,
   type AnimationState,
 } from "./animation.js";
+import { drawSpeechBubble } from "./overlays.js";
 import { Camera, type CameraOptions } from "./camera.js";
 import { InputHandler } from "./input.js";
 
@@ -66,6 +67,10 @@ export class GameRenderer {
   private lerpMap = new Map<string, CharacterLerp>();
   /** Last known integer tile positions (for detecting movement). */
   private lastPositions = new Map<string, { x: number; y: number }>();
+
+  /** High-resolution overlay canvas for speech bubbles (crisp text). */
+  private overlayCanvas: HTMLCanvasElement | null = null;
+  private overlayCtx: CanvasRenderingContext2D | null = null;
 
   readonly camera: Camera;
   private input: InputHandler;
@@ -254,7 +259,10 @@ export class GameRenderer {
     this.ctx.clearRect(0, 0, w, h);
     this.ctx.drawImage(this.buffer!, 0, 0);
 
-    // Notify host (e.g. React) so it can update HTML overlays
+    // Draw speech bubbles on the overlay canvas (high-res for crisp text)
+    this.renderSpeechOverlays(characters, now);
+
+    // Notify host (e.g. React) so it can update overlays and capture frames
     this.onFrame?.();
   }
 
@@ -281,6 +289,17 @@ export class GameRenderer {
     return this.canvas;
   }
 
+  /** Access the overlay canvas (e.g. for video recording compositing). */
+  getOverlayCanvas(): HTMLCanvasElement | null {
+    return this.overlayCanvas;
+  }
+
+  /** Attach a high-resolution overlay canvas for speech bubbles. */
+  setOverlayCanvas(canvas: HTMLCanvasElement | null): void {
+    this.overlayCanvas = canvas;
+    this.overlayCtx = canvas?.getContext("2d") ?? null;
+  }
+
   /** Clean up resources. */
   destroy(): void {
     this.stop();
@@ -289,6 +308,8 @@ export class GameRenderer {
     this.state = null;
     this.buffer = null;
     this.bufCtx = null;
+    this.overlayCanvas = null;
+    this.overlayCtx = null;
     this.lerpMap.clear();
     this.lastPositions.clear();
   }
@@ -369,6 +390,51 @@ export class GameRenderer {
       x: lerp.fromX + (lerp.toX - lerp.fromX) * e,
       y: lerp.fromY + (lerp.toY - lerp.fromY) * e,
     };
+  }
+
+  /**
+   * Draw speech bubbles on the high-res overlay canvas.
+   * Uses a scale transform so game-canvas coordinates map to overlay resolution,
+   * giving text the same sharpness as HTML.
+   */
+  private renderSpeechOverlays(characters: CharacterState[], now: number): void {
+    const ctx = this.overlayCtx;
+    const overlay = this.overlayCanvas;
+    if (!ctx || !overlay) return;
+
+    const ow = overlay.width;
+    const oh = overlay.height;
+    ctx.clearRect(0, 0, ow, oh);
+
+    const gw = this.canvas.width;
+    const gh = this.canvas.height;
+    if (gw === 0 || gh === 0) return;
+
+    // Scale from game-canvas space to overlay space
+    const sx = ow / gw;
+    const sy = oh / gh;
+
+    const dateNow = Date.now();
+
+    for (const char of characters) {
+      if (!char.speech?.text || char.speech.expiresAt <= dateNow) continue;
+      if (char.shelter) continue; // hidden in tent
+
+      const visual = this.getVisualPositionAt(char.id, now);
+      if (!visual) continue;
+
+      const screen = this.camera.worldToScreen(
+        (visual.x + 0.5) * this.tileSize,
+        visual.y * this.tileSize,
+        gw,
+        gh,
+      );
+
+      ctx.save();
+      ctx.setTransform(sx, 0, 0, sy, 0, 0);
+      drawSpeechBubble(ctx, char.speech.text, screen.x, screen.y, char.id);
+      ctx.restore();
+    }
   }
 
   /**

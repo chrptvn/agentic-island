@@ -23,13 +23,6 @@ interface GameViewerProps {
   spriteBaseUrl: string | null;
 }
 
-interface SpeechOverlay {
-  id: string;
-  text: string;
-  cssX: number;
-  cssY: number;
-}
-
 interface FollowButtonOverlay {
   id: string;
   cssX: number;
@@ -38,12 +31,12 @@ interface FollowButtonOverlay {
 
 export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const spritesLoadedRef = useRef(false);
   const stateRef = useRef<IslandState | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const tooltipRef = useRef<TooltipData | null>(null);
-  const [speechOverlays, setSpeechOverlays] = useState<SpeechOverlay[]>([]);
   const [followButtonOverlay, setFollowButtonOverlay] = useState<FollowButtonOverlay | null>(null);
 
   // Follow feature refs (used in callbacks, not needing React re-renders)
@@ -81,6 +74,17 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const recStateModeRef = useRef(recState.mode);
   useEffect(() => { recStateModeRef.current = recState.mode; }, [recState.mode]);
 
+  // Match overlay canvas pixel dimensions to the game canvas CSS display size
+  const resizeOverlayCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    const overlay = overlayCanvasRef.current;
+    if (!canvas || !overlay) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    overlay.width = Math.round(rect.width * dpr);
+    overlay.height = Math.round(rect.height * dpr);
+  }, []);
+
   // Resize canvas only when fullscreen state changes. Cancel recording if
   // exiting fullscreen mid-session to avoid crop mismatch.
   useEffect(() => {
@@ -104,6 +108,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       renderer.resize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
       recActionsRef.current.setCanvas(canvasRef.current);
     }
+    resizeOverlayCanvas();
   }, [isFullscreen]); // intentionally excludes recState.mode — use ref to avoid camera reset on mode changes
 
   // Handle window resize while in fullscreen (e.g. orientation change).
@@ -120,6 +125,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       }
       renderer.resize(window.innerWidth, window.innerHeight);
       recActionsRef.current.setCanvas(canvasRef.current);
+      resizeOverlayCanvas();
     };
 
     window.addEventListener('resize', onResize);
@@ -159,9 +165,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     return () => ro.disconnect();
   }, []);
 
-  // Compute speech bubble positions from character data + camera state.
-  // Also recompute tile-anchored tooltip position (mobile tap-to-inspect).
-  const updateSpeechOverlays = useCallback(() => {
+  // Compute follow button + tooltip positions from character data + camera state.
+  const updateOverlayPositions = useCallback(() => {
     const renderer = rendererRef.current;
     const canvas = canvasRef.current;
     const s = stateRef.current;
@@ -172,23 +177,6 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
     const cssScaleX = rect.width / canvas.width;
     const cssScaleY = rect.height / canvas.height;
-    const now = Date.now();
-
-    const overlays: SpeechOverlay[] = [];
-    for (const char of s.characters) {
-      if (char.speech?.text && char.speech.expiresAt > now) {
-        const visual = renderer.getVisualPosition(char.id);
-        const screen = renderer.tileToScreen(visual?.x ?? char.x, visual?.y ?? char.y);
-        overlays.push({
-          id: char.id,
-          text: char.speech.text,
-          cssX: screen.x * cssScaleX,
-          cssY: screen.y * cssScaleY,
-        });
-      }
-    }
-
-    setSpeechOverlays(overlays);
 
     // Compute follow button position for selected character
     const selId = selectedCharIdRef.current;
@@ -367,21 +355,28 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   // Initialize renderer with fixed viewport resolution
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !overlayCanvasRef.current) return;
     const canvas = canvasRef.current;
+    const overlayCanvas = overlayCanvasRef.current;
     canvas.width = VIEWPORT_WIDTH;
     canvas.height = VIEWPORT_HEIGHT;
+
+    // Size overlay canvas at the CSS display dimensions for crisp text
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    overlayCanvas.width = Math.round(rect.width * dpr);
+    overlayCanvas.height = Math.round(rect.height * dpr);
 
     const renderer = new GameRenderer({
       canvas,
       tileSize: TILE_SIZE,
       scaleFactor: SCALE_FACTOR,
     });
+    renderer.setOverlayCanvas(overlayCanvas);
     rendererRef.current = renderer;
 
-    // Update HTML speech overlays on every rendered frame.
+    // Update overlay positions on every rendered frame.
     // During recording playback, also advance the renderer state.
-    // Use ref for recording callback to avoid effect re-runs.
     renderer.onFrame = () => {
       // Camera follow: keep viewport centered on the followed agent each frame
       const followId = followedCharIdRef.current;
@@ -394,15 +389,16 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         }
       }
 
-      updateSpeechOverlays();
+      updateOverlayPositions();
       // During recording, feed the playback state to the renderer each frame
       const displayState = recActionsRef.current.getDisplayState();
       if (displayState) renderer.setState(displayState);
       recActionsRef.current.onFrame();
     };
 
-    // Give the recording system a ref to the canvas
+    // Give the recording system refs to the canvases
     recActionsRef.current.setCanvas(canvas);
+    recActionsRef.current.setOverlayCanvas(overlayCanvasRef.current);
 
     renderer.start();
 
@@ -411,8 +407,9 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       rendererRef.current = null;
       spritesLoadedRef.current = false;
       recActionsRef.current.setCanvas(null);
+      recActionsRef.current.setOverlayCanvas(null);
     };
-  }, [updateSpeechOverlays]);
+  }, [updateOverlayPositions]);
 
   // Load sprites
   useEffect(() => {
@@ -483,20 +480,10 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         className="block w-full h-full cursor-crosshair"
         style={{ imageRendering: 'pixelated' }}
       />
-      {speechOverlays.map((bubble) => (
-        <div
-          key={bubble.id}
-          className="pointer-events-none absolute z-40 max-w-xs -translate-x-1/2 -translate-y-full rounded-lg border border-border-default bg-surface/90 px-3 py-2 font-mono text-xs text-text-primary shadow-lg backdrop-blur-sm"
-          style={{ left: bubble.cssX, top: bubble.cssY - 4 }}
-        >
-          <p className="font-bold text-accent-cyan text-[10px] mb-0.5">{bubble.id}</p>
-          <p>{bubble.text}</p>
-          <div
-            className="absolute left-1/2 -translate-x-1/2 border-x-[6px] border-t-[6px] border-x-transparent border-t-border-default"
-            style={{ bottom: -6 }}
-          />
-        </div>
-      ))}
+      <canvas
+        ref={overlayCanvasRef}
+        className="pointer-events-none absolute inset-0 block w-full h-full"
+      />
       {followButtonOverlay && (
         <button
           onClick={(e) => {
