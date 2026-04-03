@@ -11,7 +11,7 @@ import { encodePNG } from "./png.js";
 const COLOR_WATER: [number, number, number] = [30, 64, 175]; // #1e40af
 const COLOR_GRASS: [number, number, number] = [34, 197, 94]; // #22c55e
 const COLOR_VEGETATION: [number, number, number] = [22, 101, 52]; // #166534
-const COLOR_SHORE: [number, number, number] = [96, 165, 250]; // #60a5fa
+const COLOR_SAND: [number, number, number] = [217, 190, 127]; // #d9be7f
 
 const SCALE = 2;
 
@@ -33,7 +33,11 @@ function isVegetationTile(tileId: string): boolean {
 }
 
 function isShoreTile(tileId: string): boolean {
-  return tileId.startsWith("water_edge_") || tileId.startsWith("water_corner_");
+  return tileId.startsWith("water_at_");
+}
+
+function isSandTile(tileId: string): boolean {
+  return tileId.startsWith("sand_at_");
 }
 
 /**
@@ -64,19 +68,25 @@ export function generateThumbnail(
       let color: [number, number, number];
 
       if (isGrass) {
-        // Check for vegetation on entity layers (3+)
-        const hasVegetation =
-          layers &&
-          layers.some(
-            (tileId, i) => i >= 3 && tileId && isVegetationTile(tileId),
-          );
-        color = hasVegetation ? COLOR_VEGETATION : COLOR_GRASS;
+        // Check layer 1 for sand (sand cells converted from grass at shoreline)
+        const l1 = layers?.[1] ?? "";
+        if (isSandTile(l1)) {
+          color = COLOR_SAND;
+        } else {
+          // Check for vegetation on entity layers (3+)
+          const hasVegetation =
+            layers &&
+            layers.some(
+              (tileId, i) => i >= 3 && tileId && isVegetationTile(tileId),
+            );
+          color = hasVegetation ? COLOR_VEGETATION : COLOR_GRASS;
+        }
       } else {
         // Check for shore autotile on layer 1
         const hasShore =
           layers &&
           layers.some((tileId, i) => i >= 1 && tileId && isShoreTile(tileId));
-        color = hasShore ? COLOR_SHORE : COLOR_WATER;
+        color = hasShore ? COLOR_SAND : COLOR_WATER;
       }
 
       // Fill SCALE×SCALE block

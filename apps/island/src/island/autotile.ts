@@ -1,35 +1,12 @@
 /**
  * Auto-tiling engine for grass-island generation.
  *
- * Tiles are drawn on WATER cells to show the shoreline facing the grass.
- * Bitmask convention: N=1, E=2, S=4, W=8  (bit SET = that cardinal neighbor HAS grass)
- *
- *   water_edge_n → grass to NORTH  → shore at top of this water cell
- *   water_edge_e → grass to EAST   → shore at right of this water cell
- *   water_edge_s → grass to SOUTH  → shore at bottom of this water cell
- *   water_edge_w → grass to WEST   → shore at left of this water cell
-
+ * Uses the RPG Maker 48-tile "blob" autotile system (Pipoya Type 3 tilesheets).
+ * 8-bit neighbor bitmask (bit=1 → neighbor is SAME terrain) with diagonal
+ * masking produces exactly 48 unique configurations per terrain transition.
  */
 
-const CARDINAL_MASK_TO_TILE: Record<number, string> = {
-  0b0000: "water_full",        // no grass neighbors — interior water
-  0b0001: "water_edge_n",      // grass only to N
-  0b0010: "water_edge_e",      // grass only to E
-  0b0100: "water_edge_s",      // grass only to S
-  0b1000: "water_edge_w",      // grass only to W
-  0b0011: "water_corner_ne",   // grass N+E → NE shore corner
-  0b1001: "water_corner_nw",   // grass N+W → NW shore corner
-  0b0110: "water_corner_se",   // grass S+E → SE shore corner
-  0b1100: "water_corner_sw",   // grass S+W → SW shore corner
-  // Strips and 3-sided cases fall back to water_full
-  0b0101: "water_full",
-  0b1010: "water_full",
-  0b0111: "water_full",
-  0b1011: "water_full",
-  0b1101: "water_full",
-  0b1110: "water_full",
-  0b1111: "water_full",
-};
+import { getAutotileId } from "./rpgmaker-autotile.js";
 
 /**
  * Mulberry32 — fast, seedable 32-bit PRNG.
@@ -46,52 +23,36 @@ function mulberry32(seed: number): () => number {
 }
 
 /**
- * Returns the layer-1 tile ID for cell (x, y):
- *   - Grass cells → "grass" (so the client knows to render the grass tile)
- *   - Water cells adjacent to grass (cardinally) → shore/edge tile
- *   - Water cells at outer corners (diagonally adjacent to exactly one grass cell) → corner tile
- *   - All other water cells → "" (client defaults to water_full)
+ * Returns the layer-1 water autotile ID for a water cell at (x, y).
+ * Uses the full 8-neighbor bitmask → 48-tile Pipoya mapping.
  *
- * @param hasGrass  Predicate: is the cell at (x, y) a grass cell?
- *                  Out-of-bounds positions count as water (return false).
+ * "Same terrain" for water = neighbor is also water (not grass/sand).
+ *
+ * @param isWater  Predicate: is the cell at (nx, ny) a water cell?
+ *                 Out-of-bounds positions count as water (return true).
  */
-export function autotileCell(
+function autotileWaterCell(
   x: number,
   y: number,
-  hasGrass: (x: number, y: number) => boolean,
-  w: number,
-  h: number
+  isWater: (nx: number, ny: number) => boolean,
 ): string {
-  // Grass cells: mark for grass rendering
-  if (hasGrass(x, y)) return "grass";
+  return getAutotileId("water_at", x, y, isWater);
+}
 
-  // Water cell: check cardinal grass neighbours
-  const n  = (y > 0)     && hasGrass(x,     y - 1) ? 1 : 0;
-  const e  = (x < w - 1) && hasGrass(x + 1, y)     ? 1 : 0;
-  const s  = (y < h - 1) && hasGrass(x,     y + 1) ? 1 : 0;
-  const ww = (x > 0)     && hasGrass(x - 1, y)     ? 1 : 0;
-  const mask = n | (e << 1) | (s << 2) | (ww << 3);
-
-  if (mask !== 0b0000) {
-    return CARDINAL_MASK_TO_TILE[mask] ?? "water_full";
-  }
-
-  // No cardinal grass — check diagonals for outer-corner tiles.
-  // A water cell with exactly one diagonal grass neighbor is at an outer island corner.
-  const se = (x < w - 1) && (y < h - 1) && hasGrass(x + 1, y + 1);
-  const sw = (x > 0)     && (y < h - 1) && hasGrass(x - 1, y + 1);
-  const ne = (x < w - 1) && (y > 0)     && hasGrass(x + 1, y - 1);
-  const nw = (x > 0)     && (y > 0)     && hasGrass(x - 1, y - 1);
-
-  const diagCount = +se + +sw + +ne + +nw;
-  if (diagCount === 1) {
-    if (se) return "water_outer_nw";  // grass to SE → water is outside island's NW corner
-    if (sw) return "water_outer_ne";  // grass to SW → water is outside island's NE corner
-    if (ne) return "water_outer_sw";  // grass to NE → water is outside island's SW corner
-    if (nw) return "water_outer_se";  // grass to NW → water is outside island's SE corner
-  }
-
-  return "";  // no adjacent grass — pure water, client defaults to water_full
+/**
+ * Returns the layer-1 sand autotile ID for a sand cell at (x, y).
+ * The sand tilesheet transitions against grass: "same" = sand, "different" = grass.
+ *
+ * @param isSand  Predicate: is the cell at (nx, ny) sand (or water)?
+ *                Sand-water borders are handled by the water autotile,
+ *                so water neighbors count as "same" for sand autotiling.
+ */
+function autotileSandCell(
+  x: number,
+  y: number,
+  isSandOrWater: (nx: number, ny: number) => boolean,
+): string {
+  return getAutotileId("sand_at", x, y, isSandOrWater);
 }
 
 /**
@@ -107,6 +68,12 @@ export function autotileCell(
  * The existing autotileCell() handles arbitrary grass/water patterns so no
  * changes are needed there.
  */
+/**
+ * Terrain type for each cell during generation.
+ * "grass" = land, "sand" = beach fringe, "water" = ocean/lake.
+ */
+type TerrainCell = "grass" | "sand" | "water";
+
 export function buildIslandLayer1(
   w: number,
   h: number,
@@ -184,9 +151,6 @@ export function buildIslandLayer1(
   }
 
   // ── 4 & 6. Fill narrow water gaps (helper, called before and after lake) ──
-  // Rule A: water cell with ≥3 grass cardinal neighbours → grass
-  // Rule B: water cell with grass on both opposite diagonals (NW+SE or NE+SW) → grass
-  // Repeating 10× handles chains of surrounded water cells.
   const cardinalGrassCount = (gx: number, gy: number): number => {
     let n = 0;
     for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
@@ -224,7 +188,6 @@ export function buildIslandLayer1(
 
   // ── 5. Optional lake ──────────────────────────────────────────────────────
   if (rng() < mapGen.lakeProbability) {
-    // Collect "deep interior" cells: all 8 neighbours are grass
     const deep: [number, number][] = [];
     for (let y = 1; y < h - 1; y++) {
       for (let x = 1; x < w - 1; x++) {
@@ -240,14 +203,12 @@ export function buildIslandLayer1(
     if (deep.length > 0) {
       const [lx, ly] = deep[Math.floor(rng() * deep.length)];
       const radius = mapGen.lakeRadiusMin + Math.floor(rng() * (mapGen.lakeRadiusMax - mapGen.lakeRadiusMin + 1));
-
-      // BFS flood from lake centre up to radius, only through grass
       const lakeQ: [number, number, number][] = [[lx, ly, 0]];
       const lakeVis = new Set<string>();
       lakeVis.add(`${lx},${ly}`);
       while (lakeQ.length) {
         const [cx, cy, d] = lakeQ.shift()!;
-        grid[cy][cx] = false; // carve water
+        grid[cy][cx] = false;
         if (d >= radius) continue;
         for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
           const nx = cx + dx, ny = cy + dy;
@@ -262,19 +223,65 @@ export function buildIslandLayer1(
     }
   }
 
-  fillGaps(); // ── 6. After lake — clean up any narrow lake-edge artifacts
+  fillGaps(); // ── 6. After lake
 
-  // ── 7. Build tile overrides ───────────────────────────────────────────────
-  const isGrass = (x: number, y: number): boolean =>
-    x >= 0 && x < w && y >= 0 && y < h && grid[y][x];
+  // ── 7. Generate sand beach fringe ─────────────────────────────────────────
+  // Convert grass cells that are cardinally adjacent to water → sand
+  const terrain: TerrainCell[][] = Array.from({ length: h }, (_, y) =>
+    Array.from({ length: w }, (_, x) => (grid[y][x] ? "grass" : "water") as TerrainCell)
+  );
 
-  const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const tileId = autotileCell(x, y, isGrass, w, h);
-      if (tileId) result.push({ x, y, layer: 1, tileId });
+      if (terrain[y][x] !== "grass") continue;
+      let adjacentWater = false;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water") {
+          adjacentWater = true;
+          break;
+        }
+      }
+      if (adjacentWater && rng() < 0.85) {
+        terrain[y][x] = "sand";
+      }
     }
   }
+
+  // ── 8. Build tile overrides ───────────────────────────────────────────────
+  // For water autotile: bit=1 means neighbor is water (same terrain)
+  const isWater = (nx: number, ny: number): boolean =>
+    nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water";
+
+  // For sand autotile: bit=1 means neighbor is sand or water (not grass)
+  const isSandOrWater = (nx: number, ny: number): boolean =>
+    nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] !== "grass";
+
+  const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const t = terrain[y][x];
+      if (t === "grass") {
+        result.push({ x, y, layer: 1, tileId: "grass" });
+      } else if (t === "sand") {
+        const tileId = autotileSandCell(x, y, isSandOrWater);
+        result.push({ x, y, layer: 1, tileId });
+      } else {
+        // Water cell — only add overlay if it has any non-water neighbors
+        // (pure interior water shows the layer-0 water tile)
+        const hasLandNeighbor = !isWater(x-1,y) || !isWater(x+1,y) || !isWater(x,y-1) || !isWater(x,y+1)
+          || !isWater(x-1,y-1) || !isWater(x+1,y-1) || !isWater(x-1,y+1) || !isWater(x+1,y+1);
+        if (hasLandNeighbor) {
+          const tileId = autotileWaterCell(x, y, isWater);
+          result.push({ x, y, layer: 1, tileId });
+        }
+      }
+    }
+  }
+
+  // grassGrid: true for grass AND sand (both are walkable land for vegetation/pathfinding)
+  // However, sand cells should not spawn vegetation, so provide the original grass-only grid.
   return { overrides: result, grassGrid: grid };
 }
 
@@ -329,9 +336,19 @@ export function isPathTileId(tileId: string): boolean {
   return PATH_TILE_IDS.has(tileId);
 }
 
-/** Returns true if the tile ID represents walkable ground (grass or any path tile). */
+/** Returns true if the tile ID represents walkable ground (grass, sand, or any path tile). */
 export function isWalkableGround(tileId: string): boolean {
-  return tileId === "grass" || PATH_TILE_IDS.has(tileId);
+  return tileId === "grass" || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
+}
+
+/**
+ * Determine the terrain type from a layer-1 tile ID.
+ * Used by island.ts to classify cells for game logic.
+ */
+export function terrainFromLayer1(l1: string): "grass" | "sand" | "water" {
+  if (l1 === "grass") return "grass";
+  if (l1.startsWith("sand_at_")) return "sand";
+  return "water";
 }
 
 /**

@@ -138,7 +138,7 @@ export function buildGameRules(): object {
       delete_marker: "Remove a marker at a specific (x, y) location you no longer need.",
     },
     world: {
-      terrain: "The island is grass surrounded by water. You can only walk on grass. Dirt paths make walking easier.",
+      terrain: "The island has grass and sandy beaches surrounded by water. You can walk on grass and sand. Dirt paths make walking easier.",
       coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate and remember locations.",
       vision: "You can see the 8 tiles around you in detail, notice things a couple of steps away, and sense terrain changes in the distance.",
       adjacency: "To harvest, build, interact, or use containers, you must be standing next to the target (N/S/E/W).",

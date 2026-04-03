@@ -1,4 +1,4 @@
-export type TileType = "grass" | "water";
+export type TileType = "grass" | "water" | "sand";
 
 export type MapSize = "very_small" | "small" | "medium" | "large" | "very_large";
 
@@ -67,7 +67,7 @@ export class IslandMap {
   }
 
   /** Returns the map as a 2D grid of terrain types plus per-cell layer-1+ overlays.
-   *  grid[y][x]       = "grass" | "water"  (layer-0 terrain)
+   *  grid[y][x]       = "grass" | "water" | "sand"  (layer-0 terrain)
    *  overlays["x,y"]  = [l1_tile_id, ...]  (layer-1 and above, sparse)
    */
   toJSON(overrides: Map<string, string[]> = new Map()) {

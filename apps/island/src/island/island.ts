@@ -8,7 +8,7 @@ import {
   saveCharacter, deleteCharacter, loadCharacter, clearAllCharacters, runTransaction,
 } from "../persistence/db.js";
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
-import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell } from "./autotile.js";
+import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
 import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ITEM_IDS, GROWTH_DEFS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
@@ -21,7 +21,7 @@ import { generateThumbnail } from "./thumbnail.js";
 
 const MAP_STATE_KEY = "map_config";
 
-const TERRAIN_TYPES = new Set(["grass", "water"]);
+const TERRAIN_TYPES = new Set(["grass", "water", "sand"]);
 
 /** Returns true if the given tile ID is an inventory item that cannot be placed on the map. */
 function isItemTile(tileId: string): boolean {
@@ -261,7 +261,7 @@ export class Island extends EventEmitter {
         const steps = Math.max(Math.abs(dx), Math.abs(dy));
         // Terrain is tracked via layer-1 overrides ("grass" tile = walkable land)
         const l1 = this.getLayer(cx, cy, 1);
-        const terrain = l1 === "grass" ? "grass" : "water";
+        const terrain = terrainFromLayer1(l1);
         const cell: (typeof nearby)[0] = { direction: compassDir(dx, dy), steps, dx, dy, terrain };
         const entity = this.getLayer(cx, cy, 3);
         if (entity) cell.entity = entity;
@@ -274,7 +274,7 @@ export class Island extends EventEmitter {
 
     // Terrain for current cell
     const standingL1 = this.getLayer(x, y, 1);
-    const standingTerrain = standingL1 === "grass" ? "grass" : "water";
+    const standingTerrain = terrainFromLayer1(standingL1);
     return {
       character: characterId,
       position: { x, y },
@@ -556,9 +556,9 @@ export class Island extends EventEmitter {
 
     const { x, y } = character;
 
-    // Validate cell — grass is tracked via layer-1 overrides ("grass" tile ID), not map.tiles
+    // Validate cell — terrain is tracked via layer-1 overrides
     const l1 = this.getLayer(x, y, 1);
-    if (l1 !== "grass") throw new Error(`Cannot plow here: cell (${x},${y}) is not grass terrain.`);
+    if (terrainFromLayer1(l1) === "water") throw new Error(`Cannot plow here: cell (${x},${y}) is not land terrain.`);
     if (isPathTileId(this.getLayer(x, y, 2))) throw new Error(`Cell (${x},${y}) is already a dirt path.`);
     if (this.getLayer(x, y, 3) !== "") throw new Error(`Cannot plow here: an entity is blocking cell (${x},${y}).`);
 
@@ -1868,7 +1868,7 @@ export class Island extends EventEmitter {
       if (nb.x < 0 || nb.x >= this.map.width || nb.y < 0 || nb.y >= this.map.height) continue;
       const key = `${nb.x},${nb.y}`;
       const layers = this.overrides.get(key);
-      if (!layers || layers[1] !== "grass") continue;
+      if (!layers || !isWalkableGround(layers[1] ?? "")) continue;
       const l3 = layers[3] ?? "";
       const l4 = layers[4] ?? "";
       if (l3 || l4) continue; // skip occupied cells (entity at layer 3 or canopy at layer 4)
