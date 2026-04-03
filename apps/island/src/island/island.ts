@@ -673,7 +673,7 @@ export class Island extends EventEmitter {
    * Remove a character from the active world but keep their data in the DB
    * so they can reconnect later with the same state.
    */
-  kick(id: string): void {
+  disconnect(id: string): void {
     if (!this.characters.has(id)) throw new Error(`No character named "${id}".`);
     this.characters.delete(id);
     this.emit("map:updated", this.map);

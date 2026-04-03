@@ -63,25 +63,34 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   const hasTileRegistry = !!state?.tileRegistry;
 
-  // Resize canvas when entering/exiting fullscreen, and auto-cancel recording
-  // on exit to avoid resolution mismatch. Merged into a single effect to
-  // guarantee cancel happens before resize.
+  const prevIsFullscreenRef = useRef(isFullscreen);
+  const recStateModeRef = useRef(recState.mode);
+  useEffect(() => { recStateModeRef.current = recState.mode; }, [recState.mode]);
+
+  // Resize canvas only when fullscreen state changes. Cancel recording if
+  // exiting fullscreen mid-session to avoid crop mismatch.
   useEffect(() => {
     const renderer = rendererRef.current;
     if (!renderer) return;
+
+    const wasFullscreen = prevIsFullscreenRef.current;
+    prevIsFullscreenRef.current = isFullscreen;
+    const exitingFullscreen = wasFullscreen && !isFullscreen;
 
     if (isFullscreen) {
       renderer.resize(window.innerWidth, window.innerHeight);
       recActionsRef.current.setCanvas(canvasRef.current);
     } else {
-      // Cancel recording before resizing to avoid brief cropRect mismatch
-      if (recState.mode === 'recording' || recState.mode === 'preview') {
-        recActionsRef.current.cancel();
+      if (exitingFullscreen) {
+        const mode = recStateModeRef.current;
+        if (mode === 'recording' || mode === 'preview') {
+          recActionsRef.current.cancel();
+        }
       }
       renderer.resize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
       recActionsRef.current.setCanvas(canvasRef.current);
     }
-  }, [isFullscreen, recState.mode]);
+  }, [isFullscreen]); // intentionally excludes recState.mode — use ref to avoid camera reset on mode changes
 
   // Handle window resize while in fullscreen (e.g. orientation change).
   // During active recording, cancel instead of resizing to avoid crop mismatch.
@@ -92,7 +101,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       const renderer = rendererRef.current;
       if (!renderer) return;
 
-      if (recState.mode === 'recording') {
+      if (recStateModeRef.current === 'recording') {
         recActionsRef.current.cancel();
       }
       renderer.resize(window.innerWidth, window.innerHeight);
@@ -101,7 +110,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [isFullscreen, recState.mode]);
+  }, [isFullscreen]);
 
   const handleRecordPress = useCallback(() => {
     if (isMobile && isFullscreen) {
@@ -111,6 +120,14 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     }
   }, [isMobile, isFullscreen, recActions]);
 
+  // On non-fullscreen, scroll the canvas bottom into view when preview/recording
+  // mode starts so the bottom controls bar is visible.
+  useEffect(() => {
+    if (isFullscreen) return;
+    if (recState.mode === 'preview' || recState.mode === 'recording') {
+      containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }, [isFullscreen, recState.mode]);
   // Track container size for overlay positioning
   useEffect(() => {
     const el = containerRef.current;

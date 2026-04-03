@@ -113,11 +113,11 @@ async function handleRequest(
     return;
   }
 
-  if (url === "/api/kick" && method === "POST") {
+  if (url === "/api/disconnect" && method === "POST") {
     try {
       const body = await readBody(req) as { id: string };
-      Island.getInstance().kick(body.id);
-      jsonOk(res, { message: `Character "${body.id}" kicked from the island.` });
+      Island.getInstance().disconnect(body.id);
+      jsonOk(res, { message: `Character "${body.id}" disconnected from the island.` });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
@@ -150,7 +150,7 @@ async function handleRequest(
       const island = Island.getInstance();
       const map = island.regenerateMap({ size: body.size });
       const characterId = body.characterId ?? "Carl";
-      try { island.kick(characterId); } catch { /* not spawned, fine */ }
+      try { island.disconnect(characterId); } catch { /* not spawned, fine */ }
       const { character, reconnected } = island.connect(characterId);
       jsonOk(res, { message: `Island reset. "${characterId}" spawned at (${character.x}, ${character.y}).`, size: map.size, seed: map.seed, width: map.width, height: map.height, character: { id: characterId, x: character.x, y: character.y }, reconnected });
     } catch (err) {

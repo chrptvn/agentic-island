@@ -7,7 +7,7 @@ import WorldCard from './WorldCard';
 type IslandFilter = 'with-agents' | 'all';
 
 const TABS: { key: IslandFilter; label: string }[] = [
-  { key: 'with-agents', label: 'With Agents' },
+  { key: 'with-agents', label: 'Active' },
   { key: 'all', label: 'All' },
 ];
 

@@ -15,6 +15,7 @@ import { Island } from "../island/island.js";
 const ALERT_ENERGY_THRESHOLD  = 20;
 const ALERT_HUNGER_THRESHOLD  = 20;
 const ALERT_COOLDOWN_MS       = 10_000; // min ms between same-type alerts
+const SURROUNDINGS_PUSH_INTERVAL_MS = 5_000; // throttle full-status push to agents
 
 interface AlertCooldowns {
   energy:  number;
@@ -24,17 +25,53 @@ interface AlertCooldowns {
 // ─── Session ─────────────────────────────────────────────────────────────────
 
 export interface McpSession {
-  server:       McpServer;
-  transport:    Transport;
-  username:     string | null;
-  sessionToken: string | null;
-  lastSnapshot: string;
+  server:         McpServer;
+  transport:      Transport;
+  username:       string | null;
+  sessionToken:   string | null;
+  lastSnapshot:   string;
   alertCooldowns: AlertCooldowns;
-  worldListener: (() => void) | null;
+  worldListener:          (() => void) | null;
+  lastActivityAt:         number;
+  lastSurroundingsPushAt: number;
 }
 
 /** Active sessions keyed by Mcp-Session-Id. */
 const mcpSessions = new Map<string, McpSession>();
+
+/** All active sessions regardless of transport type (HTTP or tunnel). */
+const allMcpSessions = new Set<McpSession>();
+
+// ─── Idle disconnect ──────────────────────────────────────────────────────────
+
+const IDLE_TIMEOUT_MS       = 60_000; // 1 minute
+const IDLE_CHECK_INTERVAL_MS = 10_000; // check every 10 seconds
+
+function checkIdleSessions(): void {
+  const now = Date.now();
+  for (const session of allMcpSessions) {
+    if (!session.username) continue; // not yet authenticated — skip
+    if (now - session.lastActivityAt < IDLE_TIMEOUT_MS) continue;
+
+    console.log(`[mcp] Disconnecting idle session for "${session.username}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
+    session.server.sendLoggingMessage({
+      level: "warning",
+      data: "🔌 Disconnecting due to 1 minute of inactivity. Call connect again to resume.",
+    }).catch(() => {});
+    session.transport.close().catch(() => {});
+  }
+}
+
+setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
+
+/** Returns true if another active session already owns this username. */
+export function isUsernameClaimed(username: string, excludeSession?: McpSession): boolean {
+  for (const s of allMcpSessions) {
+    if (s === excludeSession) continue;
+    if (s.username === username) return true;
+  }
+  return false;
+}
 
 // ─── Island push helpers ───────────────────────────────────────────────────────
 
@@ -55,20 +92,31 @@ export function attachWorldListener(session: McpSession): void {
     const uri = `agentic-island://character/${encodeURIComponent(id)}/surroundings`;
     session.server.server.sendResourceUpdated({ uri }).catch(() => {/* session may be gone */});
 
+    // Push full humanized status (throttled)
+    const now = Date.now();
+    if (now - session.lastSurroundingsPushAt >= SURROUNDINGS_PUSH_INTERVAL_MS) {
+      session.lastSurroundingsPushAt = now;
+      const humanized = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]);
+      session.server.sendLoggingMessage({
+        level: "info",
+        data: JSON.stringify(humanized, null, 2),
+      }).catch(() => {});
+    }
+
     // Push alert log messages for critical stats
     const stats = (snapshot as { stats: { energy: number; hunger: number } }).stats;
-    const now = Date.now();
+    const alertNow = Date.now();
 
-    if (stats.energy < ALERT_ENERGY_THRESHOLD && now - session.alertCooldowns.energy > ALERT_COOLDOWN_MS) {
-      session.alertCooldowns.energy = now;
+    if (stats.energy < ALERT_ENERGY_THRESHOLD && alertNow - session.alertCooldowns.energy > ALERT_COOLDOWN_MS) {
+      session.alertCooldowns.energy = alertNow;
       session.server.sendLoggingMessage({
         level: "warning",
         data: `⚡ Energy low (${Math.round(stats.energy)}/100)! Rest near a lit campfire to recover faster.`,
       }).catch(() => {});
     }
 
-    if (stats.hunger < ALERT_HUNGER_THRESHOLD && now - session.alertCooldowns.hunger > ALERT_COOLDOWN_MS) {
-      session.alertCooldowns.hunger = now;
+    if (stats.hunger < ALERT_HUNGER_THRESHOLD && alertNow - session.alertCooldowns.hunger > ALERT_COOLDOWN_MS) {
+      session.alertCooldowns.hunger = alertNow;
       session.server.sendLoggingMessage({
         level: "warning",
         data: `🍖 Hunger low (${Math.round(stats.hunger)}/100)! Eat berries or acorns from your inventory.`,
@@ -91,6 +139,17 @@ function detachWorldListener(session: McpSession): void {
 
 /** Register all tools, resources, and the surroundings resource on a session. */
 function initServer(server: McpServer, session: McpSession): void {
+
+  // Wrap server.tool so every tool call updates the session's lastActivityAt.
+  const originalTool = server.tool.bind(server) as typeof server.tool;
+  (server as unknown as Record<string, unknown>).tool = (...args: unknown[]) => {
+    const handler = args[args.length - 1] as (...a: unknown[]) => unknown;
+    args[args.length - 1] = (...handlerArgs: unknown[]) => {
+      session.lastActivityAt = Date.now();
+      return (handler as (...a: unknown[]) => unknown)(...handlerArgs);
+    };
+    return (originalTool as (...a: unknown[]) => unknown)(...args);
+  };
 
   // ── Surroundings resource template ────────────────────────────────────────
   server.resource(
@@ -138,9 +197,10 @@ function makeHttpSession(): McpSession {
 
   transport.onclose = () => {
     if (transport.sessionId) mcpSessions.delete(transport.sessionId);
+    allMcpSessions.delete(session);
     detachWorldListener(session);
     if (session.username) {
-      Island.getInstance().kick(session.username);
+      Island.getInstance().disconnect(session.username);
       session.username = null;
     }
   };
@@ -153,8 +213,11 @@ function makeHttpSession(): McpSession {
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
+    lastActivityAt: Date.now(),
+    lastSurroundingsPushAt: 0,
   };
 
+  allMcpSessions.add(session);
   initServer(server, session);
   server.connect(transport);
   return session;
@@ -175,12 +238,17 @@ export function makeTunnelSession(transport: Transport): McpSession {
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
+    lastActivityAt: Date.now(),
+    lastSurroundingsPushAt: 0,
   };
 
+  allMcpSessions.add(session);
+
   transport.onclose = () => {
+    allMcpSessions.delete(session);
     detachWorldListener(session);
     if (session.username) {
-      Island.getInstance().kick(session.username);
+      Island.getInstance().disconnect(session.username);
       session.username = null;
     }
   };

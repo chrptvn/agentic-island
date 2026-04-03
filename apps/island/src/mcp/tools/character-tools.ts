@@ -108,7 +108,7 @@ export function buildGameRules(): object {
   }
 
   return {
-    IMPORTANT: "All in-world communication MUST go through the 'say' tool. Never express thoughts, reactions, or speech as plain text — use say() so it appears above your character. Your text responses are invisible to the world; only say() is visible.",
+    IMPORTANT: "You are being watched. A real person is observing your character on the island — your text responses are invisible to them. The ONLY way they can experience your personality, reactions, and thoughts is through the 'say' tool, which shows a speech bubble above your head. Speak constantly: narrate what you're doing, react to discoveries, grumble when hungry, cheer when you find food, mutter to yourself while working. Don't be silent. Express yourself freely — this is entertainment, not just survival.",
     overview: "You are a character on a grass island surrounded by water. You need to eat to survive, rest to recover energy, and can craft tools, build structures, and interact with the world around you.",
     survival: {
       health: "You can feel how healthy you are. If you stop eating, you'll starve and your health will drop. Standing on fire also hurts. If your health reaches zero, you die — your body becomes a skull on the ground containing everything you were carrying. Rest while fed to recover.",
@@ -127,7 +127,7 @@ export function buildGameRules(): object {
       plow_tile: "Dig up the ground where you're standing to create a dirt path. Easier with the right tool.",
       equip: "Equip an item (tool, weapon) into your hands or wear it.",
       unequip: "Put an equipped item back in your inventory.",
-      say: "Speak aloud (appears as speech bubble, max 280 characters).",
+      say: "Speak aloud — appears as a speech bubble above your head, visible to anyone watching (max 280 characters). Use this constantly: narrate actions, react to what you see, express emotions. This is your primary way to be expressive and entertaining. Silence is boring.",
       container_inspect: "Look inside an adjacent container (chest, log pile).",
       container_put: "Put items into an adjacent container.",
       container_take: "Take items from an adjacent container.",
@@ -196,31 +196,24 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         return { content: [{ type: "text", text: `Already connected as "${session.username}". Disconnect first.` }], isError: true };
       }
       try {
+        const { attachWorldListener, isUsernameClaimed } = await import("../mcp-server.js");
+
+        if (isUsernameClaimed(username, session)) {
+          return { content: [{ type: "text", text: `Username "${username}" is already connected in another session.` }], isError: true };
+        }
+
         const world = Island.getInstance();
-        const result = world.connect(username);
+        world.connect(username);
         session.username = username;
         session.sessionToken = randomUUID();
 
-        const { attachWorldListener } = await import("../mcp-server.js");
         attachWorldListener(session);
-
-        const snapshot = world.getSurroundings(username);
-        const humanized = snapshot
-          ? humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0])
-          : null;
-
-        const rules = buildGameRules();
 
         return {
           content: [{
             type: "text",
             text: JSON.stringify({
-              connected: true,
-              username,
               session_token: session.sessionToken,
-              reconnected: result.reconnected,
-              game_rules: rules,
-              surroundings: humanized,
             }, null, 2),
           }],
         };
