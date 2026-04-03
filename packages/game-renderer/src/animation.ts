@@ -25,6 +25,9 @@ export function createAnimationState(): AnimationState {
   return { frame: 0, lastFrameTime: 0 };
 }
 
+/** Large modulo so frame counters wrap cleanly without overflow. */
+const FRAME_COUNTER_MAX = 10_000;
+
 /** Get the current animation frame for a character based on elapsed time. */
 export function getCharacterFrame(
   state: AnimationState,
@@ -34,7 +37,7 @@ export function getCharacterFrame(
   const msPerFrame = 1000 / fps;
   const elapsed = now - state.lastFrameTime;
   if (elapsed >= msPerFrame) {
-    return (state.frame + 1) % 2;
+    return (state.frame + 1) % FRAME_COUNTER_MAX;
   }
   return state.frame;
 }
@@ -123,7 +126,7 @@ export function tickAnimation(
   const elapsed = now - state.lastFrameTime;
   if (elapsed >= msPerFrame) {
     return {
-      frame: (state.frame + 1) % 2,
+      frame: (state.frame + 1) % FRAME_COUNTER_MAX,
       lastFrameTime: now,
     };
   }

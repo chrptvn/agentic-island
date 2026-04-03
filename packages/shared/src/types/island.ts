@@ -5,6 +5,11 @@ export interface MapData {
   terrain: string[][];
 }
 
+export interface AnimFrame {
+  col: number;
+  row: number;
+}
+
 export interface TileDef {
   id: string;
   col: number;
@@ -12,8 +17,7 @@ export interface TileDef {
   sheet: string;
   tileSize?: number;
   gap?: number;
-  step?: number;
-  frames?: number;
+  frames?: AnimFrame[];
   fps?: number;
   category?: string;
   layer?: number;

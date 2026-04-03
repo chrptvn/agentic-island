@@ -147,7 +147,7 @@ export class Island extends EventEmitter {
         gap,
         category: def.category,
         layer: def.layer,
-        frames: def.frames?.length,
+        frames: def.frames,
         fps: def.fps,
       };
     }

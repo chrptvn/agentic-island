@@ -65,13 +65,13 @@ export function drawTile(
   const srcTileSize = def.tileSize ?? sheet.tileSize;
   const gap = def.gap ?? sheet.gap;
 
-  // Determine the animation frame column offset
-  const totalFrames = def.frames ?? 1;
-  const step = def.step ?? 1;
-  const animCol = totalFrames > 1 ? (frame % totalFrames) * step : 0;
+  // Determine the animation frame source coordinates
+  const frameEntry = def.frames?.length ? def.frames[frame % def.frames.length] : null;
+  const srcCol = frameEntry ? frameEntry.col : def.col;
+  const srcRow = frameEntry ? frameEntry.row : def.row;
 
-  const srcX = (def.col + animCol) * (srcTileSize + gap);
-  const srcY = def.row * (srcTileSize + gap);
+  const srcX = srcCol * (srcTileSize + gap);
+  const srcY = srcRow * (srcTileSize + gap);
 
   ctx.drawImage(
     sheet.image,
