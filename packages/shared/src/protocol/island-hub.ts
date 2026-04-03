@@ -73,13 +73,20 @@ export interface IslandMcpTunnelResponse {
   message: unknown; // JSONRPCMessage
 }
 
+/** Notify the hub that a tunnel session was closed from the island side (e.g. idle timeout). */
+export interface IslandMcpTunnelSessionClosed {
+  type: "mcp_tunnel_session_closed";
+  sessionId: string;
+}
+
 // Union types
 
 export type IslandToHubMessage =
   | IslandHandshakeMessage
   | IslandStateUpdateMessage
   | IslandPingMessage
-  | IslandMcpTunnelResponse;
+  | IslandMcpTunnelResponse
+  | IslandMcpTunnelSessionClosed;
 
 export type HubToIslandMessage =
   | HubHandshakeAckMessage

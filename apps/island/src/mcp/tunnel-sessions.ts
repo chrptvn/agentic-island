@@ -4,6 +4,14 @@ import { makeTunnelSession, type McpSession } from "./mcp-server.js";
 
 const PREFIX = "[mcp-tunnel]";
 
+/** Callback to notify the hub when the island closes a tunnel session. */
+let notifySessionClosed: ((sessionId: string) => void) | null = null;
+
+/** Set the callback used to notify the hub when a tunnel session is closed from the island side. */
+export function setSessionClosedNotifier(cb: (sessionId: string) => void): void {
+  notifySessionClosed = cb;
+}
+
 /** Active tunnel sessions keyed by the hub-assigned sessionId. */
 const tunnelSessions = new Map<string, { session: McpSession; transport: WebSocketTunnelTransport }>();
 
@@ -24,6 +32,17 @@ export function handleTunnelMessage(
     const session = makeTunnelSession(transport);
     entry = { session, transport };
     tunnelSessions.set(sessionId, entry);
+
+    // Ensure tunnelSessions is cleaned up when the transport closes
+    // (e.g. idle timeout closes it from the island side).
+    const mcpOnClose = transport.onclose;
+    transport.onclose = () => {
+      if (tunnelSessions.delete(sessionId)) {
+        console.log(PREFIX, `Tunnel session ${sessionId} closed (island-side)`);
+        notifySessionClosed?.(sessionId);
+      }
+      mcpOnClose?.();
+    };
   }
 
   entry.transport.deliverMessage(message as JSONRPCMessage);

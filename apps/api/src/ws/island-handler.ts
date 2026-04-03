@@ -6,7 +6,7 @@ import type {
 import { createHash, randomUUID, randomBytes } from "node:crypto";
 import db from "../db/index.js";
 import { saveSprites, saveThumbnail } from "../cache/sprites.js";
-import { deliverTunnelResponse, closeAllSessionsForIsland } from "../mcp-proxy/sessions.js";
+import { deliverTunnelResponse, closeProxySession, closeAllSessionsForIsland } from "../mcp-proxy/sessions.js";
 import { broadcastIslandUpdate, broadcastIslandRemoved } from "./lobby.js";
 
 interface ConnectedIsland {
@@ -197,6 +197,11 @@ export function handleIslandConnection(ws: WebSocket): void {
 
         case "mcp_tunnel_response": {
           deliverTunnelResponse(msg.sessionId, msg.message);
+          break;
+        }
+
+        case "mcp_tunnel_session_closed": {
+          closeProxySession(msg.sessionId);
           break;
         }
       }

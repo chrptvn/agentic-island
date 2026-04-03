@@ -47,6 +47,9 @@ export function getCharacterFrame(
  *
  * `tileSize` is the effective output tile size (base × scale), possibly
  * fractional.  Positions are snapped to integer pixels.
+ *
+ * `visualX` / `visualY` are optional fractional tile coordinates for smooth
+ * interpolated movement. If omitted, `character.x / character.y` are used.
  */
 export function drawCharacter(
   ctx: CanvasRenderingContext2D,
@@ -56,14 +59,19 @@ export function drawCharacter(
   viewport: Viewport,
   tileSize: number,
   animFrame: number,
+  visualX?: number,
+  visualY?: number,
 ): void {
   // Don't render characters sheltered inside tents
   if (character.shelter) return;
 
   const { startCol, startRow, offsetX, offsetY } = viewport;
 
-  const screenCol = character.x - startCol;
-  const screenRow = character.y - startRow;
+  const charX = visualX ?? character.x;
+  const charY = visualY ?? character.y;
+
+  const screenCol = charX - startCol;
+  const screenRow = charY - startRow;
 
   // Skip if outside visible viewport
   if (

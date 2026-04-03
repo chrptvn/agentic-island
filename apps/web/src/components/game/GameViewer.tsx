@@ -30,6 +30,13 @@ interface SpeechOverlay {
   cssY: number;
 }
 
+interface FollowButtonOverlay {
+  id: string;
+  cssX: number;
+  cssY: number;
+  isFollowing: boolean;
+}
+
 export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
@@ -38,6 +45,14 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const tooltipRef = useRef<TooltipData | null>(null);
   const [speechOverlays, setSpeechOverlays] = useState<SpeechOverlay[]>([]);
+  const [followButtonOverlay, setFollowButtonOverlay] = useState<FollowButtonOverlay | null>(null);
+
+  // Follow feature refs (used in callbacks, not needing React re-renders)
+  const selectedCharIdRef = useRef<string | null>(null);
+  const followedCharIdRef = useRef<string | null>(null);
+  // Drag vs click detection
+  const pointerDownPosRef = useRef({ x: 0, y: 0 });
+  const wasDraggingRef = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
@@ -163,7 +178,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     const overlays: SpeechOverlay[] = [];
     for (const char of s.characters) {
       if (char.speech?.text && char.speech.expiresAt > now) {
-        const screen = renderer.tileToScreen(char.x, char.y);
+        const visual = renderer.getVisualPosition(char.id);
+        const screen = renderer.tileToScreen(visual?.x ?? char.x, visual?.y ?? char.y);
         overlays.push({
           id: char.id,
           text: char.speech.text,
@@ -174,6 +190,29 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     }
 
     setSpeechOverlays(overlays);
+
+    // Compute follow button position for selected character
+    const selId = selectedCharIdRef.current;
+    if (selId) {
+      const selChar = s.characters.find((c) => c.id === selId);
+      if (selChar) {
+        const visual = renderer.getVisualPosition(selChar.id);
+        const screen = renderer.tileToScreen(visual?.x ?? selChar.x, visual?.y ?? selChar.y);
+        setFollowButtonOverlay({
+          id: selId,
+          cssX: screen.x * cssScaleX,
+          cssY: screen.y * cssScaleY,
+          isFollowing: followedCharIdRef.current === selId,
+        });
+      } else {
+        // Character no longer on the map — clear selection
+        selectedCharIdRef.current = null;
+        followedCharIdRef.current = null;
+        setFollowButtonOverlay(null);
+      }
+    } else {
+      setFollowButtonOverlay(null);
+    }
 
     // Reposition tile-anchored tooltip (moves with camera)
     const tip = tooltipRef.current;
@@ -191,6 +230,17 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
+      // Drag detection: primary button held + moved >5px → cancel follow & selection
+      if (e.buttons === 1) {
+        const dx = e.clientX - pointerDownPosRef.current.x;
+        const dy = e.clientY - pointerDownPosRef.current.y;
+        if (Math.hypot(dx, dy) > 5 && !wasDraggingRef.current) {
+          wasDraggingRef.current = true;
+          selectedCharIdRef.current = null;
+          followedCharIdRef.current = null;
+        }
+      }
+
       const canvas = canvasRef.current;
       const renderer = rendererRef.current;
       const s = stateRef.current;
@@ -228,6 +278,49 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     setTooltip(null);
   }, []);
 
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return;
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+    wasDraggingRef.current = false;
+  }, []);
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>) => {
+      if (wasDraggingRef.current) return;
+      if (isMobile) return; // Mobile uses handleTap
+
+      const canvas = canvasRef.current;
+      const renderer = rendererRef.current;
+      const s = stateRef.current;
+      if (!canvas || !renderer || !s) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const { tileX, tileY } = renderer.screenToTile(
+        (e.clientX - rect.left) * scaleX,
+        (e.clientY - rect.top) * scaleY,
+      );
+
+      const character = s.characters.find((c) => c.x === tileX && c.y === tileY) ?? null;
+      if (character) {
+        selectedCharIdRef.current = character.id;
+      } else {
+        selectedCharIdRef.current = null;
+        followedCharIdRef.current = null;
+      }
+    },
+    [isMobile],
+  );
+
+  const handleFollowClick = useCallback((charId: string) => {
+    if (followedCharIdRef.current === charId) {
+      followedCharIdRef.current = null;
+    } else {
+      followedCharIdRef.current = charId;
+    }
+  }, []);
+
   // Tap-to-inspect on mobile: show tooltip on tap, dismiss on tap empty space
   const handleTap = useCallback(
     (e: React.TouchEvent<HTMLCanvasElement>) => {
@@ -263,9 +356,15 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
         };
         tooltipRef.current = data;
         setTooltip(data);
+        // Also select character for follow button
+        if (character) {
+          selectedCharIdRef.current = character.id;
+        }
       } else {
         tooltipRef.current = null;
         setTooltip(null);
+        selectedCharIdRef.current = null;
+        followedCharIdRef.current = null;
       }
     },
     [],
@@ -289,6 +388,17 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     // During recording playback, also advance the renderer state.
     // Use ref for recording callback to avoid effect re-runs.
     renderer.onFrame = () => {
+      // Camera follow: keep viewport centered on the followed agent each frame
+      const followId = followedCharIdRef.current;
+      if (followId) {
+        const visual = renderer.getVisualPosition(followId);
+        if (visual) {
+          renderer.camera.setCenter((visual.x + 0.5) * TILE_SIZE, (visual.y + 0.5) * TILE_SIZE);
+        } else {
+          followedCharIdRef.current = null;
+        }
+      }
+
       updateSpeechOverlays();
       // During recording, feed the playback state to the renderer each frame
       const displayState = recActionsRef.current.getDisplayState();
@@ -370,8 +480,10 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     >
       <canvas
         ref={canvasRef}
+        onPointerDown={handlePointerDown}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
         onTouchEnd={handleTap}
         className="block w-full h-full cursor-crosshair"
         style={{ imageRendering: 'pixelated' }}
@@ -390,6 +502,35 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
           />
         </div>
       ))}
+      {followButtonOverlay && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleFollowClick(followButtonOverlay.id);
+          }}
+          className={`absolute z-50 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full shadow-lg transition-all ${
+            followButtonOverlay.isFollowing
+              ? 'bg-accent-cyan text-black hover:bg-accent-cyan/80'
+              : 'bg-black/60 text-white hover:bg-black/80'
+          }`}
+          style={{ left: followButtonOverlay.cssX, top: followButtonOverlay.cssY }}
+          title={followButtonOverlay.isFollowing ? 'Stop following' : 'Follow this agent'}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+          >
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      )}
       <Tooltip data={tooltip} portalContainer={isFullscreen ? containerRef.current : null} />
 
       {/* Fullscreen toggle button */}

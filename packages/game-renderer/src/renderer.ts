@@ -21,6 +21,23 @@ const DEFAULT_TILE_SIZE = 16;
 const DEFAULT_SCALE_FACTOR = 2;
 const ZOOM_STEP = 1.25;
 
+/** Duration in ms over which a character smoothly moves one tile. */
+const LERP_DURATION_MS = 400;
+
+/** Cubic ease-out: fast start, smooth deceleration into the target tile. */
+function easeOut(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+interface CharacterLerp {
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
+  startTime: number;
+  duration: number;
+}
+
 export interface RendererOptions {
   canvas: HTMLCanvasElement;
   /** Base tile size in pixels (default: 16) */
@@ -44,6 +61,11 @@ export class GameRenderer {
   private state: IslandState | null = null;
   private running = false;
   private rafId = 0;
+
+  /** Per-character position interpolation state. */
+  private lerpMap = new Map<string, CharacterLerp>();
+  /** Last known integer tile positions (for detecting movement). */
+  private lastPositions = new Map<string, { x: number; y: number }>();
 
   readonly camera: Camera;
   private input: InputHandler;
@@ -101,6 +123,36 @@ export class GameRenderer {
 
   /** Update the world state (called on each WebSocket message). */
   setState(state: IslandState): void {
+    const now = performance.now();
+
+    // Detect character moves and start position lerps
+    const incomingIds = new Set<string>();
+    for (const char of state.characters) {
+      incomingIds.add(char.id);
+      const last = this.lastPositions.get(char.id);
+      if (last && (last.x !== char.x || last.y !== char.y)) {
+        // Character moved — lerp from current visual position to new tile
+        const visual = this.getVisualPositionAt(char.id, now);
+        this.lerpMap.set(char.id, {
+          fromX: visual?.x ?? last.x,
+          fromY: visual?.y ?? last.y,
+          toX: char.x,
+          toY: char.y,
+          startTime: now,
+          duration: LERP_DURATION_MS,
+        });
+      }
+      this.lastPositions.set(char.id, { x: char.x, y: char.y });
+    }
+
+    // Clean up state for characters that left the map
+    for (const id of this.lerpMap.keys()) {
+      if (!incomingIds.has(id)) this.lerpMap.delete(id);
+    }
+    for (const id of this.lastPositions.keys()) {
+      if (!incomingIds.has(id)) this.lastPositions.delete(id);
+    }
+
     this.state = state;
 
     // Initialize camera position on first state with a map
@@ -182,6 +234,7 @@ export class GameRenderer {
 
     // Render characters to off-screen buffer
     for (const char of characters) {
+      const visual = this.getVisualPositionAt(char.id, now);
       drawCharacter(
         buf as CanvasRenderingContext2D,
         char,
@@ -190,6 +243,8 @@ export class GameRenderer {
         viewport,
         effectiveTile,
         this.animState.frame,
+        visual?.x,
+        visual?.y,
       );
     }
 
@@ -234,6 +289,8 @@ export class GameRenderer {
     this.state = null;
     this.buffer = null;
     this.bufCtx = null;
+    this.lerpMap.clear();
+    this.lastPositions.clear();
   }
 
   // ── Public camera controls ─────────────────────────────────────────
@@ -285,7 +342,34 @@ export class GameRenderer {
     return { x: world.x, y: world.y };
   }
 
+  /**
+   * Return the current interpolated (fractional) tile position for a character.
+   * Returns `null` if the character is unknown.
+   * Use this for smooth camera follow and overlay positioning.
+   */
+  getVisualPosition(charId: string): { x: number; y: number } | null {
+    return this.getVisualPositionAt(charId, performance.now());
+  }
+
   // ── Private ─────────────────────────────────────────────────────────
+
+  /**
+   * Compute the interpolated visual position for a character at a given time.
+   * Falls back to last known integer position when no lerp is active.
+   */
+  private getVisualPositionAt(charId: string, now: number): { x: number; y: number } | null {
+    const lerp = this.lerpMap.get(charId);
+    const last = this.lastPositions.get(charId);
+    if (!last) return null;
+    if (!lerp) return { x: last.x, y: last.y };
+
+    const t = Math.min(1, (now - lerp.startTime) / lerp.duration);
+    const e = easeOut(t);
+    return {
+      x: lerp.fromX + (lerp.toX - lerp.fromX) * e,
+      y: lerp.fromY + (lerp.toY - lerp.fromY) * e,
+    };
+  }
 
   /**
    * Ensure the off-screen buffer matches the visible canvas size.

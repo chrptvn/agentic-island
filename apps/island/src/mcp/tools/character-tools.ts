@@ -203,17 +203,24 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         }
 
         const world = Island.getInstance();
-        world.connect(username);
+        const { reconnected } = world.connect(username);
         session.username = username;
         session.sessionToken = randomUUID();
 
         attachWorldListener(session);
+
+        const snapshot = world.getSurroundings(username);
+        const surroundings = snapshot
+          ? humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0])
+          : null;
 
         return {
           content: [{
             type: "text",
             text: JSON.stringify({
               session_token: session.sessionToken,
+              reconnected,
+              ...(surroundings ? { surroundings } : {}),
             }, null, 2),
           }],
         };

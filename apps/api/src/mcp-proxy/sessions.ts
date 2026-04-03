@@ -116,6 +116,17 @@ export function deliverTunnelResponse(sessionId: string, message: unknown): void
 }
 
 /**
+ * Close a single proxy session (e.g. island-side idle disconnect).
+ * The transport's onclose handler takes care of map cleanup.
+ */
+export function closeProxySession(sessionId: string): void {
+  const session = proxySessions.get(sessionId);
+  if (!session) return;
+  console.log(PREFIX, `Closing proxy session ${sessionId} (island-initiated)`);
+  session.transport.close().catch(() => {});
+}
+
+/**
  * Close all proxy sessions for an island (e.g. when the island disconnects).
  */
 export function closeAllSessionsForIsland(islandId: string): void {

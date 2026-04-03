@@ -690,7 +690,10 @@ export class Island extends EventEmitter {
     const id = username;
     // Already active — just return
     const existing = this.characters.get(id);
-    if (existing) return { character: existing, reconnected: true };
+    if (existing) {
+      this.emit("map:updated", this.map);
+      return { character: existing, reconnected: true };
+    }
 
     // Try to restore from DB
     const saved = loadCharacter(id);

@@ -11,7 +11,7 @@ import {
   HEARTBEAT_INTERVAL_MS,
 } from "@agentic-island/shared";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
-import { handleTunnelMessage, closeTunnelSession, closeAllTunnelSessions } from "../mcp/tunnel-sessions.js";
+import { handleTunnelMessage, closeTunnelSession, closeAllTunnelSessions, setSessionClosedNotifier } from "../mcp/tunnel-sessions.js";
 
 export interface HubConnectorOptions {
   hubUrl: string;
@@ -158,6 +158,7 @@ export class HubConnector {
             this.reconnectDelay = WS_RECONNECT_BASE_MS;
             this.startHeartbeat();
             console.log(PREFIX, `Connected — islandId=${msg.islandId}`);
+            setSessionClosedNotifier((sid) => this.sendTunnelSessionClosed(sid));
             void this.onConnected?.(msg.islandId, msg.accessKey);
           } else {
             console.error(
@@ -271,6 +272,16 @@ export class HubConnector {
       type: "mcp_tunnel_response",
       sessionId,
       message,
+    };
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  /** Notify the hub that a tunnel session was closed from the island side (e.g. idle timeout). */
+  private sendTunnelSessionClosed(sessionId: string): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    const msg: IslandToHubMessage = {
+      type: "mcp_tunnel_session_closed",
+      sessionId,
     };
     this.ws.send(JSON.stringify(msg));
   }
