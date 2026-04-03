@@ -34,7 +34,6 @@ interface FollowButtonOverlay {
   id: string;
   cssX: number;
   cssY: number;
-  isFollowing: boolean;
 }
 
 export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
@@ -202,7 +201,6 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
           id: selId,
           cssX: screen.x * cssScaleX,
           cssY: screen.y * cssScaleY,
-          isFollowing: followedCharIdRef.current === selId,
         });
       } else {
         // Character no longer on the map — clear selection
@@ -314,11 +312,8 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
   );
 
   const handleFollowClick = useCallback((charId: string) => {
-    if (followedCharIdRef.current === charId) {
-      followedCharIdRef.current = null;
-    } else {
-      followedCharIdRef.current = charId;
-    }
+    followedCharIdRef.current = charId;
+    selectedCharIdRef.current = null;
   }, []);
 
   // Tap-to-inspect on mobile: show tooltip on tap, dismiss on tap empty space
@@ -508,13 +503,9 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
             e.stopPropagation();
             handleFollowClick(followButtonOverlay.id);
           }}
-          className={`absolute z-50 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full shadow-lg transition-all ${
-            followButtonOverlay.isFollowing
-              ? 'bg-accent-cyan text-black hover:bg-accent-cyan/80'
-              : 'bg-black/60 text-white hover:bg-black/80'
-          }`}
+          className="absolute z-50 flex h-8 w-8 -translate-x-1/2 -translate-y-full items-center justify-center rounded-full bg-black/60 text-white shadow-lg transition-all hover:bg-black/80"
           style={{ left: followButtonOverlay.cssX, top: followButtonOverlay.cssY }}
-          title={followButtonOverlay.isFollowing ? 'Stop following' : 'Follow this agent'}
+          title="Follow this agent"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
