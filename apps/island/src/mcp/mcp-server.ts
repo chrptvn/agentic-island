@@ -53,12 +53,20 @@ function checkIdleSessions(): void {
     if (!session.username) continue; // not yet authenticated — skip
     if (now - session.lastActivityAt < IDLE_TIMEOUT_MS) continue;
 
-    console.log(`[mcp] Disconnecting idle session for "${session.username}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
+    const username = session.username;
+    console.log(`[mcp] Disconnecting idle character "${username}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
+
+    // Disconnect the character from the world but keep the MCP session alive
+    // so the agent can call connect again to resume.
+    try { Island.getInstance().disconnect(username); } catch { /* already disconnected */ }
+    detachWorldListener(session);
+    session.username = null;
+    session.sessionToken = null;
+
     session.server.sendLoggingMessage({
       level: "warning",
-      data: "🔌 Disconnecting due to 1 minute of inactivity. Call connect again to resume.",
+      data: `🔌 Character "${username}" disconnected due to ${Math.round(IDLE_TIMEOUT_MS / 60_000)} minute(s) of inactivity. Call connect again to resume.`,
     }).catch(() => {});
-    session.transport.close().catch(() => {});
   }
 }
 
@@ -128,7 +136,7 @@ export function attachWorldListener(session: McpSession): void {
   session.worldListener = listener;
 }
 
-function detachWorldListener(session: McpSession): void {
+export function detachWorldListener(session: McpSession): void {
   if (session.worldListener) {
     Island.getInstance().off("map:updated", session.worldListener);
     session.worldListener = null;

@@ -290,6 +290,15 @@ export function deleteCharacter(id: string): void {
   db.prepare("DELETE FROM characters WHERE id = ?").run(id);
 }
 
+/** Delete all characters and their associated markers + journal entries. */
+export function clearAllCharacters(): void {
+  runTransaction(() => {
+    db.prepare("DELETE FROM journal").run();
+    db.prepare("DELETE FROM character_markers").run();
+    db.prepare("DELETE FROM characters").run();
+  });
+}
+
 // ── Character markers ─────────────────────────────────────────────────────────
 
 db.exec(`

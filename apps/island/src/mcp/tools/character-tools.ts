@@ -202,9 +202,19 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
           return { content: [{ type: "text", text: `Username "${username}" is already connected in another session.` }], isError: true };
         }
 
-        const world = Island.getInstance();
-        const { reconnected } = world.connect(username);
+        // Claim the username immediately (synchronous within same tick as the
+        // check above) so no other session can grab it before world.connect().
         session.username = username;
+
+        const world = Island.getInstance();
+        let reconnected: boolean;
+        try {
+          ({ reconnected } = world.connect(username));
+        } catch (err) {
+          // Roll back the claim if connect fails
+          session.username = null;
+          throw err;
+        }
         session.sessionToken = randomUUID();
 
         attachWorldListener(session);
@@ -224,6 +234,32 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
             }, null, 2),
           }],
         };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  // ── disconnect tool ──────────────────────────────────────────────────────
+
+  server.tool(
+    "disconnect",
+    "Disconnect your character from the world. The character is removed from the map but saved in the database so you can reconnect later with the same state. Call connect again to resume.",
+    {
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
+    },
+    async ({ session_token }) => {
+      const check = requireSession(session, session_token);
+      if (typeof check !== "string") return check;
+      const username = check;
+
+      try {
+        const { detachWorldListener } = await import("../mcp-server.js");
+        Island.getInstance().disconnect(username);
+        detachWorldListener(session);
+        session.username = null;
+        session.sessionToken = null;
+        return { content: [{ type: "text", text: `Disconnected "${username}". Call connect to resume.` }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }

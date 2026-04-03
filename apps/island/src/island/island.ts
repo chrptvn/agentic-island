@@ -5,7 +5,7 @@ import {
   loadState, saveState,
   loadOverrides, saveOverride, saveOverridesBatch, clearTileOverride, clearOverrides, loadOverridesVersion,
   loadEntityStats, saveEntityStat, deleteEntityStat, saveEntityStatsBatch, clearEntityStats,
-  loadCharacters, saveCharacter, deleteCharacter, loadCharacter, runTransaction,
+  saveCharacter, deleteCharacter, loadCharacter, clearAllCharacters, runTransaction,
 } from "../persistence/db.js";
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell } from "./autotile.js";
@@ -59,22 +59,6 @@ export class Island extends EventEmitter {
     this.overrides = loadOverrides();
     this.overridesVersion = loadOverridesVersion();
     this.entityStats = loadEntityStats() as Map<string, EntityStats>;
-
-    for (const c of loadCharacters()) {
-      const loadedStats: CharacterStats = { ...getDefaultCharacterStats(), ...(c.stats as Partial<CharacterStats>) };
-      // backwards-compat: existing DB rows won't have equipment field
-      if (!loadedStats.equipment) loadedStats.equipment = defaultEquipment();
-      this.characters.set(c.id, {
-        id: c.id, x: c.x, y: c.y,
-        tileId: c.tileId,
-        hairTileId: c.hairTileId,
-        beardTileId: c.beardTileId,
-        stats: loadedStats,
-        path: c.path as Point[],
-        action: c.action,
-        ...(c.shelter ? { shelter: c.shelter } : {}),
-      });
-    }
 
     if (!saved) {
       saveState(MAP_STATE_KEY, this.mapConfig());
@@ -326,6 +310,11 @@ export class Island extends EventEmitter {
 
   regenerateMap(options?: MapOptions): IslandMap {
     this.map = new IslandMap(options);
+    // Disconnect all active characters and wipe character DB data
+    for (const id of [...this.characters.keys()]) {
+      this.characters.delete(id);
+    }
+    clearAllCharacters();
     clearOverrides();
     clearEntityStats();
     this.overrides.clear();
