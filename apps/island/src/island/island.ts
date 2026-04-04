@@ -10,7 +10,7 @@ import {
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
-import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ITEM_IDS, GROWTH_DEFS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, ITEM_IDS, GROWTH_DEFS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
 import { resolveTargetFilter } from "./goal-executor.js";
@@ -158,7 +158,7 @@ export class Island extends EventEmitter {
       if (tileId && tileId !== "") {
         const inv = (stats as unknown as { inventory?: { item: string; qty: number }[] }).inventory;
         const occupants = tentOccupants.get(key);
-        const def = ENTITY_DEF_BY_ID.get(tileId);
+        const def = ENTITY_DEF_BY_TILE_ID.get(tileId);
         const name = def?.name;
         result.push({ x, y, tileId, stats, ...(name ? { name } : {}), ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}) });
 
@@ -800,7 +800,7 @@ export class Island extends EventEmitter {
     const def = HARVEST_DEFS[tileId];
     if (!def) {
       // Fallback: if the entity is a container, treat harvest as "take items from it"
-      if (ENTITY_DEF_BY_ID.get(tileId)?.container) {
+      if (ENTITY_DEF_BY_TILE_ID.get(tileId)?.container) {
         if (BLOCKING_IDS.has(tileId) && (targetX === undefined || targetY === undefined)) {
           throw new Error(`"${tileId}" is a solid entity — provide target_x/target_y to harvest from an adjacent tile.`);
         }
@@ -963,7 +963,7 @@ export class Island extends EventEmitter {
       clearTileOverride(entityX, entityY, 3);
 
       // Remove extra tiles for multi-tile entities (generic tiles iteration)
-      const entityDef = ENTITY_DEF_BY_ID.get(tileId);
+      const entityDef = ENTITY_DEF_BY_TILE_ID.get(tileId);
       if (entityDef) {
         for (const t of entityDef.tiles) {
           if (t.dx === 0 && t.dy === 0) continue;
@@ -1513,7 +1513,7 @@ export class Island extends EventEmitter {
     const key = `${x},${y}`;
     const tileId = this.overrides.get(key)?.[3];
     if (!tileId) throw new Error(`No entity at (${x}, ${y}).`);
-    if (!ENTITY_DEF_BY_ID.get(tileId)?.container) {
+    if (!ENTITY_DEF_BY_TILE_ID.get(tileId)?.container) {
       throw new Error(`The entity at (${x}, ${y}) ("${tileId}") is not a container.`);
     }
     type ContainerStats = { health: number; maxHealth: number; inventory: { item: string; qty: number }[] };
@@ -1548,7 +1548,7 @@ export class Island extends EventEmitter {
 
     // Retrieve entity def for filter + capacity checks
     const tileId = this.overrides.get(`${x},${y}`)?.[3]!;
-    const def = ENTITY_DEF_BY_ID.get(tileId)!;
+    const def = ENTITY_DEF_BY_TILE_ID.get(tileId)!;
 
     if (def.acceptedItems && def.acceptedItems.length > 0 && !def.acceptedItems.includes(item)) {
       throw new Error(`This container only accepts: ${def.acceptedItems.join(", ")}. "${item}" is not allowed.`);
@@ -1613,7 +1613,7 @@ export class Island extends EventEmitter {
     if (stats.inventory.length === 0) {
       const key = `${x},${y}`;
       const tileId = this.overrides.get(key)?.[3] ?? "";
-      const def = tileId ? ENTITY_DEF_BY_ID.get(tileId) : undefined;
+      const def = tileId ? ENTITY_DEF_BY_TILE_ID.get(tileId) : undefined;
       if (def && def.tiles.length > 1) {
         // Keep multi-tile entities on the map; just persist cleared inventory
         saveEntityStat(x, y, stats);
@@ -1771,7 +1771,7 @@ export class Island extends EventEmitter {
     saveOverride(x, y, 3, def.fullBase);
 
     // Restore extra tiles for multi-tile entities
-    const entityDef = ENTITY_DEF_BY_ID.get(tileId);
+    const entityDef = ENTITY_DEF_BY_TILE_ID.get(tileId);
     if (entityDef) {
       for (const t of entityDef.tiles) {
         if (t.dx === 0 && t.dy === 0) continue;
@@ -2157,7 +2157,7 @@ export class Island extends EventEmitter {
         const standKey = `${character.x},${character.y}`;
         const standTileId = this.overrides.get(standKey)?.[3];
         if (standTileId) {
-          const dmgPerSec = ENTITY_DEF_BY_ID.get(standTileId)?.fireDamage ?? 0;
+          const dmgPerSec = ENTITY_DEF_BY_TILE_ID.get(standTileId)?.fireDamage ?? 0;
           if (dmgPerSec > 0) {
             s.health = Math.max(0, s.health - dmgPerSec * TICK_S);
             changed = true;
@@ -2195,7 +2195,7 @@ export class Island extends EventEmitter {
             const adjLayers = this.overrides.get(adjKey);
             const tileId = adjLayers?.[3];
             if (tileId) {
-              const aura = ENTITY_DEF_BY_ID.get(tileId)?.energyRegen ?? 0;
+              const aura = ENTITY_DEF_BY_TILE_ID.get(tileId)?.energyRegen ?? 0;
               if (aura > bestAura) bestAura = aura;
             }
           }

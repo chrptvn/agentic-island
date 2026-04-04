@@ -1,6 +1,7 @@
 import { readFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { TILE_BY_ID } from "./tile-registry.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const CONFIG_PATH = join(__dirname, "../..", "config", "entities.json");
@@ -193,6 +194,25 @@ function buildDerivedExports(defs: EntityDef[]) {
 
   const ENTITY_DEF_BY_ID: Map<string, EntityDef> = new Map(defs.map((e) => [e.id, e]));
 
+  // Index by anchor tileId (tile at dx=0, dy=0) for reverse-lookup from tile overrides.
+  // This allows entity.id and the anchor tileId to differ (e.g. "my_tree" entity with tileId "big_tree_light").
+  const ENTITY_DEF_BY_TILE_ID: Map<string, EntityDef> = new Map();
+  for (const e of defs) {
+    const anchor = e.tiles?.find((t) => t.dx === 0 && t.dy === 0);
+    if (anchor) {
+      ENTITY_DEF_BY_TILE_ID.set(anchor.tileId, e);
+      if (!TILE_BY_ID.has(anchor.tileId)) {
+        process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" anchor tileId "${anchor.tileId}" not found in tileset.json — it will spawn but render as invisible\n`);
+      }
+    }
+    // Warn on non-anchor tiles too
+    for (const t of (e.tiles ?? [])) {
+      if ((t.dx !== 0 || t.dy !== 0) && !TILE_BY_ID.has(t.tileId)) {
+        process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" tile tileId "${t.tileId}" (dx=${t.dx}, dy=${t.dy}) not found in tileset.json\n`);
+      }
+    }
+  }
+
   const DECAY_DEFS: Record<string, DecayDef> = Object.fromEntries(
     defs.filter((e) => e.decay !== undefined).map((e) => [e.id, e.decay!])
   );
@@ -211,7 +231,7 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.filter((e) => e.randomStats !== undefined).map((e) => [e.id, e.randomStats!])
   );
 
-  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS, RANDOM_STATS };
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS, RANDOM_STATS };
 }
 
 /** Full entity definitions as loaded from config/entities.json. */
@@ -278,6 +298,9 @@ export let BLOCKING_IDS: Set<string> = _derived.BLOCKING_IDS;
 /** Maps entity id → full EntityDef for O(1) lookup (e.g. in tick aura checks). */
 export let ENTITY_DEF_BY_ID: Map<string, EntityDef> = _derived.ENTITY_DEF_BY_ID;
 
+/** Maps anchor tileId → full EntityDef. Use this when looking up from tile override strings. */
+export let ENTITY_DEF_BY_TILE_ID: Map<string, EntityDef> = _derived.ENTITY_DEF_BY_TILE_ID;
+
 /**
  * Maps each searchTarget group name to the set of tile IDs belonging to that group.
  * e.g. "trees" → Set { "young_tree", "old_tree_base" }
@@ -299,6 +322,7 @@ export function reloadEntities(): void {
   REPAIR_DEFS       = _derived.REPAIR_DEFS;
   BLOCKING_IDS      = _derived.BLOCKING_IDS;
   ENTITY_DEF_BY_ID  = _derived.ENTITY_DEF_BY_ID;
+  ENTITY_DEF_BY_TILE_ID = _derived.ENTITY_DEF_BY_TILE_ID;
   SEARCH_TARGET_MAP = _derived.SEARCH_TARGET_MAP;
   ITEM_IDS          = _derived.ITEM_IDS;
   GROWTH_DEFS       = _derived.GROWTH_DEFS;

@@ -272,14 +272,14 @@
       }
     },
     {
-      "id": "dried_flower",
-      "name": "Dried Flower",
+      "id": "small_stomp",
+      "name": "Small Stomp",
       "tiles": [
         {
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "dried_flower"
+          "tileId": "small_stomp"
         }
       ],
       "spawn": {
@@ -287,14 +287,14 @@
       }
     },
     {
-      "id": "log",
-      "name": "Log",
+      "id": "stomp",
+      "name": "Stomp",
       "tiles": [
         {
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "log"
+          "tileId": "stomp"
         }
       ],
       "blocks": true,
@@ -325,14 +325,14 @@
       }
     },
     {
-      "id": "succulent",
-      "name": "Succulent",
+      "id": "plant",
+      "name": "Plant",
       "tiles": [
         {
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "succulent"
+          "tileId": "plant"
         }
       ],
       "spawn": {
