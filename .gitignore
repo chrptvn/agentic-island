@@ -36,3 +36,4 @@ sprite-cache/
 *.log
 .world-id
 .playwright-mcp/
+apps/island/nohup.out
