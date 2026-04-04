@@ -321,8 +321,9 @@ export function buildIslandLayer1(
         const tileId = autotileWaterCell(x, y, isWater);
         result.push({ x, y, layer: 1, tileId });
       } else if (t === "sand") {
-        // Sand cells: layer 0 = sand autotile (transitions against grass)
-        result.push({ x, y, layer: 0, tileId: autotileSandCell(x, y, isSandOrWater) });
+        // Sand cells: layer 0 = grass (base), layer 1 = sand autotile on top
+        result.push({ x, y, layer: 0, tileId: "grass" });
+        result.push({ x, y, layer: 1, tileId: autotileSandCell(x, y, isSandOrWater) });
       } else {
         // Grass cells: override layer 0 to "grass" (base map defaults to "water")
         result.push({ x, y, layer: 0, tileId: "grass" });
