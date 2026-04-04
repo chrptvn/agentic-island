@@ -40,38 +40,6 @@
       "item": true
     },
     {
-      "id": "young_tree",
-      "name": "Young Tree",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "young_tree"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "old_tree_base",
-      "name": "Old Oak Tree",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "old_tree_base"
-        },
-        {
-          "dx": 0,
-          "dy": -1,
-          "layer": 4,
-          "tileId": "old_tree_top"
-        }
-      ],
-      "blocks": true
-    },
-    {
       "id": "big_tree_light",
       "name": "Big Light Tree",
       "tiles": [
@@ -79,25 +47,25 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_light"
+          "tileId": "tree_light2"
         },
         {
           "dx": 1,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_light_br"
+          "tileId": "tree_light3"
         },
         {
           "dx": 0,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_light_tl"
+          "tileId": "tree_light0"
         },
         {
           "dx": 1,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_light_tr"
+          "tileId": "tree_light1"
         }
       ],
       "blocks": true,
@@ -113,25 +81,25 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_dark"
+          "tileId": "tree_dark2"
         },
         {
           "dx": 1,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_dark_br"
+          "tileId": "tree_dark3"
         },
         {
           "dx": 0,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_dark_tl"
+          "tileId": "tree_dark0"
         },
         {
           "dx": 1,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_dark_tr"
+          "tileId": "tree_dark1"
         }
       ],
       "blocks": true,
@@ -147,25 +115,25 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_orange"
+          "tileId": "tree_orange2"
         },
         {
           "dx": 1,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_orange_br"
+          "tileId": "tree_orange3"
         },
         {
           "dx": 0,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_orange_tl"
+          "tileId": "tree_orange0"
         },
         {
           "dx": 1,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_orange_tr"
+          "tileId": "tree_orange1"
         }
       ],
       "blocks": true,
@@ -181,25 +149,25 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_dead"
+          "tileId": "tree_dead2"
         },
         {
           "dx": 1,
           "dy": 0,
           "layer": 3,
-          "tileId": "big_tree_dead_br"
+          "tileId": "tree_dead3"
         },
         {
           "dx": 0,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_dead_tl"
+          "tileId": "tree_dead0"
         },
         {
           "dx": 1,
           "dy": -1,
           "layer": 4,
-          "tileId": "big_tree_dead_tr"
+          "tileId": "tree_dead1"
         }
       ],
       "blocks": true,
@@ -215,7 +183,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "small_tree_light"
+          "tileId": "bush_light"
         }
       ],
       "blocks": true,
@@ -231,7 +199,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "small_tree_dark"
+          "tileId": "bush_dark"
         }
       ],
       "blocks": true,
@@ -247,7 +215,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "small_tree_orange"
+          "tileId": "bush_orange"
         }
       ],
       "blocks": true,
@@ -263,7 +231,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "small_tree_dead"
+          "tileId": "bush_dead"
         }
       ],
       "blocks": true,
@@ -279,7 +247,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "small_stomp"
+          "tileId": "small_stump"
         }
       ],
       "spawn": {
@@ -294,7 +262,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "stomp"
+          "tileId": "large_stump"
         }
       ],
       "blocks": true,
@@ -310,13 +278,13 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "fallen_tree_h"
+          "tileId": "fallen_tree_horrizontal0"
         },
         {
           "dx": 1,
           "dy": 0,
           "layer": 3,
-          "tileId": "fallen_tree_h_r"
+          "tileId": "fallen_tree_horrizontal1"
         }
       ],
       "blocks": true,
@@ -340,36 +308,6 @@
       }
     },
     {
-      "id": "dried_plant",
-      "name": "Dried Plant",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "dried_plant"
-        }
-      ],
-      "spawn": {
-        "weight": 1
-      }
-    },
-    {
-      "id": "leaves",
-      "name": "Leaves",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "leaves"
-        }
-      ],
-      "spawn": {
-        "weight": 1.5
-      }
-    },
-    {
       "id": "sprouts",
       "name": "Sprouts",
       "tiles": [
@@ -377,7 +315,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "sprouts"
+          "tileId": "dead_grass_patch"
         }
       ],
       "spawn": {
@@ -392,7 +330,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "plant_cluster"
+          "tileId": "white_flowers"
         }
       ],
       "spawn": {
@@ -407,7 +345,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "flowers_mixed"
+          "tileId": "pink_flowers"
         }
       ],
       "spawn": {
@@ -422,7 +360,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "flowers_blue"
+          "tileId": "blue_flowers"
         }
       ],
       "spawn": {
@@ -437,7 +375,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "flowers_yellow"
+          "tileId": "yellow_flowers"
         }
       ],
       "spawn": {
@@ -452,7 +390,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "mushroom"
+          "tileId": "orange_mushrooms"
         }
       ],
       "spawn": {
@@ -467,13 +405,13 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "fallen_tree_v"
+          "tileId": "fallen_tree_vertical0"
         },
         {
           "dx": 0,
           "dy": 1,
           "layer": 3,
-          "tileId": "fallen_tree_v_b"
+          "tileId": "fallen_tree_vertical1"
         }
       ],
       "blocks": true,
@@ -489,7 +427,7 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "rock_small"
+          "tileId": "small_rock"
         }
       ],
       "blocks": true,
@@ -505,110 +443,13 @@
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "rock_large"
+          "tileId": "big_rock"
         }
       ],
       "blocks": true,
       "spawn": {
         "weight": 1.5
       }
-    },
-    {
-      "id": "young_berry",
-      "name": "Young Berry Bush",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "young_berry"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "oak_sprout",
-      "name": "Oak Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "oak_sprout"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "oak_sprout_big",
-      "name": "Oak Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "oak_sprout_big"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "berry_sprout",
-      "name": "Berry Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "berry_sprout"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "berry_sprout_big",
-      "name": "Berry Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "berry_sprout_big"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "old_berry_base",
-      "name": "Old Berry Tree",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "old_berry_base"
-        },
-        {
-          "dx": 0,
-          "dy": -1,
-          "layer": 4,
-          "tileId": "old_berry_top"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "rock",
-      "name": "Rock",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "rock"
-        }
-      ],
-      "blocks": true
     },
     {
       "id": "wood",
@@ -676,68 +517,6 @@
       "blocks": true
     },
     {
-      "id": "cotton_plant",
-      "name": "Cotton Plant",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton_plant"
-        }
-      ]
-    },
-    {
-      "id": "cotton_sprout",
-      "name": "Cotton Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton_sprout"
-        }
-      ]
-    },
-    {
-      "id": "cotton_sprout_big",
-      "name": "Cotton Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton_sprout_big"
-        }
-      ]
-    },
-    {
-      "id": "cotton",
-      "name": "Cotton",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "cotton_seed",
-      "name": "Cotton Seed",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton_seed"
-        }
-      ],
-      "item": true
-    },
-    {
       "id": "skull",
       "name": "Skull",
       "tiles": [
@@ -748,206 +527,6 @@
           "tileId": "skull"
         }
       ]
-    },
-    {
-      "id": "flower_blue",
-      "name": "Blue Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_blue"
-        }
-      ]
-    },
-    {
-      "id": "flower_red",
-      "name": "Red Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_red"
-        }
-      ]
-    },
-    {
-      "id": "flower_purple",
-      "name": "Purple Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_purple"
-        }
-      ]
-    },
-    {
-      "id": "flower_white",
-      "name": "White Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_white"
-        }
-      ]
-    },
-    {
-      "id": "flower_blue_sprout",
-      "name": "Blue Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_blue_sprout"
-        }
-      ]
-    },
-    {
-      "id": "flower_red_sprout",
-      "name": "Red Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_red_sprout"
-        }
-      ]
-    },
-    {
-      "id": "flower_purple_sprout",
-      "name": "Purple Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_purple_sprout"
-        }
-      ]
-    },
-    {
-      "id": "flower_white_sprout",
-      "name": "White Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_white_sprout"
-        }
-      ]
-    },
-    {
-      "id": "flower_blue_item",
-      "name": "Blue Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_blue_item"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_red_item",
-      "name": "Red Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_red_item"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_purple_item",
-      "name": "Purple Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_purple_item"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_white_item",
-      "name": "White Flower",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_white_item"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_blue_seed",
-      "name": "Blue Flower Seed",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_blue_seed"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_red_seed",
-      "name": "Red Flower Seed",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_red_seed"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_purple_seed",
-      "name": "Purple Flower Seed",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_purple_seed"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "flower_white_seed",
-      "name": "White Flower Seed",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "flower_white_seed"
-        }
-      ],
-      "item": true
     },
     {
       "id": "log_pile",
@@ -1023,6 +602,54 @@
         }
       ],
       "blocks": true
+    },
+    {
+      "id": "grass_patch",
+      "name": "Grass Patch",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "grass_patch"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 3
+      }
+    },
+    {
+      "id": "dead_plant",
+      "name": "Dead Plant",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "dead_plant"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 2
+      }
+    },
+    {
+      "id": "purple_mushrooms",
+      "name": "Purple Mushrooms",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "purple_mushrooms"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 1
+      }
     }
   ]
 }

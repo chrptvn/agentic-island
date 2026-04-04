@@ -1,0 +1,40 @@
+x,y,id,description
+0,1,tree_light0,Light Tree - Canopy Left
+1,1,tree_light1,Light Tree - Canopy Right
+2,1,tree_dark0,Dark Tree - Canopy Left
+3,1,tree_dark1,Dark Tree - Canopy Right
+4,1,tree_orange0,Orange Tree - Canopy Left
+5,1,tree_orange1,Orange Tree - Canopy Right
+6,1,tree_dead0,Dead Tree - Canopy Left
+7,1,tree_dead1,Dead Tree - Canopy Right
+0,2,tree_light2,Light Tree - Base Left
+1,2,tree_light3,Light Tree - Base Right
+2,2,tree_dark2,Dark Tree - Base Left
+3,2,tree_dark3,Dark Tree - Base Right
+4,2,tree_orange2,Orange Tree - Base Left
+5,2,tree_orange3,Orange Tree - Base Right
+6,2,tree_dead2,Dead Tree - Base Left
+7,2,tree_dead3,Dead Tree - Base Right
+0,5,bush_light,Light Bush
+1,5,bush_dark,Dark Bush
+2,5,bush_orange,Orange Bush
+3,5,bush_dead,Dead Bush
+4,5,small_stump,Small Stump
+5,5,large_stump,Large Stump
+6,5,fallen_tree_horrizontal0,Fallen Tree - Left
+7,5,fallen_tree_horrizontal1,Fallen Tree - Right
+0,6,plant,Plant
+1,6,grass_patch,Grass Patch
+2,6,dead_plant,Dead Plant
+3,6,dead_grass_patch,Dead Grass Patch
+4,6,white_flowers,White Flowers
+5,6,pink_flowers,Pink Flowers
+6,6,blue_flowers,Blue Flowers
+7,6,yellow_flowers,Yellow Flowers
+0,7,orange_mushrooms,Orange Mushrooms
+1,7,purple_mushrooms,Purple Mushrooms
+7,7,fallen_tree_vertical0,Fallen Tree - Top
+0,8,small_rock,Small Rock
+1,8,big_rock,Big Rock
+7,8,fallen_tree_vertical1,Fallen Tree - Bottom
+

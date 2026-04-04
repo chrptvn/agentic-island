@@ -81,345 +81,6 @@
       "fps": 3
     },
     {
-      "id": "young_tree",
-      "col": 15,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Young oak tree"
-    },
-    {
-      "id": "old_tree_base",
-      "col": 15,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Old oak tree \u2014 base"
-    },
-    {
-      "id": "old_tree_top",
-      "col": 15,
-      "row": 10,
-      "layer": 3,
-      "category": "vegetation",
-      "description": "Old oak tree \u2014 canopy"
-    },
-
-    {
-      "id": "big_tree_light",
-      "col": 0,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big light tree — base left"
-    },
-    {
-      "id": "big_tree_light_br",
-      "col": 1,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big light tree — base right"
-    },
-    {
-      "id": "big_tree_light_tl",
-      "col": 0,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big light tree — canopy left"
-    },
-    {
-      "id": "big_tree_light_tr",
-      "col": 1,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big light tree — canopy right"
-    },
-
-    {
-      "id": "big_tree_dark",
-      "col": 2,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dark tree — base left"
-    },
-    {
-      "id": "big_tree_dark_br",
-      "col": 3,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dark tree — base right"
-    },
-    {
-      "id": "big_tree_dark_tl",
-      "col": 2,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dark tree — canopy left"
-    },
-    {
-      "id": "big_tree_dark_tr",
-      "col": 3,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dark tree — canopy right"
-    },
-
-    {
-      "id": "big_tree_orange",
-      "col": 4,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big orange tree — base left"
-    },
-    {
-      "id": "big_tree_orange_br",
-      "col": 5,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big orange tree — base right"
-    },
-    {
-      "id": "big_tree_orange_tl",
-      "col": 4,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big orange tree — canopy left"
-    },
-    {
-      "id": "big_tree_orange_tr",
-      "col": 5,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big orange tree — canopy right"
-    },
-
-    {
-      "id": "big_tree_dead",
-      "col": 6,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dead tree — base left"
-    },
-    {
-      "id": "big_tree_dead_br",
-      "col": 7,
-      "row": 2,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dead tree — base right"
-    },
-    {
-      "id": "big_tree_dead_tl",
-      "col": 6,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dead tree — canopy left"
-    },
-    {
-      "id": "big_tree_dead_tr",
-      "col": 7,
-      "row": 1,
-      "layer": 4,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Big dead tree — canopy right"
-    },
-
-    {
-      "id": "small_tree_light",
-      "col": 0,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Small light tree"
-    },
-    {
-      "id": "small_tree_dark",
-      "col": 1,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Small dark tree"
-    },
-    {
-      "id": "small_tree_orange",
-      "col": 2,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Small orange tree"
-    },
-    {
-      "id": "small_tree_dead",
-      "col": 3,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Small dead tree"
-    },
-
-    {
-      "id": "dried_flower",
-      "col": 4,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Dried flower puff"
-    },
-    {
-      "id": "log",
-      "col": 5,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Horizontal log"
-    },
-    {
-      "id": "fallen_tree_h",
-      "col": 6,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Horizontal fallen tree — left tile"
-    },
-    {
-      "id": "fallen_tree_h_r",
-      "col": 7,
-      "row": 5,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Horizontal fallen tree — right tile"
-    },
-
-    {
-      "id": "succulent",
-      "col": 0,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Small green succulent"
-    },
-    {
-      "id": "dried_plant",
-      "col": 1,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Dried spider plant"
-    },
-    {
-      "id": "leaves",
-      "col": 2,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Scattered green leaves"
-    },
-    {
-      "id": "sprouts",
-      "col": 3,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Tiny green sprouts"
-    },
-    {
-      "id": "plant_cluster",
-      "col": 4,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Yellow-green plant cluster"
-    },
-    {
-      "id": "flowers_mixed",
-      "col": 5,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Mixed colorful flowers"
-    },
-    {
-      "id": "flowers_blue",
-      "col": 6,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Blue flowers"
-    },
-    {
-      "id": "flowers_yellow",
-      "col": 7,
-      "row": 6,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Yellow flowers"
-    },
-
-    {
-      "id": "mushroom",
-      "col": 0,
-      "row": 7,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "decoration",
-      "description": "Brown mushrooms"
-    },
-    {
-      "id": "fallen_tree_v",
-      "col": 7,
-      "row": 7,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Vertical fallen tree — top tile"
-    },
-
-    {
       "id": "rock_small",
       "col": 0,
       "row": 8,
@@ -436,104 +97,6 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "terrain",
       "description": "Large rock"
-    },
-    {
-      "id": "fallen_tree_v_b",
-      "col": 7,
-      "row": 8,
-      "layer": 3,
-      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
-      "category": "vegetation",
-      "description": "Vertical fallen tree — bottom tile"
-    },
-
-    {
-      "id": "young_berry",
-      "col": 23,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Young berry tree"
-    },
-    {
-      "id": "oak_sprout",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Oak sprout \u2014 stage 1"
-    },
-    {
-      "id": "oak_sprout_big",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Oak sprout \u2014 stage 2"
-    },
-    {
-      "id": "berry_sprout",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Berry sprout \u2014 stage 1"
-    },
-    {
-      "id": "berry_sprout_big",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Berry sprout \u2014 stage 2"
-    },
-    {
-      "id": "old_berry_base",
-      "col": 23,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Old berry tree \u2014 base"
-    },
-    {
-      "id": "old_berry_top",
-      "col": 23,
-      "row": 10,
-      "layer": 3,
-      "category": "vegetation",
-      "description": "Old berry tree \u2014 canopy"
-    },
-    {
-      "id": "young_berry_empty",
-      "col": 13,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Young berry tree \u2014 empty"
-    },
-    {
-      "id": "old_berry_empty_base",
-      "col": 13,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Old berry tree empty \u2014 base"
-    },
-    {
-      "id": "old_berry_empty_top",
-      "col": 13,
-      "row": 10,
-      "layer": 3,
-      "category": "vegetation",
-      "description": "Old berry tree empty \u2014 canopy"
-    },
-    {
-      "id": "rock",
-      "col": 54,
-      "row": 22,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Rock \u2014 harvestable stone"
     },
     {
       "id": "wood",
@@ -863,30 +426,6 @@
       "description": "A skull left behind when a character dies"
     },
     {
-      "id": "cotton_plant",
-      "col": 25,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Cotton plant \u2014 harvestable for cotton and cotton seeds"
-    },
-    {
-      "id": "cotton_sprout",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Cotton sprout \u2014 stage 1"
-    },
-    {
-      "id": "cotton_sprout_big",
-      "col": 22,
-      "row": 11,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Cotton sprout \u2014 stage 2"
-    },
-    {
       "id": "cotton",
       "col": 3,
       "row": 10,
@@ -903,70 +442,6 @@
       "category": "item",
       "description": "Dropped cotton seed",
       "item": true
-    },
-    {
-      "id": "flower_blue",
-      "col": 28,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Blue flower \u2014 harvestable"
-    },
-    {
-      "id": "flower_red",
-      "col": 29,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Red flower \u2014 harvestable"
-    },
-    {
-      "id": "flower_purple",
-      "col": 30,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Purple flower \u2014 harvestable"
-    },
-    {
-      "id": "flower_white",
-      "col": 31,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "White flower \u2014 harvestable"
-    },
-    {
-      "id": "flower_blue_sprout",
-      "col": 34,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Blue flower sprout"
-    },
-    {
-      "id": "flower_red_sprout",
-      "col": 37,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Red flower sprout"
-    },
-    {
-      "id": "flower_purple_sprout",
-      "col": 35,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "Purple flower sprout"
-    },
-    {
-      "id": "flower_white_sprout",
-      "col": 36,
-      "row": 9,
-      "layer": 2,
-      "category": "vegetation",
-      "description": "White flower sprout"
     },
     {
       "id": "flower_blue_item",
@@ -5900,6 +5375,348 @@
       "layer": 1,
       "category": "terrain",
       "description": "Sand autotile grid position (7,5)"
+    },
+    {
+      "id": "tree_light0",
+      "col": 0,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Light Tree - Canopy Left"
+    },
+    {
+      "id": "tree_light1",
+      "col": 1,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Light Tree - Canopy Right"
+    },
+    {
+      "id": "tree_dark0",
+      "col": 2,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dark Tree - Canopy Left"
+    },
+    {
+      "id": "tree_dark1",
+      "col": 3,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dark Tree - Canopy Right"
+    },
+    {
+      "id": "tree_orange0",
+      "col": 4,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Orange Tree - Canopy Left"
+    },
+    {
+      "id": "tree_orange1",
+      "col": 5,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Orange Tree - Canopy Right"
+    },
+    {
+      "id": "tree_dead0",
+      "col": 6,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dead Tree - Canopy Left"
+    },
+    {
+      "id": "tree_dead1",
+      "col": 7,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dead Tree - Canopy Right"
+    },
+    {
+      "id": "tree_light2",
+      "col": 0,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Light Tree - Base Left"
+    },
+    {
+      "id": "tree_light3",
+      "col": 1,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Light Tree - Base Right"
+    },
+    {
+      "id": "tree_dark2",
+      "col": 2,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dark Tree - Base Left"
+    },
+    {
+      "id": "tree_dark3",
+      "col": 3,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dark Tree - Base Right"
+    },
+    {
+      "id": "tree_orange2",
+      "col": 4,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Orange Tree - Base Left"
+    },
+    {
+      "id": "tree_orange3",
+      "col": 5,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Orange Tree - Base Right"
+    },
+    {
+      "id": "tree_dead2",
+      "col": 6,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dead Tree - Base Left"
+    },
+    {
+      "id": "tree_dead3",
+      "col": 7,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dead Tree - Base Right"
+    },
+    {
+      "id": "bush_light",
+      "col": 0,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Light Bush"
+    },
+    {
+      "id": "bush_dark",
+      "col": 1,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dark Bush"
+    },
+    {
+      "id": "bush_orange",
+      "col": 2,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Orange Bush"
+    },
+    {
+      "id": "bush_dead",
+      "col": 3,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Dead Bush"
+    },
+    {
+      "id": "small_stump",
+      "col": 4,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small Stump"
+    },
+    {
+      "id": "large_stump",
+      "col": 5,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Large Stump"
+    },
+    {
+      "id": "fallen_tree_horrizontal0",
+      "col": 6,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Fallen Tree - Left"
+    },
+    {
+      "id": "fallen_tree_horrizontal1",
+      "col": 7,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Fallen Tree - Right"
+    },
+    {
+      "id": "plant",
+      "col": 0,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Plant"
+    },
+    {
+      "id": "grass_patch",
+      "col": 1,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Grass Patch"
+    },
+    {
+      "id": "dead_plant",
+      "col": 2,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Dead Plant"
+    },
+    {
+      "id": "dead_grass_patch",
+      "col": 3,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Dead Grass Patch"
+    },
+    {
+      "id": "white_flowers",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "White Flowers"
+    },
+    {
+      "id": "pink_flowers",
+      "col": 5,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Pink Flowers"
+    },
+    {
+      "id": "blue_flowers",
+      "col": 6,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Blue Flowers"
+    },
+    {
+      "id": "yellow_flowers",
+      "col": 7,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Yellow Flowers"
+    },
+    {
+      "id": "orange_mushrooms",
+      "col": 0,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Orange Mushrooms"
+    },
+    {
+      "id": "purple_mushrooms",
+      "col": 1,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Purple Mushrooms"
+    },
+    {
+      "id": "fallen_tree_vertical0",
+      "col": 7,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Fallen Tree - Top"
+    },
+    {
+      "id": "small_rock",
+      "col": 0,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small Rock"
+    },
+    {
+      "id": "big_rock",
+      "col": 1,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big Rock"
+    },
+    {
+      "id": "fallen_tree_vertical1",
+      "col": 7,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Fallen Tree - Bottom"
     }
   ]
 }
