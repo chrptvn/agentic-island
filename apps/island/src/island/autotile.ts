@@ -40,23 +40,6 @@ function autotileWaterCell(
 }
 
 /**
- * Returns the layer-1 grass autotile ID for a grass cell at (x, y).
- * Uses the full 8-neighbor bitmask → 48-tile Pipoya mapping.
- *
- * "Same terrain" for grass = neighbor is also grass (not water/sand/OOB).
- * Out-of-bounds = different terrain (returns false).
- *
- * @param isGrass  Predicate: is the cell at (nx, ny) a grass cell?
- */
-function autotileGrassCell(
-  x: number,
-  y: number,
-  isGrass: (nx: number, ny: number) => boolean,
-): string {
-  return getAutotileId("grass_at", x, y, isGrass);
-}
-
-/**
  * Returns the layer-1 sand autotile ID for a sand cell at (x, y).
  * The sand tilesheet transitions against grass: "same" = sand, "different" = grass.
  *
@@ -268,37 +251,34 @@ export function buildIslandLayer1(
   // }
 
   // ── 8. Build tile overrides ───────────────────────────────────────────────
-  // For water autotile: bit=1 means neighbor is water (same terrain)
+  // Two-layer approach:
+  //   Layer 0: grass everywhere (grass cells via terrain; border water via override)
+  //   Layer 1: water autotile on ALL water cells (border tiles have transparency,
+  //            grass shows through; interior tiles are fully opaque + animated)
   const isWater = (nx: number, ny: number): boolean =>
     nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water";
-
-  // For grass autotile: bit=1 means neighbor is grass (same terrain)
-  const isGrass = (nx: number, ny: number): boolean =>
-    nx >= 0 && nx < w && ny >= 0 && ny < h && terrain[ny][nx] === "grass";
 
   const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
 
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const t = terrain[y][x];
-      if (t === "grass") {
-        const tileId = autotileGrassCell(x, y, isGrass);
-        result.push({ x, y, layer: 1, tileId });
-      } else if (t === "sand") {
-        // Sand autotile (disabled but kept for when sand is re-enabled)
-        const isSandOrWater = (nx: number, ny: number): boolean =>
-          nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] !== "grass";
-        const tileId = autotileSandCell(x, y, isSandOrWater);
-        result.push({ x, y, layer: 1, tileId });
-      } else {
-        // Water cell — only add overlay if it has any non-water neighbors
-        // (pure interior water shows the layer-0 water tile)
+      if (t === "water") {
+        // Check if this water cell has any land neighbors (border cell)
         const hasLandNeighbor = !isWater(x-1,y) || !isWater(x+1,y) || !isWater(x,y-1) || !isWater(x,y+1)
           || !isWater(x-1,y-1) || !isWater(x+1,y-1) || !isWater(x-1,y+1) || !isWater(x+1,y+1);
+
         if (hasLandNeighbor) {
-          const tileId = autotileWaterCell(x, y, isWater);
-          result.push({ x, y, layer: 1, tileId });
+          // Border water: override layer 0 to grass so it shows through cliff transparency
+          result.push({ x, y, layer: 0, tileId: "grass" });
         }
+
+        // ALL water cells get a layer-1 water autotile overlay (animated)
+        const tileId = autotileWaterCell(x, y, isWater);
+        result.push({ x, y, layer: 1, tileId });
+      } else {
+        // Grass cells: override layer 0 to "grass" (base map defaults to "water")
+        result.push({ x, y, layer: 0, tileId: "grass" });
       }
     }
   }
@@ -358,19 +338,22 @@ export function isPathTileId(tileId: string): boolean {
   return PATH_TILE_IDS.has(tileId);
 }
 
-/** Returns true if the tile ID represents walkable ground (grass, sand, or any path tile). */
+/** Returns true if the tile ID represents walkable ground.
+ * With two-layer rendering, grass cells have no layer-1 override (empty string). */
 export function isWalkableGround(tileId: string): boolean {
-  return tileId === "grass" || tileId.startsWith("grass_at_") || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
+  if (tileId.startsWith("water_at_")) return false;
+  return tileId === "" || tileId === "grass" || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
 }
 
 /**
  * Determine the terrain type from a layer-1 tile ID.
- * Used by island.ts to classify cells for game logic.
+ * With the two-layer approach: water cells have water_at_* on layer 1,
+ * grass cells have no layer 1 override (empty string).
  */
 export function terrainFromLayer1(l1: string): "grass" | "sand" | "water" {
-  if (l1 === "grass" || l1.startsWith("grass_at_")) return "grass";
+  if (l1.startsWith("water_at_")) return "water";
   if (l1.startsWith("sand_at_")) return "sand";
-  return "water";
+  return "grass";
 }
 
 /**
