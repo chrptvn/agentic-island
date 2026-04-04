@@ -34,6 +34,9 @@
     "lakeProbability": 0.3,
     "lakeRadiusMin": 2,
     "lakeRadiusMax": 4,
-    "vegetationDensity": 0.1
+    "vegetationDensity": 0.1,
+    "sandSeedProb": 0.25,
+    "sandGrowProb": 0.60,
+    "sandMaxDepth": 2
   }
 }

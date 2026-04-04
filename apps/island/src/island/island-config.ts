@@ -41,6 +41,12 @@ export interface MapGenConfig {
   lakeRadiusMax:    number;
   /** Fraction (0–1) of eligible inner cells that receive vegetation. */
   vegetationDensity: number;
+  /** Fraction (0–1) of water-adjacent grass cells that seed a sand patch. */
+  sandSeedProb: number;
+  /** Probability (0–1) of sand spreading to each eligible neighbor (first wave). */
+  sandGrowProb: number;
+  /** Maximum distance from water (in cells) that sand can reach. */
+  sandMaxDepth: number;
 }
 
 export interface IslandConfig {
@@ -78,6 +84,9 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     lakeRadiusMin:     2,
     lakeRadiusMax:     4,
     vegetationDensity: 0.10,
+    sandSeedProb:      0.25,
+    sandGrowProb:      0.60,
+    sandMaxDepth:      2,
   },
 };
 

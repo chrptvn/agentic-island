@@ -225,38 +225,82 @@ export function buildIslandLayer1(
 
   fillGaps(); // ── 6. After lake
 
-  // ── 7. Generate sand beach fringe (DISABLED — kept for future re-enabling) ──
-  // Convert grass cells that are cardinally adjacent to water → sand
+  // ── 7. Generate natural sand patches near water ───────────────────────────
+  // Two-pass seeded patch growth:
+  //   Phase 1 (seed): ~sandSeedProb of water-adjacent grass cells become sand
+  //   Phase 2 (grow): each seeded cell spreads to grass neighbors within sandMaxDepth
+  //   Phase 3 (second grow): second wave at lower probability for rounder patches
   const terrain: TerrainCell[][] = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) => (grid[y][x] ? "grass" : "water") as TerrainCell)
   );
 
-  // Sand generation disabled per user request.
-  // To re-enable, uncomment the block below:
-  // for (let y = 0; y < h; y++) {
-  //   for (let x = 0; x < w; x++) {
-  //     if (terrain[y][x] !== "grass") continue;
-  //     let adjacentWater = false;
-  //     for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
-  //       const nx = x + dx, ny = y + dy;
-  //       if (nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water") {
-  //         adjacentWater = true;
-  //         break;
-  //       }
-  //     }
-  //     if (adjacentWater && rng() < 0.85) {
-  //       terrain[y][x] = "sand";
-  //     }
-  //   }
-  // }
+  const { sandSeedProb, sandGrowProb, sandMaxDepth } = mapGen;
+  const CARDINALS: [number, number][] = [[1,0],[-1,0],[0,1],[0,-1]];
+
+  // BFS from all water cells to compute distance-to-water for each grass cell
+  const distToWater: number[][] = Array.from({ length: h }, () => new Array(w).fill(Infinity));
+  const distQ: [number, number][] = [];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!grid[y][x]) { distToWater[y][x] = 0; distQ.push([x, y]); }
+    }
+  }
+  for (let qi = 0; qi < distQ.length; qi++) {
+    const [cx, cy] = distQ[qi];
+    const nextDist = distToWater[cy][cx] + 1;
+    for (const [dx, dy] of CARDINALS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      if (distToWater[ny][nx] > nextDist) {
+        distToWater[ny][nx] = nextDist;
+        distQ.push([nx, ny]);
+      }
+    }
+  }
+
+  // Phase 1: seed sand on water-adjacent grass cells
+  const wave1: [number, number][] = [];
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (terrain[y][x] === "grass" && distToWater[y][x] === 1 && rng() < sandSeedProb) {
+        terrain[y][x] = "sand";
+        wave1.push([x, y]);
+      }
+    }
+  }
+
+  // Phase 2: spread from seeds to nearby grass neighbors
+  const wave2: [number, number][] = [];
+  for (const [cx, cy] of wave1) {
+    for (const [dx, dy] of CARDINALS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb) {
+        terrain[ny][nx] = "sand";
+        wave2.push([nx, ny]);
+      }
+    }
+  }
+
+  // Phase 3: second wave at lower probability for organic rounded edges
+  for (const [cx, cy] of wave2) {
+    for (const [dx, dy] of CARDINALS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb * 0.55) {
+        terrain[ny][nx] = "sand";
+      }
+    }
+  }
 
   // ── 8. Build tile overrides ───────────────────────────────────────────────
-  // Two-layer approach:
-  //   Layer 0: grass everywhere (grass cells via terrain; border water via override)
-  //   Layer 1: water autotile on ALL water cells (border tiles have transparency,
-  //            grass shows through; interior tiles are fully opaque + animated)
+  // Layer 0: grass or sand base (sand cells use sand autotile)
+  // Layer 1: water autotile on ALL water cells (border tiles transparent)
   const isWater = (nx: number, ny: number): boolean =>
     nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water";
+
+  const isSandOrWater = (nx: number, ny: number): boolean =>
+    nx < 0 || nx >= w || ny < 0 || ny >= h || terrain[ny][nx] === "water" || terrain[ny][nx] === "sand";
 
   const result: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
 
@@ -276,6 +320,9 @@ export function buildIslandLayer1(
         // ALL water cells get a layer-1 water autotile overlay (animated)
         const tileId = autotileWaterCell(x, y, isWater);
         result.push({ x, y, layer: 1, tileId });
+      } else if (t === "sand") {
+        // Sand cells: layer 0 = sand autotile (transitions against grass)
+        result.push({ x, y, layer: 0, tileId: autotileSandCell(x, y, isSandOrWater) });
       } else {
         // Grass cells: override layer 0 to "grass" (base map defaults to "water")
         result.push({ x, y, layer: 0, tileId: "grass" });
@@ -283,8 +330,11 @@ export function buildIslandLayer1(
     }
   }
 
-  // grassGrid tracks original grass cells for vegetation spawning
-  return { overrides: result, grassGrid: grid };
+  // grassGrid: true only for pure grass cells (not sand) — used for vegetation spawning
+  const grassOnlyGrid = Array.from({ length: h }, (_, y) =>
+    Array.from({ length: w }, (_, x) => terrain[y][x] === "grass")
+  );
+  return { overrides: result, grassGrid: grassOnlyGrid };
 }
 
 // ── Dirt-path autotiling ──────────────────────────────────────────────────────
