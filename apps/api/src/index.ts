@@ -51,7 +51,7 @@ app.route("/api/admin", admin);
 // Serve cached sprites (filename may contain subdirectory segments e.g. tiles/Items/Food.png)
 app.get("/sprites/:islandId/*", async (c) => {
   const islandId = c.req.param("islandId");
-  const userSegment = c.req.path.slice(`/sprites/${islandId}/`.length);
+  const userSegment = decodeURIComponent(c.req.path.slice(`/sprites/${islandId}/`.length));
   const filePath = safePath(getSpriteCacheDir(), islandId, userSegment);
 
   if (!filePath) {
@@ -69,7 +69,7 @@ app.get("/sprites/:islandId/*", async (c) => {
           ? "image/jpeg"
           : "application/octet-stream";
     return new Response(buf, {
-      headers: { "Content-Type": mime, "Cache-Control": "public, max-age=3600" },
+      headers: { "Content-Type": mime, "Cache-Control": "public, max-age=31536000, immutable" },
     });
   } catch {
     return c.json({ error: "Sprite not found" }, 404);

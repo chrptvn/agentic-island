@@ -77,7 +77,7 @@
       },
       "searchTarget": "trees",
       "spawn": {
-        "weight": 4,
+        "weight": 0,
         "requiresDeep": false
       },
       "blocks": true
@@ -110,11 +110,270 @@
       },
       "searchTarget": "trees",
       "spawn": {
+        "weight": 0,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+
+    {
+      "id": "big_tree_light",
+      "tileType": "quad",
+      "topTileId": "big_tree_light_tl",
+      "rightTileId": "big_tree_light_br",
+      "topRightTileId": "big_tree_light_tr",
+      "canopyTop": true,
+      "stats": {
+        "health": 120,
+        "maxHealth": 120,
+        "branches": 6,
+        "acorns": 5
+      },
+      "harvest": {
+        "fullBase": "big_tree_light",
+        "fullTop": "big_tree_light_tl",
+        "fullRight": "big_tree_light_br",
+        "fullTopRight": "big_tree_light_tr",
+        "requires": ["chop"],
+        "damage": 20,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 8,
+            "acorns": 4,
+            "wood": 6
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
         "weight": 4,
         "requiresDeep": true
       },
       "blocks": true
     },
+    {
+      "id": "big_tree_dark",
+      "tileType": "quad",
+      "topTileId": "big_tree_dark_tl",
+      "rightTileId": "big_tree_dark_br",
+      "topRightTileId": "big_tree_dark_tr",
+      "canopyTop": true,
+      "stats": {
+        "health": 120,
+        "maxHealth": 120,
+        "branches": 6,
+        "acorns": 5
+      },
+      "harvest": {
+        "fullBase": "big_tree_dark",
+        "fullTop": "big_tree_dark_tl",
+        "fullRight": "big_tree_dark_br",
+        "fullTopRight": "big_tree_dark_tr",
+        "requires": ["chop"],
+        "damage": 20,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 8,
+            "acorns": 4,
+            "wood": 6
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+    {
+      "id": "big_tree_orange",
+      "tileType": "quad",
+      "topTileId": "big_tree_orange_tl",
+      "rightTileId": "big_tree_orange_br",
+      "topRightTileId": "big_tree_orange_tr",
+      "canopyTop": true,
+      "stats": {
+        "health": 120,
+        "maxHealth": 120,
+        "branches": 6,
+        "acorns": 5
+      },
+      "harvest": {
+        "fullBase": "big_tree_orange",
+        "fullTop": "big_tree_orange_tl",
+        "fullRight": "big_tree_orange_br",
+        "fullTopRight": "big_tree_orange_tr",
+        "requires": ["chop"],
+        "damage": 20,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 8,
+            "acorns": 4,
+            "wood": 6
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 4,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+    {
+      "id": "big_tree_dead",
+      "tileType": "quad",
+      "topTileId": "big_tree_dead_tl",
+      "rightTileId": "big_tree_dead_br",
+      "topRightTileId": "big_tree_dead_tr",
+      "canopyTop": true,
+      "stats": {
+        "health": 80,
+        "maxHealth": 80,
+        "branches": 4
+      },
+      "harvest": {
+        "fullBase": "big_tree_dead",
+        "fullTop": "big_tree_dead_tl",
+        "fullRight": "big_tree_dead_br",
+        "fullTopRight": "big_tree_dead_tr",
+        "requires": ["chop"],
+        "damage": 20,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 6,
+            "wood": 4
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 2,
+        "requiresDeep": true
+      },
+      "blocks": true
+    },
+
+    {
+      "id": "small_tree_light",
+      "tileType": "single",
+      "stats": {
+        "health": 40,
+        "maxHealth": 40,
+        "branches": 2,
+        "acorns": 2
+      },
+      "harvest": {
+        "fullBase": "small_tree_light",
+        "requires": ["chop"],
+        "damage": 10,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 3,
+            "acorns": 2,
+            "wood": 3
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 3,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "small_tree_dark",
+      "tileType": "single",
+      "stats": {
+        "health": 40,
+        "maxHealth": 40,
+        "branches": 2,
+        "acorns": 2
+      },
+      "harvest": {
+        "fullBase": "small_tree_dark",
+        "requires": ["chop"],
+        "damage": 10,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 3,
+            "acorns": 2,
+            "wood": 3
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 3,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "small_tree_orange",
+      "tileType": "single",
+      "stats": {
+        "health": 40,
+        "maxHealth": 40,
+        "branches": 2,
+        "acorns": 2
+      },
+      "harvest": {
+        "fullBase": "small_tree_orange",
+        "requires": ["chop"],
+        "damage": 10,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 3,
+            "acorns": 2,
+            "wood": 3
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 3,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+    {
+      "id": "small_tree_dead",
+      "tileType": "single",
+      "stats": {
+        "health": 30,
+        "maxHealth": 30,
+        "branches": 2
+      },
+      "harvest": {
+        "fullBase": "small_tree_dead",
+        "requires": ["chop"],
+        "damage": 10,
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "branches": 3,
+            "wood": 2
+          }
+        }
+      },
+      "searchTarget": "trees",
+      "spawn": {
+        "weight": 1,
+        "requiresDeep": false
+      },
+      "blocks": true
+    },
+
     {
       "id": "young_berry",
       "tileType": "single",
@@ -131,7 +390,7 @@
       },
       "searchTarget": "berries",
       "spawn": {
-        "weight": 4,
+        "weight": 0,
         "requiresDeep": false
       },
       "blocks": true
@@ -219,7 +478,7 @@
       },
       "searchTarget": "berries",
       "spawn": {
-        "weight": 4,
+        "weight": 0,
         "requiresDeep": true
       },
       "blocks": true
@@ -237,7 +496,7 @@
       },
       "searchTarget": "rocks",
       "spawn": {
-        "weight": 1,
+        "weight": 0,
         "requiresDeep": false
       },
       "blocks": true
@@ -378,7 +637,7 @@
       },
       "searchTarget": "cotton",
       "spawn": {
-        "weight": 2,
+        "weight": 0,
         "requiresDeep": false
       },
       "randomStats": {
@@ -478,7 +737,7 @@
       },
       "searchTarget": "flowers",
       "spawn": {
-        "weight": 1,
+        "weight": 0,
         "requiresDeep": false
       },
       "randomStats": {
@@ -501,7 +760,7 @@
       },
       "searchTarget": "flowers",
       "spawn": {
-        "weight": 1,
+        "weight": 0,
         "requiresDeep": false
       },
       "randomStats": {
@@ -524,7 +783,7 @@
       },
       "searchTarget": "flowers",
       "spawn": {
-        "weight": 1,
+        "weight": 0,
         "requiresDeep": false
       },
       "randomStats": {
@@ -547,7 +806,7 @@
       },
       "searchTarget": "flowers",
       "spawn": {
-        "weight": 1,
+        "weight": 0,
         "requiresDeep": false
       },
       "randomStats": {

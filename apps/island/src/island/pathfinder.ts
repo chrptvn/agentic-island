@@ -30,10 +30,8 @@ export function findPath(
     if (!layers) return false;
     if (!isWalkableGround(layers[1] ?? "")) return false;
     const l3 = layers[3];
-    const l4 = layers[4];
-    // Always blocked — solid obstacles (trees, rocks) or two-tile canopy cells (layer 4)
+    // Always blocked — solid obstacles (trees, rocks)
     if (l3 && blockingIds.has(l3)) return false;
-    if (l4 && l4 !== "") return false;
     // Allow target cell even if it has a non-blocking layer-3 entity
     if (p.x === target.x && p.y === target.y) return true;
     // Blocked if has any other layer-3 entity

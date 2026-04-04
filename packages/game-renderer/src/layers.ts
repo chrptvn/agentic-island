@@ -106,6 +106,8 @@ export function renderLayers(
   tileSize: number,
   frame: number,
   backgroundTileId?: string,
+  startLayer: number = 0,
+  endLayer: number = 4,
 ): void {
   const { startCol, startRow, cols, rows, offsetX, offsetY } = viewport;
   const { terrain, overrides, entities } = layerData;
@@ -122,8 +124,8 @@ export function renderLayers(
     entityMap.set(`${ent.x},${ent.y}`, ent);
   }
 
-  // Render layers 0-4 in order
-  for (let layer = 0; layer <= 4; layer++) {
+  // Render layers 0-4 in order (constrained by startLayer/endLayer)
+  for (let layer = startLayer; layer <= endLayer; layer++) {
     for (let r = 0; r < rows; r++) {
       // Integer Y position for this row and the next (gap-free)
       const cy = Math.round(r * tileSize + offsetY);
@@ -157,10 +159,13 @@ export function renderLayers(
             drawTile(ctx, backgroundTileId, registry, sprites, cx, cy, dw, dh, frame);
           }
         } else if (layer === 3) {
-          // Entity base layer
-          const ent = entityMap.get(`${worldCol},${worldRow}`);
-          if (ent) {
-            drawTile(ctx, ent.tileId, registry, sprites, cx, cy, dw, dh, frame);
+          // Entity base layer — skip if a layer-4 canopy override exists here
+          // (canopy tiles belong on layer 4 only, not drawn twice)
+          if (!overrideMap.has(`4,${worldCol},${worldRow}`)) {
+            const ent = entityMap.get(`${worldCol},${worldRow}`);
+            if (ent) {
+              drawTile(ctx, ent.tileId, registry, sprites, cx, cy, dw, dh, frame);
+            }
           }
         } else if (layer === 4) {
           // Entity canopy: look up the entity def's topTileId via registry

@@ -21,6 +21,7 @@ const VIEWPORT_HEIGHT = 540;
 interface GameViewerProps {
   state: IslandState | null;
   spriteBaseUrl: string | null;
+  spriteVersion?: string | null;
 }
 
 interface FollowButtonOverlay {
@@ -29,7 +30,7 @@ interface FollowButtonOverlay {
   cssY: number;
 }
 
-export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
+export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: GameViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
@@ -411,11 +412,19 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     };
   }, [updateOverlayPositions]);
 
+  // Reset sprite cache when version changes (new sprites uploaded)
+  useEffect(() => {
+    if (!rendererRef.current || !spriteVersion) return;
+    rendererRef.current.clearSprites();
+    spritesLoadedRef.current = false;
+  }, [spriteVersion]);
+
   // Load sprites
   useEffect(() => {
     if (!rendererRef.current || !spriteBaseUrl || !state?.tileRegistry) return;
     if (spritesLoadedRef.current) return;
 
+    const vSuffix = spriteVersion ? `?v=${spriteVersion}` : '';
     const sheets: Record<
       string,
       { url: string; tileSize?: number; gap?: number }
@@ -423,7 +432,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
     for (const tile of Object.values(state.tileRegistry)) {
       if (tile.sheet && !sheets[tile.sheet]) {
         sheets[tile.sheet] = {
-          url: `${spriteBaseUrl}${tile.sheet}`,
+          url: `${spriteBaseUrl}${tile.sheet}${vSuffix}`,
           tileSize: tile.tileSize,
           gap: tile.gap,
         };
@@ -437,7 +446,7 @@ export default function GameViewer({ state, spriteBaseUrl }: GameViewerProps) {
       })
       .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spriteBaseUrl, hasTileRegistry]);
+  }, [spriteBaseUrl, spriteVersion, hasTileRegistry]);
 
   // Update state — use buffered state when paused/recording, live state otherwise
   useEffect(() => {

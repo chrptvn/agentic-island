@@ -15,6 +15,8 @@ export interface EntityDef {
   rightTileId?: string;
   /** For quad entities: the tile placed at (x+1, y-1) — top-right. */
   topRightTileId?: string;
+  /** For quad entities with canopy: top row tiles go on layer 4 (above player). */
+  canopyTop?: boolean;
   stats: EntityStats;
   /** If true, this entity is an inventory item and cannot be placed directly on the map. */
   item?: boolean;
@@ -116,6 +118,10 @@ export interface HarvestDef {
   emptyTop?: string;
   fullBase: string;
   fullTop?: string;
+  /** For quad-canopy entities: the full tile ID at (x+1, y) — base right. */
+  fullRight?: string;
+  /** For quad-canopy entities: the full tile ID at (x+1, y-1) — canopy right. */
+  fullTopRight?: string;
   regrowMs?: number;
   /** Capability tags required on the character's equipped (hands) item. Omit = no restriction. */
   requires?: string[];
@@ -178,6 +184,12 @@ function buildDerivedExports(defs: EntityDef[]) {
   }
 
   const BLOCKING_IDS: Set<string> = new Set(defs.filter((e) => e.blocks === true).map((e) => e.id));
+  // Quad-canopy entities: the base-right tile also blocks
+  for (const e of defs) {
+    if (e.blocks && e.tileType === "quad" && e.canopyTop && e.rightTileId) {
+      BLOCKING_IDS.add(e.rightTileId);
+    }
+  }
 
   const ENTITY_DEF_BY_ID: Map<string, EntityDef> = new Map(defs.map((e) => [e.id, e]));
 

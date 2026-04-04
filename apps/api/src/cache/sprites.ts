@@ -1,19 +1,30 @@
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join, dirname } from "node:path";
+import { createHash } from "node:crypto";
 import type { SpriteAsset } from "@agentic-island/shared";
 import { safePath } from "../lib/safe-path.js";
 
 const CACHE_DIR = process.env.SPRITE_CACHE_DIR ?? "sprite-cache";
 
+/**
+ * Save sprites to the cache directory and return a short content hash.
+ * The hash changes whenever any sprite file changes, enabling cache busting.
+ */
 export async function saveSprites(
   islandId: string,
   sprites: SpriteAsset[],
-): Promise<void> {
+): Promise<string> {
   const dir = join(CACHE_DIR, islandId);
   await mkdir(dir, { recursive: true });
 
+  const hasher = createHash("sha256");
+  // Sort by filename for deterministic hash regardless of arrival order
+  const sorted = [...sprites].sort((a, b) =>
+    a.filename.localeCompare(b.filename),
+  );
+
   await Promise.all(
-    sprites.map(async (sprite) => {
+    sorted.map(async (sprite) => {
       const dest = safePath(dir, sprite.filename);
       if (!dest) {
         console.warn(
@@ -27,6 +38,14 @@ export async function saveSprites(
       await writeFile(dest, buf);
     }),
   );
+
+  // Feed sorted buffers into hash after writes complete
+  for (const sprite of sorted) {
+    hasher.update(sprite.filename);
+    hasher.update(sprite.data);
+  }
+
+  return hasher.digest("hex").slice(0, 8);
 }
 
 export async function clearSprites(islandId: string): Promise<void> {

@@ -16,7 +16,7 @@ export default function WorldViewerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, spriteBaseUrl, islandName, secured, connected, error } =
+  const { state, spriteBaseUrl, spriteVersion, islandName, secured, connected, error } =
     useIslandStream(id);
 
   // Once the viewer has been shown, keep it mounted to avoid
@@ -74,7 +74,7 @@ export default function WorldViewerPage({
 
       {/* Game canvas — stays mounted once first shown */}
       {everShown.current && (
-        <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} />
+        <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} spriteVersion={spriteVersion} />
       )}
 
       {/* MCP Configuration section — only for unsecured islands */}

@@ -415,10 +415,12 @@ export function buildVegetationLayer(
   const rng = mulberry32(seed ^ 0xdeadbeef);
 
   // ── Build weighted spawn pool from entity definitions ─────────────────────
-  // Separate shallow (single or two-tile on inner cell) from deep (two-tile requiring deepInner).
   interface SpawnCandidate {
     id: string;
     topId?: string;
+    rightId?: string;
+    topRightId?: string;
+    isQuadCanopy: boolean;
     requiresDeep: boolean;
   }
 
@@ -427,9 +429,13 @@ export function buildVegetationLayer(
 
   for (const def of ENTITY_DEFS) {
     if (!def.spawn || def.spawn.weight <= 0) continue;
+    const isQuadCanopy = def.tileType === "quad" && def.canopyTop === true;
     spawnPool.push({
       id: def.id,
-      topId: def.tileType === "two-tile" ? def.topTileId : undefined,
+      topId: def.tileType === "two-tile" || isQuadCanopy ? def.topTileId : undefined,
+      rightId: isQuadCanopy ? def.rightTileId : undefined,
+      topRightId: isQuadCanopy ? def.topRightTileId : undefined,
+      isQuadCanopy,
       requiresDeep: def.spawn.requiresDeep,
     });
     spawnWeights.push(def.spawn.weight);
@@ -477,12 +483,51 @@ export function buildVegetationLayer(
     }
   }
 
+  // "wideDeep" → both (x,y) and (x+1,y) are deepInner (room for 2×2 quad tree)
+  function isWideDeep(x: number, y: number): boolean {
+    return deepInner.has(`${x},${y}`) && deepInner.has(`${x + 1},${y}`);
+  }
+
   const tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
   const entityStats:   Array<{ x: number; y: number; stats: EntityStats }> = [];
-  const occupied       = new Set<string>(); // prevent overlapping entities
+  const occupied       = new Set<string>(); // prevent overlapping base tiles
 
+  // Only check 2 base tiles — canopy (layer 4) can overlap layer 3 entities
+  function canPlaceQuad(x: number, y: number): boolean {
+    return isWideDeep(x, y) &&
+      !occupied.has(`${x},${y}`) &&
+      !occupied.has(`${x + 1},${y}`);
+  }
+
+  function placeQuad(x: number, y: number, c: SpawnCandidate): void {
+    tileOverrides.push({ x,     y,     layer: 3, tileId: c.id });
+    tileOverrides.push({ x: x+1, y,     layer: 3, tileId: c.rightId! });
+    tileOverrides.push({ x,     y: y-1, layer: 4, tileId: c.topId! });
+    tileOverrides.push({ x: x+1, y: y-1, layer: 4, tileId: c.topRightId! });
+
+    const stats = { ...ENTITY_DEFAULTS[c.id] } as Record<string, unknown>;
+    applyRandomStats(c.id, stats, rng);
+    entityStats.push({ x, y, stats: stats as EntityStats });
+
+    // Only mark base tiles as occupied (canopy overlaps freely)
+    occupied.add(`${x},${y}`);
+    occupied.add(`${x + 1},${y}`);
+  }
+
+  // ── Collect candidates that pass density check ─────────────────────────────
+  const candidates: string[] = [];
   for (const key of inner) {
-    if (rng() >= SPAWN_DENSITY) continue;
+    if (rng() < SPAWN_DENSITY) candidates.push(key);
+  }
+
+  // Fisher-Yates shuffle to break grid alignment
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  // ── Place entities: try quad first per cell, fall back to single ───────────
+  for (const key of candidates) {
     if (occupied.has(key)) continue;
 
     const [x, y] = key.split(",").map(Number);
@@ -490,7 +535,10 @@ export function buildVegetationLayer(
     const candidate = pickCandidate(allowDeep);
     if (!candidate) continue;
 
-    if (candidate.topId) {
+    if (candidate.isQuadCanopy) {
+      if (!canPlaceQuad(x, y)) continue;
+      placeQuad(x, y, candidate);
+    } else if (candidate.topId) {
       // Two-tile entity: base at (x,y) layer 3, top at (x,y-1) layer 4
       const canopyKey = `${x},${y - 1}`;
       if (occupied.has(canopyKey)) continue;

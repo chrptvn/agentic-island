@@ -29,6 +29,7 @@ export interface ViewerIslandStateMessage {
   islandName: string;
   state: IslandState;
   spriteBaseUrl: string;
+  spriteVersion?: string;
   secured: boolean;
 }
 

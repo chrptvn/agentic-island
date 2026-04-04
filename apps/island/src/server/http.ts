@@ -488,7 +488,7 @@ async function handleRequest(
 
 
   // Static file serving: sprites only (no local viewer)
-  const requestedFile = url === "/" ? "" : url;
+  const requestedFile = url === "/" ? "" : decodeURIComponent(url);
   if (requestedFile) {
     const spritePath = join(SPRITE_DIR, requestedFile);
     try {

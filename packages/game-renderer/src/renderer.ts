@@ -110,6 +110,11 @@ export class GameRenderer {
     await Promise.all(promises);
   }
 
+  /** Clear all cached sprite sheets so they can be reloaded. */
+  clearSprites(): void {
+    this.sprites.clear();
+  }
+
   /** Load sprite sheets from base64 data (Hub viewer). */
   async loadSpritesFromData(
     sheets: Array<{
@@ -225,7 +230,7 @@ export class GameRenderer {
       entities,
     };
 
-    // Render tile layers to off-screen buffer
+    // Render tile layers 0-3 (terrain, ground cover, paths, entity bases)
     renderLayers(
       buf as CanvasRenderingContext2D,
       layerData,
@@ -235,6 +240,8 @@ export class GameRenderer {
       effectiveTile,
       this.animState.frame,
       'water',
+      0,
+      3,
     );
 
     // Render characters to off-screen buffer
@@ -252,6 +259,20 @@ export class GameRenderer {
         visual?.y,
       );
     }
+
+    // Render layer 4 (canopy) above characters for walk-under effect
+    renderLayers(
+      buf as CanvasRenderingContext2D,
+      layerData,
+      tileRegistry,
+      this.sprites,
+      viewport,
+      effectiveTile,
+      this.animState.frame,
+      undefined,
+      4,
+      4,
+    );
 
     buf.restore();
 

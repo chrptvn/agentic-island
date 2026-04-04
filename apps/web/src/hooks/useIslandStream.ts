@@ -6,6 +6,7 @@ import type { IslandState, HubToViewerMessage } from '@agentic-island/shared';
 export interface IslandStream {
   state: IslandState | null;
   spriteBaseUrl: string | null;
+  spriteVersion: string | null;
   islandName: string | null;
   secured: boolean;
   connected: boolean;
@@ -18,6 +19,7 @@ const WS_RECONNECT_MAX = 30_000;
 export function useIslandStream(islandId: string | undefined): IslandStream {
   const [state, setState] = useState<IslandState | null>(null);
   const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
+  const [spriteVersion, setSpriteVersion] = useState<string | null>(null);
   const [islandName, setIslandName] = useState<string | null>(null);
   const [secured, setSecured] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -54,6 +56,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
             case 'island_state':
               setState(msg.state);
               setSpriteBaseUrl(msg.spriteBaseUrl);
+              setSpriteVersion(msg.spriteVersion ?? null);
               setIslandName(msg.islandName);
               setSecured(msg.secured ?? false);
               break;
@@ -95,5 +98,5 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
     };
   }, [islandId]);
 
-  return { state, spriteBaseUrl, islandName, secured, connected, error };
+  return { state, spriteBaseUrl, spriteVersion, islandName, secured, connected, error };
 }

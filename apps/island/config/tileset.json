@@ -20,6 +20,10 @@
     "pipoya/terrain-sand.png": {
       "tileSize": 32,
       "tileGap": 0
+    },
+    "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png": {
+      "tileSize": 32,
+      "tileGap": 0
     }
   },
   "tiles": [
@@ -100,6 +104,192 @@
       "category": "vegetation",
       "description": "Old oak tree \u2014 canopy"
     },
+
+    {
+      "id": "big_tree_light",
+      "col": 0,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big light tree — base left"
+    },
+    {
+      "id": "big_tree_light_br",
+      "col": 1,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big light tree — base right"
+    },
+    {
+      "id": "big_tree_light_tl",
+      "col": 0,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big light tree — canopy left"
+    },
+    {
+      "id": "big_tree_light_tr",
+      "col": 1,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big light tree — canopy right"
+    },
+
+    {
+      "id": "big_tree_dark",
+      "col": 2,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dark tree — base left"
+    },
+    {
+      "id": "big_tree_dark_br",
+      "col": 3,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dark tree — base right"
+    },
+    {
+      "id": "big_tree_dark_tl",
+      "col": 2,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dark tree — canopy left"
+    },
+    {
+      "id": "big_tree_dark_tr",
+      "col": 3,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dark tree — canopy right"
+    },
+
+    {
+      "id": "big_tree_orange",
+      "col": 4,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big orange tree — base left"
+    },
+    {
+      "id": "big_tree_orange_br",
+      "col": 5,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big orange tree — base right"
+    },
+    {
+      "id": "big_tree_orange_tl",
+      "col": 4,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big orange tree — canopy left"
+    },
+    {
+      "id": "big_tree_orange_tr",
+      "col": 5,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big orange tree — canopy right"
+    },
+
+    {
+      "id": "big_tree_dead",
+      "col": 6,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dead tree — base left"
+    },
+    {
+      "id": "big_tree_dead_br",
+      "col": 7,
+      "row": 2,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dead tree — base right"
+    },
+    {
+      "id": "big_tree_dead_tl",
+      "col": 6,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dead tree — canopy left"
+    },
+    {
+      "id": "big_tree_dead_tr",
+      "col": 7,
+      "row": 1,
+      "layer": 4,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Big dead tree — canopy right"
+    },
+
+    {
+      "id": "small_tree_light",
+      "col": 0,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small light tree"
+    },
+    {
+      "id": "small_tree_dark",
+      "col": 1,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small dark tree"
+    },
+    {
+      "id": "small_tree_orange",
+      "col": 2,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small orange tree"
+    },
+    {
+      "id": "small_tree_dead",
+      "col": 3,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Small dead tree"
+    },
+
     {
       "id": "young_berry",
       "col": 23,

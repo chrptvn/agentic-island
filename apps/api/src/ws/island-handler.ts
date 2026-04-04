@@ -26,6 +26,9 @@ export const islandViewers = new Map<string, Set<WebSocket>>();
 // Cache the last state payload per island so new viewers get an immediate snapshot
 export const lastIslandState = new Map<string, string>();
 
+// Cache the sprite content hash per island for URL cache busting
+const spriteHashes = new Map<string, string>();
+
 export function handleIslandConnection(ws: WebSocket): void {
   let core: ConnectedIsland | null = null;
 
@@ -118,7 +121,8 @@ export function handleIslandConnection(ws: WebSocket): void {
           }
 
           if (msg.sprites?.length) {
-            await saveSprites(islandId, msg.sprites);
+            const hash = await saveSprites(islandId, msg.sprites);
+            spriteHashes.set(islandId, hash);
           }
 
           // Save thumbnail alongside sprites
@@ -162,12 +166,15 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Notify lobby viewers of metadata changes (throttled)
           broadcastIslandUpdate(core.islandId);
 
+          const spriteHash = spriteHashes.get(core.islandId);
+          const baseUrl = `/sprites/${core.islandId}/`;
           const relay = JSON.stringify({
             type: "island_state",
             islandId: core.islandId,
             islandName: core.islandName,
             state: msg.state,
-            spriteBaseUrl: `/sprites/${core.islandId}/`,
+            spriteBaseUrl: baseUrl,
+            spriteVersion: spriteHash ?? undefined,
             secured: core.secured,
           });
           // Cache so late-joining viewers get an immediate snapshot
@@ -217,6 +224,7 @@ export function handleIslandConnection(ws: WebSocket): void {
       ).run(core.islandId);
       connectedIslands.delete(core.islandId);
       lastIslandState.delete(core.islandId);
+      spriteHashes.delete(core.islandId);
       closeAllSessionsForIsland(core.islandId);
 
       // Notify lobby viewers that the island is gone
