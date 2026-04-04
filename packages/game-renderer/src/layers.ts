@@ -167,18 +167,9 @@ export function renderLayers(
               drawTile(ctx, ent.tileId, registry, sprites, cx, cy, dw, dh, frame);
             }
           }
-        } else if (layer === 4) {
-          // Entity canopy: look up the entity def's topTileId via registry
-          const ent = entityMap.get(`${worldCol},${worldRow}`);
-          if (ent) {
-            const def = registry[ent.tileId];
-            // Two-tile entities have a canopy tile rendered one row above
-            if (def && (def as TileDef & { topTileId?: string }).topTileId) {
-              // TODO: resolve topTileId from EntityDef once available
-            }
-          }
         }
-        // Layers 1 and 2 without overrides are empty (transparent)
+        // Layer 4 canopy tiles are rendered via overrides (line 148).
+        // Layers 1 and 2 without overrides are empty (transparent).
       }
     }
   }

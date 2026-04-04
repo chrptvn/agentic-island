@@ -138,8 +138,8 @@ export class Island extends EventEmitter {
     return registry;
   }
 
-  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[]; occupants?: string[] }> {
-    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; inventory?: { item: string; qty: number }[]; occupants?: string[] }> = [];
+  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[] }> {
+    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[] }> = [];
 
     // Build a map of tent base positions → occupant character IDs
     const tentOccupants = new Map<string, string[]>();
@@ -154,25 +154,19 @@ export class Island extends EventEmitter {
     for (const [key, stats] of this.entityStats) {
       const [x, y] = key.split(",").map(Number);
       const layers = this.overrides.get(key);
-      // Entity base tiles are on layer 3 (index 3 in the overrides array)
       const tileId = layers?.[3];
       if (tileId && tileId !== "") {
         const inv = (stats as unknown as { inventory?: { item: string; qty: number }[] }).inventory;
         const occupants = tentOccupants.get(key);
-        result.push({ x, y, tileId, stats, ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}) });
-
-        // For quad entities, also emit EntityInstance entries for the 3 extra tiles
         const def = ENTITY_DEF_BY_ID.get(tileId);
-        if (def?.tileType === "quad") {
-          const extras: Array<{ dx: number; dy: number; tid: string | undefined }> = [
-            { dx: 0, dy: -1, tid: def.topTileId },
-            { dx: 1, dy: 0, tid: def.rightTileId },
-            { dx: 1, dy: -1, tid: def.topRightTileId },
-          ];
-          for (const { dx, dy, tid } of extras) {
-            if (tid) {
-              result.push({ x: x + dx, y: y + dy, tileId: tid, stats, ...(occupants ? { occupants } : {}) });
-            }
+        const name = def?.name;
+        result.push({ x, y, tileId, stats, ...(name ? { name } : {}), ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}) });
+
+        // Emit extra tiles from the entity's tiles array (non-anchor tiles)
+        if (def) {
+          for (const t of def.tiles) {
+            if (t.dx === 0 && t.dy === 0) continue;
+            result.push({ x: x + t.dx, y: y + t.dy, tileId: t.tileId, stats, ...(name ? { name } : {}), ...(occupants ? { occupants } : {}) });
           }
         }
       }
@@ -968,29 +962,18 @@ export class Island extends EventEmitter {
       this.overrides.set(key, overrideLayers);
       clearTileOverride(entityX, entityY, 3);
 
-      // Remove canopy layer for two-tile entities
-      if (def.fullTop) {
-        const topKey = `${entityX},${entityY - 1}`;
-        const topLayers = this.overrides.get(topKey) ?? [];
-        topLayers[4] = "";
-        this.overrides.set(topKey, topLayers);
-        clearTileOverride(entityX, entityY - 1, 4);
-      }
-
-      // Remove extra tiles for quad-canopy entities
-      if (def.fullRight) {
-        const rightKey = `${entityX + 1},${entityY}`;
-        const rightLayers = this.overrides.get(rightKey) ?? [];
-        rightLayers[3] = "";
-        this.overrides.set(rightKey, rightLayers);
-        clearTileOverride(entityX + 1, entityY, 3);
-      }
-      if (def.fullTopRight) {
-        const trKey = `${entityX + 1},${entityY - 1}`;
-        const trLayers = this.overrides.get(trKey) ?? [];
-        trLayers[4] = "";
-        this.overrides.set(trKey, trLayers);
-        clearTileOverride(entityX + 1, entityY - 1, 4);
+      // Remove extra tiles for multi-tile entities (generic tiles iteration)
+      const entityDef = ENTITY_DEF_BY_ID.get(tileId);
+      if (entityDef) {
+        for (const t of entityDef.tiles) {
+          if (t.dx === 0 && t.dy === 0) continue;
+          const tx = entityX + t.dx, ty = entityY + t.dy;
+          const tKey = `${tx},${ty}`;
+          const tLayers = this.overrides.get(tKey) ?? [];
+          tLayers[t.layer] = "";
+          this.overrides.set(tKey, tLayers);
+          clearTileOverride(tx, ty, t.layer);
+        }
       }
 
       // Spawn replacement entity (e.g. log_pile) — pre-fill container with container drops
@@ -1174,28 +1157,24 @@ export class Island extends EventEmitter {
       throw new Error(`Cannot build at (${targetX}, ${targetY}): cell is occupied by "${existing}".`);
     }
 
-    // For quad entities, also check the 3 extra positions
+    // Validate and collect extra tile positions from the entity's tiles array
     const entityDef = ENTITY_DEF_BY_ID.get(entityId);
-    const quadPositions: Array<{ x: number; y: number; tileId: string; layer: number }> = [];
-    if (entityDef?.tileType === "quad") {
-      const isCanopyTop = entityDef.canopyTop === true;
-      const extras = [
-        { dx: 0, dy: -1, tid: entityDef.topTileId, layer: isCanopyTop ? 4 : 3 },
-        { dx: 1, dy: 0, tid: entityDef.rightTileId, layer: 3 },
-        { dx: 1, dy: -1, tid: entityDef.topRightTileId, layer: isCanopyTop ? 4 : 3 },
-      ];
-      for (const { dx, dy, tid, layer } of extras) {
-        if (!tid) continue;
-        const ex = targetX + dx, ey = targetY + dy;
+    const extraPositions: Array<{ x: number; y: number; tileId: string; layer: number }> = [];
+    if (entityDef) {
+      for (const t of entityDef.tiles) {
+        if (t.dx === 0 && t.dy === 0) continue;
+        const ex = targetX + t.dx, ey = targetY + t.dy;
         if (ex < 0 || ex >= this.map.width || ey < 0 || ey >= this.map.height) {
-          throw new Error(`Quad entity extends outside map bounds at (${ex}, ${ey}).`);
+          throw new Error(`Entity extends outside map bounds at (${ex}, ${ey}).`);
         }
-        const eKey = `${ex},${ey}`;
-        const eTile = this.overrides.get(eKey)?.[layer === 4 ? 4 : 3] ?? "";
-        if (eTile) {
-          throw new Error(`Cannot build quad entity: cell (${ex}, ${ey}) is occupied by "${eTile}".`);
+        if (t.layer === 3) {
+          const eKey = `${ex},${ey}`;
+          const eTile = this.overrides.get(eKey)?.[3] ?? "";
+          if (eTile) {
+            throw new Error(`Cannot build entity: cell (${ex}, ${ey}) is occupied by "${eTile}".`);
+          }
         }
-        quadPositions.push({ x: ex, y: ey, tileId: tid, layer });
+        extraPositions.push({ x: ex, y: ey, tileId: t.tileId, layer: t.layer });
       }
     }
 
@@ -1215,8 +1194,8 @@ export class Island extends EventEmitter {
     layers[3] = entityId;
     this.overrides.set(targetKey, layers);
 
-    // Place extra tiles for quad entities (layer varies for canopyTop)
-    for (const qp of quadPositions) {
+    // Place extra tiles for multi-tile entities
+    for (const qp of extraPositions) {
       const qKey = `${qp.x},${qp.y}`;
       const qLayers = this.overrides.get(qKey) ?? [];
       while (qLayers.length <= qp.layer) qLayers.push("");
@@ -1245,7 +1224,7 @@ export class Island extends EventEmitter {
     // Flush tile override + entity stats + character in one atomic transaction
     runTransaction(() => {
       saveOverride(targetX, targetY, 3, entityId);
-      for (const qp of quadPositions) {
+      for (const qp of extraPositions) {
         saveOverride(qp.x, qp.y, qp.layer, qp.tileId);
       }
       if (Object.keys(initStats).length > 0) {
@@ -1263,7 +1242,7 @@ export class Island extends EventEmitter {
   /** Set of entity IDs that are tent base tiles (door tiles a character can enter). */
   private static readonly TENT_IDS = new Set(
     Array.from(ENTITY_DEF_BY_ID.values())
-      .filter(d => d.tileType === "quad")
+      .filter(d => d.tiles.length > 1 && d.tiles.every(t => t.layer === 3))
       .map(d => d.id),
   );
 
@@ -1635,7 +1614,7 @@ export class Island extends EventEmitter {
       const key = `${x},${y}`;
       const tileId = this.overrides.get(key)?.[3] ?? "";
       const def = tileId ? ENTITY_DEF_BY_ID.get(tileId) : undefined;
-      if (def?.tileType === "quad" || def?.tileType === "two-tile") {
+      if (def && def.tiles.length > 1) {
         // Keep multi-tile entities on the map; just persist cleared inventory
         saveEntityStat(x, y, stats);
       } else {
@@ -1774,7 +1753,7 @@ export class Island extends EventEmitter {
 
     // Restore ALL resource fields from defaults
     const current = this.entityStats.get(key);
-    if (!current && def.emptyBase) return; // was swapped to empty, but stats gone — skip
+    if (!current && def.emptyBase) return;
 
     const defaults = ENTITY_DEFAULTS[tileId];
     if (!defaults) return;
@@ -1785,34 +1764,25 @@ export class Island extends EventEmitter {
     this.entityStats.set(key, newStats);
     saveEntityStat(x, y, newStats);
 
-    // Restore full tiles
+    // Restore full tiles from entity def
     const overrideLayers = this.overrides.get(key) ?? [];
     overrideLayers[3] = def.fullBase;
     this.overrides.set(key, overrideLayers);
     saveOverride(x, y, 3, def.fullBase);
 
-    if (def.fullTop) {
-      const topKey = `${x},${y - 1}`;
-      const topLayers = this.overrides.get(topKey) ?? [];
-      topLayers[4] = def.fullTop;
-      this.overrides.set(topKey, topLayers);
-      saveOverride(x, y - 1, 4, def.fullTop);
-    }
-
-    if (def.fullRight) {
-      const rightKey = `${x + 1},${y}`;
-      const rightLayers = this.overrides.get(rightKey) ?? [];
-      rightLayers[3] = def.fullRight;
-      this.overrides.set(rightKey, rightLayers);
-      saveOverride(x + 1, y, 3, def.fullRight);
-    }
-
-    if (def.fullTopRight) {
-      const trKey = `${x + 1},${y - 1}`;
-      const trLayers = this.overrides.get(trKey) ?? [];
-      trLayers[4] = def.fullTopRight;
-      this.overrides.set(trKey, trLayers);
-      saveOverride(x + 1, y - 1, 4, def.fullTopRight);
+    // Restore extra tiles for multi-tile entities
+    const entityDef = ENTITY_DEF_BY_ID.get(tileId);
+    if (entityDef) {
+      for (const t of entityDef.tiles) {
+        if (t.dx === 0 && t.dy === 0) continue;
+        const tx = x + t.dx, ty = y + t.dy;
+        const tKey = `${tx},${ty}`;
+        const tLayers = this.overrides.get(tKey) ?? [];
+        while (tLayers.length <= t.layer) tLayers.push("");
+        tLayers[t.layer] = t.tileId;
+        this.overrides.set(tKey, tLayers);
+        saveOverride(tx, ty, t.layer, t.tileId);
+      }
     }
 
     this.emit("map:updated", this.map);
@@ -2014,9 +1984,9 @@ export class Island extends EventEmitter {
     const layers = this.overrides.get(key) ?? [];
     while (layers.length <= 3) layers.push("");
 
-    // If the mature stage is a two-tile tree, place canopy too
+    // Place extra tiles for multi-tile entities (e.g. canopy for trees)
     const entityDef = ENTITY_DEF_BY_ID.get(nextId);
-    const topId = entityDef?.topTileId;
+    const extraTiles = entityDef?.tiles.filter(t => t.dx !== 0 || t.dy !== 0) ?? [];
 
     // Set stats for the new entity
     this.entityStats.delete(key);
@@ -2048,7 +2018,9 @@ export class Island extends EventEmitter {
 
     runTransaction(() => {
       saveOverride(x, y, 3, layers[3]);
-      if (topId) saveOverride(x, y - 1, 4, topId);
+      for (const t of extraTiles) {
+        saveOverride(x + t.dx, y + t.dy, t.layer, t.tileId);
+      }
       if (Object.keys(initStats).length > 0) saveEntityStat(x, y, initStats as EntityStats);
       else deleteEntityStat(x, y);
     });
@@ -2057,13 +2029,13 @@ export class Island extends EventEmitter {
       this.entityStats.set(key, initStats as EntityStats);
     }
 
-    // Place canopy in-memory
-    if (topId) {
-      const topKey = `${x},${y - 1}`;
-      const topLayers = this.overrides.get(topKey) ?? [];
-      while (topLayers.length <= 3) topLayers.push("");
-      topLayers[4] = topId;
-      this.overrides.set(topKey, topLayers);
+    // Place extra tiles in-memory
+    for (const t of extraTiles) {
+      const tKey = `${x + t.dx},${y + t.dy}`;
+      const tLayers = this.overrides.get(tKey) ?? [];
+      while (tLayers.length <= t.layer) tLayers.push("");
+      tLayers[t.layer] = t.tileId;
+      this.overrides.set(tKey, tLayers);
     }
 
     this.overridesVersion = loadOverridesVersion();

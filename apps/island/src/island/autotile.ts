@@ -384,23 +384,16 @@ import {
   ENTITY_DEFS,
   ENTITY_DEFAULTS,
   type EntityStats,
+  type TilePlacement,
   applyRandomStats,
 } from "./entity-registry.js";
 import { getIslandConfig } from "./island-config.js";
 
 /**
  * Scatter vegetation on inner grass cells using a seeded RNG.
- * Spawn candidates and their relative weights are driven by config/entities.json
- * (entities with a `spawn` block).
  *
- * Returns two lists:
- *  - tileOverrides: layer-2 trunk tiles + layer-3 canopy tiles (for tile_overrides table)
- *  - entityStats:   per-cell stats from ENTITY_DEFAULTS (for entity_stats table)
- *
- * @param w          Map width
- * @param h          Map height
- * @param seed       Map seed (offset internally so it doesn't clash with island RNG)
- * @param grassGrid  2-D boolean grid: grassGrid[y][x] === true → grass cell
+ * Placement is fully generic — entity footprint and canopy are derived
+ * from the `tiles` array in entities.json.  No special-case code per shape.
  */
 export function buildVegetationLayer(
   w: number,
@@ -411,17 +404,15 @@ export function buildVegetationLayer(
   tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }>;
   entityStats:   Array<{ x: number; y: number; stats: EntityStats }>;
 } {
-  // Use a different seed offset so vegetation doesn't correlate with island shape
   const rng = mulberry32(seed ^ 0xdeadbeef);
 
   // ── Build weighted spawn pool from entity definitions ─────────────────────
   interface SpawnCandidate {
     id: string;
-    topId?: string;
-    rightId?: string;
-    topRightId?: string;
-    isQuadCanopy: boolean;
+    tiles: TilePlacement[];
+    isBlocking: boolean;
     requiresDeep: boolean;
+    requiresWide: boolean;
   }
 
   const spawnPool: SpawnCandidate[] = [];
@@ -429,24 +420,25 @@ export function buildVegetationLayer(
 
   for (const def of ENTITY_DEFS) {
     if (!def.spawn || def.spawn.weight <= 0) continue;
-    const isQuadCanopy = def.tileType === "quad" && def.canopyTop === true;
+    const tiles = def.tiles;
+    const maxDx = Math.max(0, ...tiles.map((t) => t.dx));
+    const minDy = Math.min(0, ...tiles.map((t) => t.dy));
     spawnPool.push({
       id: def.id,
-      topId: def.tileType === "two-tile" || isQuadCanopy ? def.topTileId : undefined,
-      rightId: isQuadCanopy ? def.rightTileId : undefined,
-      topRightId: isQuadCanopy ? def.topRightTileId : undefined,
-      isQuadCanopy,
-      requiresDeep: def.spawn.requiresDeep,
+      tiles,
+      isBlocking: def.blocks === true,
+      requiresDeep: minDy < 0,
+      requiresWide: maxDx > 0,
     });
     spawnWeights.push(def.spawn.weight);
   }
 
   const totalWeight = spawnWeights.reduce((a, b) => a + b, 0);
 
-  function pickCandidate(allowDeep: boolean): SpawnCandidate | null {
+  function pickCandidate(isDeep: boolean, isWide: boolean): SpawnCandidate | null {
     const eligible = spawnPool
       .map((c, i) => ({ c, w: spawnWeights[i] }))
-      .filter(({ c }) => !c.requiresDeep || allowDeep);
+      .filter(({ c }) => (!c.requiresDeep || isDeep) && (!c.requiresWide || isWide));
     if (eligible.length === 0) return null;
     const total = eligible.reduce((s, { w }) => s + w, 0);
     let r = rng() * total;
@@ -457,108 +449,82 @@ export function buildVegetationLayer(
     return eligible[eligible.length - 1].c;
   }
 
-  // Spawn density from config; individual entity likelihood is controlled by weight.
   const SPAWN_DENSITY = totalWeight > 0 ? getIslandConfig().mapGen.vegetationDensity : 0;
 
   const isG = (x: number, y: number) =>
     x >= 0 && x < w && y >= 0 && y < h && grassGrid[y]?.[x] === true;
 
   // ── Classify cells ────────────────────────────────────────────────────────
-  // "inner"     → all 4 cardinal neighbours are grass
-  // "deepInner" → inner AND the cell directly above is also inner (room for canopy)
-  const inner    = new Set<string>();
-  const deepInner= new Set<string>();
+  const inner     = new Set<string>();
+  const deepInner = new Set<string>();
 
   for (let y = 1; y < h - 1; y++) {
     for (let x = 1; x < w - 1; x++) {
       if (!isG(x, y)) continue;
-      if (isG(x,y-1) && isG(x,y+1) && isG(x-1,y) && isG(x+1,y)) {
+      if (isG(x, y - 1) && isG(x, y + 1) && isG(x - 1, y) && isG(x + 1, y)) {
         const key = `${x},${y}`;
         inner.add(key);
-        // canopy cell (x, y-1) must also be inner
-        if (isG(x,y-2) && isG(x-1,y-1) && isG(x+1,y-1)) {
+        if (isG(x, y - 2) && isG(x - 1, y - 1) && isG(x + 1, y - 1)) {
           deepInner.add(key);
         }
       }
     }
   }
 
-  // "wideDeep" → both (x,y) and (x+1,y) are deepInner (room for 2×2 quad tree)
-  function isWideDeep(x: number, y: number): boolean {
-    return deepInner.has(`${x},${y}`) && deepInner.has(`${x + 1},${y}`);
-  }
-
   const tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
   const entityStats:   Array<{ x: number; y: number; stats: EntityStats }> = [];
-  const occupied       = new Set<string>(); // prevent overlapping base tiles
+  const occupied       = new Set<string>();
 
-  // Only check 2 base tiles — canopy (layer 4) can overlap layer 3 entities
-  function canPlaceQuad(x: number, y: number): boolean {
-    return isWideDeep(x, y) &&
-      !occupied.has(`${x},${y}`) &&
-      !occupied.has(`${x + 1},${y}`);
+  /** Check that every layer-3 tile position is valid (inner + unoccupied). */
+  function canPlace(x: number, y: number, c: SpawnCandidate): boolean {
+    for (const t of c.tiles) {
+      const tx = x + t.dx;
+      const ty = y + t.dy;
+      if (tx < 0 || tx >= w || ty < 0 || ty >= h) return false;
+      if (t.layer === 3) {
+        const key = `${tx},${ty}`;
+        if (!inner.has(key) || occupied.has(key)) return false;
+      }
+    }
+    return true;
   }
 
-  function placeQuad(x: number, y: number, c: SpawnCandidate): void {
-    tileOverrides.push({ x,     y,     layer: 3, tileId: c.id });
-    tileOverrides.push({ x: x+1, y,     layer: 3, tileId: c.rightId! });
-    tileOverrides.push({ x,     y: y-1, layer: 4, tileId: c.topId! });
-    tileOverrides.push({ x: x+1, y: y-1, layer: 4, tileId: c.topRightId! });
-
+  function placeEntity(x: number, y: number, c: SpawnCandidate): void {
+    for (const t of c.tiles) {
+      tileOverrides.push({ x: x + t.dx, y: y + t.dy, layer: t.layer, tileId: t.tileId });
+    }
     const stats = { ...ENTITY_DEFAULTS[c.id] } as Record<string, unknown>;
     applyRandomStats(c.id, stats, rng);
     entityStats.push({ x, y, stats: stats as EntityStats });
-
-    // Only mark base tiles as occupied (canopy overlaps freely)
-    occupied.add(`${x},${y}`);
-    occupied.add(`${x + 1},${y}`);
+    if (c.isBlocking) {
+      for (const t of c.tiles) {
+        if (t.layer === 3) occupied.add(`${x + t.dx},${y + t.dy}`);
+      }
+    }
   }
 
-  // ── Collect candidates that pass density check ─────────────────────────────
+  // ── Collect density-filtered candidates and shuffle ────────────────────────
   const candidates: string[] = [];
   for (const key of inner) {
     if (rng() < SPAWN_DENSITY) candidates.push(key);
   }
-
-  // Fisher-Yates shuffle to break grid alignment
   for (let i = candidates.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
     [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
   }
 
-  // ── Place entities: try quad first per cell, fall back to single ───────────
+  // ── Place entities ─────────────────────────────────────────────────────────
   for (const key of candidates) {
     if (occupied.has(key)) continue;
 
     const [x, y] = key.split(",").map(Number);
-    const allowDeep = deepInner.has(key);
-    const candidate = pickCandidate(allowDeep);
+    const isDeep = deepInner.has(key);
+    const isWide = isDeep && deepInner.has(`${x + 1},${y}`);
+    const candidate = pickCandidate(isDeep, isWide);
     if (!candidate) continue;
 
-    if (candidate.isQuadCanopy) {
-      if (!canPlaceQuad(x, y)) continue;
-      placeQuad(x, y, candidate);
-    } else if (candidate.topId) {
-      // Two-tile entity: base at (x,y) layer 3, top at (x,y-1) layer 4
-      const canopyKey = `${x},${y - 1}`;
-      if (occupied.has(canopyKey)) continue;
-
-      tileOverrides.push({ x, y,        layer: 3, tileId: candidate.id });
-      tileOverrides.push({ x, y: y - 1, layer: 4, tileId: candidate.topId });
-      const stats = { ...ENTITY_DEFAULTS[candidate.id] } as Record<string, unknown>;
-      applyRandomStats(candidate.id, stats, rng);
-      entityStats.push({ x, y, stats: stats as EntityStats });
-
-      occupied.add(key);
-      occupied.add(canopyKey);
-    } else {
-      // Single-tile entity
-      tileOverrides.push({ x, y, layer: 3, tileId: candidate.id });
-      const stats = { ...ENTITY_DEFAULTS[candidate.id] } as Record<string, unknown>;
-      applyRandomStats(candidate.id, stats, rng);
-      entityStats.push({ x, y, stats: stats as EntityStats });
-      occupied.add(key);
-    }
+    if (!canPlace(x, y, candidate)) continue;
+    placeEntity(x, y, candidate);
   }
 
   return { tileOverrides, entityStats };

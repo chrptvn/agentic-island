@@ -30,12 +30,12 @@ export function findPath(
     if (!layers) return false;
     if (!isWalkableGround(layers[1] ?? "")) return false;
     const l3 = layers[3];
-    // Always blocked — solid obstacles (trees, rocks)
-    if (l3 && blockingIds.has(l3)) return false;
-    // Allow target cell even if it has a non-blocking layer-3 entity
-    if (p.x === target.x && p.y === target.y) return true;
-    // Blocked if has any other layer-3 entity
-    if (l3 && l3 !== "") return false;
+    // Only block if entity is in blockingIds (trees, rocks, etc.)
+    if (l3 && blockingIds.has(l3)) {
+      // Allow target cell so characters can path to harvestable entities
+      if (p.x === target.x && p.y === target.y) return true;
+      return false;
+    }
     return true;
   };
 

@@ -2,1087 +2,1027 @@
   "entities": [
     {
       "id": "berries",
-      "tileType": "single",
-      "stats": {
-        "berries": 4
-      },
-      "harvest": {
-        "fullBase": "berries",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Berries",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "berries"
+        }
+      ],
       "item": true
     },
     {
       "id": "branches",
-      "tileType": "single",
-      "stats": {
-        "branches": 2
-      },
-      "harvest": {
-        "fullBase": "branches",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Branches",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "branches"
+        }
+      ],
       "item": true
     },
     {
       "id": "acorns",
-      "tileType": "single",
-      "stats": {
-        "acorns": 2
-      },
-      "harvest": {
-        "fullBase": "acorns",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Acorns",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "acorns"
+        }
+      ],
       "item": true
     },
     {
       "id": "young_tree",
-      "tileType": "single",
-      "stats": {
-        "health": 40,
-        "maxHealth": 40,
-        "branches": 2,
-        "acorns": 3
-      },
-      "harvest": {
-        "fullBase": "young_tree",
-        "requires": [
-          "chop"
-        ],
-        "damage": 10,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 3,
-            "acorns": 2,
-            "wood": 3
-          }
+      "name": "Young Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "young_tree"
         }
-      },
-      "searchTarget": "trees",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      ],
       "blocks": true
     },
     {
       "id": "old_tree_base",
-      "tileType": "two-tile",
-      "topTileId": "old_tree_top",
-      "stats": {
-        "health": 100,
-        "maxHealth": 100,
-        "branches": 5,
-        "acorns": 8
-      },
-      "harvest": {
-        "fullBase": "old_tree_base",
-        "fullTop": "old_tree_top",
-        "requires": [
-          "chop"
-        ],
-        "damage": 20,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 8,
-            "acorns": 5,
-            "wood": 5
-          }
+      "name": "Old Oak Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "old_tree_base"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "old_tree_top"
         }
-      },
-      "searchTarget": "trees",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": true
-      },
+      ],
       "blocks": true
     },
-
     {
       "id": "big_tree_light",
-      "tileType": "quad",
-      "topTileId": "big_tree_light_tl",
-      "rightTileId": "big_tree_light_br",
-      "topRightTileId": "big_tree_light_tr",
-      "canopyTop": true,
-      "stats": {
-        "health": 120,
-        "maxHealth": 120,
-        "branches": 6,
-        "acorns": 5
-      },
-      "harvest": {
-        "fullBase": "big_tree_light",
-        "fullTop": "big_tree_light_tl",
-        "fullRight": "big_tree_light_br",
-        "fullTopRight": "big_tree_light_tr",
-        "requires": ["chop"],
-        "damage": 20,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 8,
-            "acorns": 4,
-            "wood": 6
-          }
+      "name": "Big Light Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_light"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_light_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_light_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_light_tr"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 4,
-        "requiresDeep": true
-      },
-      "blocks": true
+        "weight": 4
+      }
     },
     {
       "id": "big_tree_dark",
-      "tileType": "quad",
-      "topTileId": "big_tree_dark_tl",
-      "rightTileId": "big_tree_dark_br",
-      "topRightTileId": "big_tree_dark_tr",
-      "canopyTop": true,
-      "stats": {
-        "health": 120,
-        "maxHealth": 120,
-        "branches": 6,
-        "acorns": 5
-      },
-      "harvest": {
-        "fullBase": "big_tree_dark",
-        "fullTop": "big_tree_dark_tl",
-        "fullRight": "big_tree_dark_br",
-        "fullTopRight": "big_tree_dark_tr",
-        "requires": ["chop"],
-        "damage": 20,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 8,
-            "acorns": 4,
-            "wood": 6
-          }
+      "name": "Big Dark Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_dark"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_dark_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_dark_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_dark_tr"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 4,
-        "requiresDeep": true
-      },
-      "blocks": true
+        "weight": 4
+      }
     },
     {
       "id": "big_tree_orange",
-      "tileType": "quad",
-      "topTileId": "big_tree_orange_tl",
-      "rightTileId": "big_tree_orange_br",
-      "topRightTileId": "big_tree_orange_tr",
-      "canopyTop": true,
-      "stats": {
-        "health": 120,
-        "maxHealth": 120,
-        "branches": 6,
-        "acorns": 5
-      },
-      "harvest": {
-        "fullBase": "big_tree_orange",
-        "fullTop": "big_tree_orange_tl",
-        "fullRight": "big_tree_orange_br",
-        "fullTopRight": "big_tree_orange_tr",
-        "requires": ["chop"],
-        "damage": 20,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 8,
-            "acorns": 4,
-            "wood": 6
-          }
+      "name": "Big Orange Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_orange"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_orange_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_orange_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_orange_tr"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 1,
-        "requiresDeep": true
-      },
-      "blocks": true
+        "weight": 1
+      }
     },
     {
       "id": "big_tree_dead",
-      "tileType": "quad",
-      "topTileId": "big_tree_dead_tl",
-      "rightTileId": "big_tree_dead_br",
-      "topRightTileId": "big_tree_dead_tr",
-      "canopyTop": true,
-      "stats": {
-        "health": 80,
-        "maxHealth": 80,
-        "branches": 4
-      },
-      "harvest": {
-        "fullBase": "big_tree_dead",
-        "fullTop": "big_tree_dead_tl",
-        "fullRight": "big_tree_dead_br",
-        "fullTopRight": "big_tree_dead_tr",
-        "requires": ["chop"],
-        "damage": 20,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 6,
-            "wood": 4
-          }
+      "name": "Big Dead Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_dead"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "big_tree_dead_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_dead_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "big_tree_dead_tr"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 0.5,
-        "requiresDeep": true
-      },
-      "blocks": true
+        "weight": 0.5
+      }
     },
-
     {
       "id": "small_tree_light",
-      "tileType": "single",
-      "stats": {
-        "health": 40,
-        "maxHealth": 40,
-        "branches": 2,
-        "acorns": 2
-      },
-      "harvest": {
-        "fullBase": "small_tree_light",
-        "requires": ["chop"],
-        "damage": 10,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 3,
-            "acorns": 2,
-            "wood": 3
-          }
+      "name": "Small Light Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "small_tree_light"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 3,
-        "requiresDeep": false
-      },
-      "blocks": true
+        "weight": 3
+      }
     },
     {
       "id": "small_tree_dark",
-      "tileType": "single",
-      "stats": {
-        "health": 40,
-        "maxHealth": 40,
-        "branches": 2,
-        "acorns": 2
-      },
-      "harvest": {
-        "fullBase": "small_tree_dark",
-        "requires": ["chop"],
-        "damage": 10,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 3,
-            "acorns": 2,
-            "wood": 3
-          }
+      "name": "Small Dark Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "small_tree_dark"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 3,
-        "requiresDeep": false
-      },
-      "blocks": true
+        "weight": 3
+      }
     },
     {
       "id": "small_tree_orange",
-      "tileType": "single",
-      "stats": {
-        "health": 40,
-        "maxHealth": 40,
-        "branches": 2,
-        "acorns": 2
-      },
-      "harvest": {
-        "fullBase": "small_tree_orange",
-        "requires": ["chop"],
-        "damage": 10,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 3,
-            "acorns": 2,
-            "wood": 3
-          }
+      "name": "Small Orange Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "small_tree_orange"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 1,
-        "requiresDeep": false
-      },
-      "blocks": true
+        "weight": 1
+      }
     },
     {
       "id": "small_tree_dead",
-      "tileType": "single",
-      "stats": {
-        "health": 30,
-        "maxHealth": 30,
-        "branches": 2
-      },
-      "harvest": {
-        "fullBase": "small_tree_dead",
-        "requires": ["chop"],
-        "damage": 10,
-        "onDeath": {
-          "spawnEntity": "log_pile",
-          "drops": {
-            "branches": 3,
-            "wood": 2
-          }
+      "name": "Small Dead Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "small_tree_dead"
         }
-      },
-      "searchTarget": "trees",
+      ],
+      "blocks": true,
       "spawn": {
-        "weight": 0.3,
-        "requiresDeep": false
-      },
-      "blocks": true
+        "weight": 0.3
+      }
     },
-
+    {
+      "id": "dried_flower",
+      "name": "Dried Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "dried_flower"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "log",
+      "name": "Log",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "log"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1
+      }
+    },
+    {
+      "id": "fallen_tree_h",
+      "name": "Fallen Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "fallen_tree_h"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "fallen_tree_h_r"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1
+      }
+    },
+    {
+      "id": "succulent",
+      "name": "Succulent",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "succulent"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "dried_plant",
+      "name": "Dried Plant",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "dried_plant"
+        }
+      ],
+      "spawn": {
+        "weight": 1
+      }
+    },
+    {
+      "id": "leaves",
+      "name": "Leaves",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "leaves"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "sprouts",
+      "name": "Sprouts",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprouts"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "plant_cluster",
+      "name": "Plant Cluster",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "plant_cluster"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "flowers_mixed",
+      "name": "Mixed Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flowers_mixed"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "flowers_blue",
+      "name": "Blue Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flowers_blue"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "flowers_yellow",
+      "name": "Yellow Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flowers_yellow"
+        }
+      ],
+      "spawn": {
+        "weight": 1.5
+      }
+    },
+    {
+      "id": "mushroom",
+      "name": "Mushroom",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "mushroom"
+        }
+      ],
+      "spawn": {
+        "weight": 0.8
+      }
+    },
+    {
+      "id": "fallen_tree_v",
+      "name": "Fallen Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "fallen_tree_v"
+        },
+        {
+          "dx": 0,
+          "dy": 1,
+          "layer": 3,
+          "tileId": "fallen_tree_v_b"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1
+      }
+    },
+    {
+      "id": "rock_small",
+      "name": "Small Rock",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "rock_small"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1
+      }
+    },
+    {
+      "id": "rock_large",
+      "name": "Large Rock",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "rock_large"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1.5
+      }
+    },
     {
       "id": "young_berry",
-      "tileType": "single",
-      "stats": {
-        "health": 30,
-        "maxHealth": 30,
-        "branches": 2,
-        "berries": 4
-      },
-      "harvest": {
-        "fullBase": "young_berry",
-        "emptyBase": "young_berry_empty",
-        "regrowMs": 300000
-      },
-      "searchTarget": "berries",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Young Berry Bush",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "young_berry"
+        }
+      ],
       "blocks": true
     },
     {
       "id": "oak_sprout",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "oak_sprout_big",
-        "growthMs": 120000
-      }
+      "name": "Oak Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "oak_sprout"
+        }
+      ],
+      "blocks": true
     },
     {
       "id": "oak_sprout_big",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "young_tree",
-        "growthMs": 300000
-      }
+      "name": "Oak Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "oak_sprout_big"
+        }
+      ],
+      "blocks": true
     },
     {
       "id": "berry_sprout",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "berry_sprout_big",
-        "growthMs": 120000
-      }
+      "name": "Berry Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "berry_sprout"
+        }
+      ],
+      "blocks": true
     },
     {
       "id": "berry_sprout_big",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "young_berry",
-        "growthMs": 300000
-      }
+      "name": "Berry Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "berry_sprout_big"
+        }
+      ],
+      "blocks": true
     },
     {
       "id": "old_berry_base",
-      "tileType": "two-tile",
-      "topTileId": "old_berry_top",
-      "stats": {
-        "health": 80,
-        "maxHealth": 80,
-        "branches": 5,
-        "berries": 10
-      },
-      "harvest": {
-        "fullBase": "old_berry_base",
-        "fullTop": "old_berry_top",
-        "emptyBase": "old_berry_empty_base",
-        "emptyTop": "old_berry_empty_top",
-        "regrowMs": 300000
-      },
-      "searchTarget": "berries",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": true
-      },
+      "name": "Old Berry Tree",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "old_berry_base"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "old_berry_top"
+        }
+      ],
       "blocks": true
     },
     {
       "id": "rock",
-      "tileType": "single",
-      "stats": {
-        "rocks": 10
-      },
-      "harvest": {
-        "fullBase": "rock",
-        "harvestYield": 5,
-        "regrowMs": 300000
-      },
-      "searchTarget": "rocks",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Rock",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "rock"
+        }
+      ],
       "blocks": true
     },
     {
       "id": "wood",
-      "tileType": "single",
-      "stats": {
-        "wood": 1
-      },
-      "harvest": {
-        "fullBase": "wood",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Wood",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "wood"
+        }
+      ],
       "item": true
     },
     {
       "id": "stone_axe",
-      "tileType": "single",
-      "stats": {
-        "health": 1,
-        "maxHealth": 1,
-        "stone_axe": 1
-      },
-      "harvest": {
-        "fullBase": "stone_axe",
-        "regrowMs": 0
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Stone Axe",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "stone_axe"
+        }
+      ],
       "item": true
     },
     {
       "id": "campfire_extinct",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {
-        "health": 0,
-        "maxHealth": 100
-      },
-      "harvest": null,
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "build": {
-        "costs": {
-          "wood": 3,
-          "branches": 2
+      "name": "Campfire",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "campfire_extinct"
         }
-      },
-      "repair": {
-        "fuelItem": "wood",
-        "healthPerFuel": 20
-      },
-      "interact": {
-        "costs": {
-          "rocks": 2
-        },
-        "result": "campfire_lit",
-        "minHealth": 20,
-        "preserveHealth": true
-      }
+      ],
+      "blocks": true
     },
     {
       "id": "campfire_lit",
-      "tileType": "single",
-      "blocks": true,
-      "stats": {
-        "health": 100,
-        "maxHealth": 100
-      },
-      "harvest": null,
-      "searchTarget": null,
-      "energyRegen": 3,
-      "fireDamage": 5,
-      "decay": {
-        "ratePerSecond": 0.2,
-        "fuelItem": "wood",
-        "healthPerFuel": 30,
-        "onEmpty": "campfire_extinct"
-      },
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "interact": {
-        "costs": {},
-        "result": "campfire_extinct",
-        "preserveHealth": true
-      }
+      "name": "Lit Campfire",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "campfire_lit"
+        }
+      ],
+      "blocks": true
     },
     {
       "id": "chest",
-      "tileType": "single",
-      "stats": {
-        "health": 20,
-        "maxHealth": 20
-      },
-      "blocks": true,
-      "container": true,
-      "rejectedItems": [
-        "wood"
-      ],
-      "maxItems": 30,
-      "build": {
-        "costs": {
-          "wood": 3,
-          "branches": 2
+      "name": "Chest",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "chest"
         }
-      },
-      "harvest": null,
-      "searchTarget": "chest",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      }
+      ],
+      "blocks": true
     },
     {
       "id": "cotton_plant",
-      "tileType": "single",
-      "stats": {
-        "cotton": 3,
-        "cotton_seed": 2
-      },
-      "harvest": {
-        "fullBase": "cotton_plant",
-        "emptyBase": null
-      },
-      "searchTarget": "cotton",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "randomStats": {
-        "cotton_seed": {
-          "min": 1,
-          "max": 2
+      "name": "Cotton Plant",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton_plant"
         }
-      }
+      ]
     },
     {
       "id": "cotton_sprout",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "cotton_sprout_big",
-        "growthMs": 120000
-      }
+      "name": "Cotton Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton_sprout"
+        }
+      ]
     },
     {
       "id": "cotton_sprout_big",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "cotton_plant",
-        "growthMs": 300000
-      }
+      "name": "Cotton Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton_sprout_big"
+        }
+      ]
     },
     {
       "id": "cotton",
-      "tileType": "single",
-      "stats": {
-        "cotton": 1
-      },
-      "harvest": {
-        "fullBase": "cotton",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Cotton",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton"
+        }
+      ],
       "item": true
     },
     {
       "id": "cotton_seed",
-      "tileType": "single",
-      "stats": {
-        "cotton_seed": 1
-      },
-      "harvest": {
-        "fullBase": "cotton_seed",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Cotton Seed",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton_seed"
+        }
+      ],
       "item": true
     },
     {
       "id": "skull",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "skull",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "container": true,
-      "maxItems": 100
+      "name": "Skull",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "skull"
+        }
+      ]
     },
     {
       "id": "flower_blue",
-      "tileType": "single",
-      "stats": {
-        "flower_blue": 1,
-        "flower_blue_seed": 2
-      },
-      "harvest": {
-        "fullBase": "flower_blue",
-        "emptyBase": null
-      },
-      "searchTarget": "flowers",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "randomStats": {
-        "flower_blue_seed": {
-          "min": 1,
-          "max": 2
+      "name": "Blue Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_blue"
         }
-      }
+      ]
     },
     {
       "id": "flower_red",
-      "tileType": "single",
-      "stats": {
-        "flower_red": 1,
-        "flower_red_seed": 2
-      },
-      "harvest": {
-        "fullBase": "flower_red",
-        "emptyBase": null
-      },
-      "searchTarget": "flowers",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "randomStats": {
-        "flower_red_seed": {
-          "min": 1,
-          "max": 2
+      "name": "Red Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_red"
         }
-      }
+      ]
     },
     {
       "id": "flower_purple",
-      "tileType": "single",
-      "stats": {
-        "flower_purple": 1,
-        "flower_purple_seed": 2
-      },
-      "harvest": {
-        "fullBase": "flower_purple",
-        "emptyBase": null
-      },
-      "searchTarget": "flowers",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "randomStats": {
-        "flower_purple_seed": {
-          "min": 1,
-          "max": 2
+      "name": "Purple Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_purple"
         }
-      }
+      ]
     },
     {
       "id": "flower_white",
-      "tileType": "single",
-      "stats": {
-        "flower_white": 1,
-        "flower_white_seed": 2
-      },
-      "harvest": {
-        "fullBase": "flower_white",
-        "emptyBase": null
-      },
-      "searchTarget": "flowers",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "randomStats": {
-        "flower_white_seed": {
-          "min": 1,
-          "max": 2
+      "name": "White Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_white"
         }
-      }
+      ]
     },
     {
       "id": "flower_blue_sprout",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "flower_blue",
-        "growthMs": 180000
-      }
+      "name": "Blue Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_blue_sprout"
+        }
+      ]
     },
     {
       "id": "flower_red_sprout",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "flower_red",
-        "growthMs": 180000
-      }
+      "name": "Red Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_red_sprout"
+        }
+      ]
     },
     {
       "id": "flower_purple_sprout",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "flower_purple",
-        "growthMs": 180000
-      }
+      "name": "Purple Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_purple_sprout"
+        }
+      ]
     },
     {
       "id": "flower_white_sprout",
-      "tileType": "single",
-      "stats": {},
-      "harvest": null,
-      "searchTarget": "sprouts",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
-      "growthStages": {
-        "nextStage": "flower_white",
-        "growthMs": 180000
-      }
+      "name": "White Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_white_sprout"
+        }
+      ]
     },
     {
       "id": "flower_blue_item",
-      "tileType": "single",
-      "stats": {
-        "flower_blue": 1
-      },
-      "harvest": {
-        "fullBase": "flower_blue_item",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Blue Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_blue_item"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_red_item",
-      "tileType": "single",
-      "stats": {
-        "flower_red": 1
-      },
-      "harvest": {
-        "fullBase": "flower_red_item",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Red Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_red_item"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_purple_item",
-      "tileType": "single",
-      "stats": {
-        "flower_purple": 1
-      },
-      "harvest": {
-        "fullBase": "flower_purple_item",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Purple Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_purple_item"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_white_item",
-      "tileType": "single",
-      "stats": {
-        "flower_white": 1
-      },
-      "harvest": {
-        "fullBase": "flower_white_item",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "White Flower",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_white_item"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_blue_seed",
-      "tileType": "single",
-      "stats": {
-        "flower_blue_seed": 1
-      },
-      "harvest": {
-        "fullBase": "flower_blue_seed",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Blue Flower Seed",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_blue_seed"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_red_seed",
-      "tileType": "single",
-      "stats": {
-        "flower_red_seed": 1
-      },
-      "harvest": {
-        "fullBase": "flower_red_seed",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Red Flower Seed",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_red_seed"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_purple_seed",
-      "tileType": "single",
-      "stats": {
-        "flower_purple_seed": 1
-      },
-      "harvest": {
-        "fullBase": "flower_purple_seed",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "Purple Flower Seed",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_purple_seed"
+        }
+      ],
       "item": true
     },
     {
       "id": "flower_white_seed",
-      "tileType": "single",
-      "stats": {
-        "flower_white_seed": 1
-      },
-      "harvest": {
-        "fullBase": "flower_white_seed",
-        "emptyBase": null
-      },
-      "searchTarget": null,
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      },
+      "name": "White Flower Seed",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "flower_white_seed"
+        }
+      ],
       "item": true
     },
     {
       "id": "log_pile",
-      "tileType": "single",
-      "stats": {},
-      "blocks": true,
-      "container": true,
-      "acceptedItems": [
-        "wood"
-      ],
-      "maxItems": 10,
-      "build": {
-        "costs": {
-          "wood": 3
+      "name": "Log Pile",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "log_pile"
         }
-      },
-      "harvest": null,
-      "searchTarget": "log_pile",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      }
+      ],
+      "blocks": true
     },
     {
       "id": "green_tent",
-      "tileType": "quad",
-      "topTileId": "green_tent_tl",
-      "rightTileId": "green_tent_br",
-      "topRightTileId": "green_tent_tr",
-      "stats": {
-        "health": 100,
-        "maxHealth": 100
-      },
-      "blocks": true,
-      "container": true,
-      "maxItems": 100,
-      "build": {
-        "costs": {
-          "green_fabric": 3,
-          "branches": 4
+      "name": "Green Tent",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "green_tent"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "green_tent_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 3,
+          "tileId": "green_tent_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 3,
+          "tileId": "green_tent_tr"
         }
-      },
-      "searchTarget": "tents",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      }
+      ],
+      "blocks": true
     },
     {
       "id": "beige_tent",
-      "tileType": "quad",
-      "topTileId": "beige_tent_tl",
-      "rightTileId": "beige_tent_br",
-      "topRightTileId": "beige_tent_tr",
-      "stats": {
-        "health": 100,
-        "maxHealth": 100
-      },
-      "blocks": true,
-      "container": true,
-      "maxItems": 100,
-      "build": {
-        "costs": {
-          "cream_fabric": 3,
-          "branches": 4
+      "name": "Beige Tent",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "beige_tent"
+        },
+        {
+          "dx": 1,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "beige_tent_br"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 3,
+          "tileId": "beige_tent_tl"
+        },
+        {
+          "dx": 1,
+          "dy": -1,
+          "layer": 3,
+          "tileId": "beige_tent_tr"
         }
-      },
-      "searchTarget": "tents",
-      "spawn": {
-        "weight": 0,
-        "requiresDeep": false
-      }
+      ],
+      "blocks": true
     }
   ]
 }

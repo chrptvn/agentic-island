@@ -7,53 +7,48 @@ const CONFIG_PATH = join(__dirname, "../..", "config", "entities.json");
 
 // ── JSON schema types ─────────────────────────────────────────────────────────
 
+/** A single tile within a multi-tile entity layout. */
+export interface TilePlacement {
+  /** Horizontal offset from the anchor tile (0 = anchor column). */
+  dx: number;
+  /** Vertical offset from the anchor tile (0 = anchor row, negative = above). */
+  dy: number;
+  /** Rendering layer: 3 = entity base (same as player), 4 = canopy (above player). */
+  layer: number;
+  /** Tile ID from tileset.json to render at this position. */
+  tileId: string;
+}
+
 export interface EntityDef {
   id: string;
-  tileType: "single" | "two-tile" | "quad";
-  topTileId?: string;
-  /** For quad entities: the tile placed at (x+1, y) — bottom-right. */
-  rightTileId?: string;
-  /** For quad entities: the tile placed at (x+1, y-1) — top-right. */
-  topRightTileId?: string;
-  /** For quad entities with canopy: top row tiles go on layer 4 (above player). */
-  canopyTop?: boolean;
-  stats: EntityStats;
+  /** Human-readable display name shown in tooltips. */
+  name?: string;
+  /** All tiles that compose this entity, relative to the anchor at (0,0). */
+  tiles: TilePlacement[];
+  /** If true, this entity is a solid obstacle — characters cannot walk through layer-3 tiles. */
+  blocks?: boolean;
   /** If true, this entity is an inventory item and cannot be placed directly on the map. */
   item?: boolean;
-  harvest?: HarvestDef;
-  /** Items consumed from inventory when a character builds this entity on the map. */
-  build?: BuildDef;
-  /** What happens when a character interacts with this entity (e.g. light/extinguish fire). */
-  interact?: InteractDef;
-  /** Group name used for search_nearest commands (e.g. "trees", "berries", "rocks"). */
-  searchTarget?: string;
-  /** If true, this entity is a solid obstacle — characters cannot walk through it and must harvest from an adjacent tile. */
-  blocks?: boolean;
-  /** If true, characters can store and retrieve items from this entity using container_put/container_take. */
-  container?: boolean;
-  /** Whitelist: if set, only these item names may be stored in this container. */
-  acceptedItems?: string[];
-  /** Blacklist: if set, these item names are always rejected by this container. */
-  rejectedItems?: string[];
-  /** Maximum total item count (sum of all stack quantities) the container can hold. */
-  maxItems?: number;
-  /** Energy regen rate (per second) granted to any character standing on an adjacent tile. Replaces passive regen. */
-  energyRegen?: number;
   spawn?: {
     /** Relative spawn weight; higher = more frequent. */
     weight: number;
-    /** If true, entity requires a "deep inner" cell (room for canopy above). */
-    requiresDeep: boolean;
   };
-  /** Gradual health decay over time, refuelled by adding items. */
+
+  // ── Functional fields (kept for backward compat, currently unused) ──────
+  stats?: EntityStats;
+  harvest?: HarvestDef;
+  build?: BuildDef;
+  interact?: InteractDef;
+  searchTarget?: string;
+  container?: boolean;
+  acceptedItems?: string[];
+  rejectedItems?: string[];
+  maxItems?: number;
+  energyRegen?: number;
   decay?: DecayDef;
-  /** Static repair config: entity health can be restored with items even while idle (no decay). */
   repair?: RepairDef;
-  /** Damage per second dealt to any character standing on this tile. */
   fireDamage?: number;
-  /** Staged growth: after growthMs ms this entity automatically becomes nextStage. */
   growthStages?: GrowthStagesDef;
-  /** Per-stat randomization applied at spawn/growth time. Keys are stat names, values have min/max. */
   randomStats?: Record<string, { min: number; max: number }>;
 }
 
@@ -118,10 +113,13 @@ export interface HarvestDef {
   emptyTop?: string;
   fullBase: string;
   fullTop?: string;
-  /** For quad-canopy entities: the full tile ID at (x+1, y) — base right. */
+  /** For quad-canopy entities: the full tile ID at (x+1, y) — base right.
+   *  Also used for two-tile-h entities: the secondary tile at (x+1, y). */
   fullRight?: string;
   /** For quad-canopy entities: the full tile ID at (x+1, y-1) — canopy right. */
   fullTopRight?: string;
+  /** For two-tile-v entities: the secondary tile at (x, y+1). */
+  fullBottom?: string;
   regrowMs?: number;
   /** Capability tags required on the character's equipped (hands) item. Omit = no restriction. */
   requires?: string[];
@@ -155,13 +153,14 @@ function loadConfig(): EntitiesConfig {
 }
 
 function buildDerivedExports(defs: EntityDef[]) {
-  const ENTITY_DEFAULTS: Record<string, EntityStats> = Object.fromEntries(defs.map((e) => [e.id, e.stats]));
+  const ENTITY_DEFAULTS: Record<string, EntityStats> = Object.fromEntries(
+    defs.map((e) => [e.id, e.stats ?? { health: 0, maxHealth: 0 }])
+  );
 
-  const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tileType === "single").map((e) => e.id);
+  const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tiles.length <= 1 && !e.item).map((e) => e.id);
 
-  const TWO_TILE_TREE_PAIRS: [string, string][] = defs
-    .filter((e): e is EntityDef & { tileType: "two-tile"; topTileId: string } => e.tileType === "two-tile" && e.topTileId !== undefined)
-    .map((e) => [e.id, e.topTileId]);
+  // Legacy: two-tile tree pairs for backward compat (empty if no entities use old format)
+  const TWO_TILE_TREE_PAIRS: [string, string][] = [];
 
   const HARVEST_DEFS: Record<string, HarvestDef> = Object.fromEntries(
     defs.filter((e) => e.harvest !== undefined).map((e) => [e.id, e.harvest!])
@@ -183,11 +182,12 @@ function buildDerivedExports(defs: EntityDef[]) {
     SEARCH_TARGET_MAP.set(e.searchTarget, group);
   }
 
-  const BLOCKING_IDS: Set<string> = new Set(defs.filter((e) => e.blocks === true).map((e) => e.id));
-  // Quad-canopy entities: the base-right tile also blocks
+  // Derive BLOCKING_IDS from tiles array: all tileIds on layer 3 of blocking entities
+  const BLOCKING_IDS: Set<string> = new Set<string>();
   for (const e of defs) {
-    if (e.blocks && e.tileType === "quad" && e.canopyTop && e.rightTileId) {
-      BLOCKING_IDS.add(e.rightTileId);
+    if (!e.blocks) continue;
+    for (const t of e.tiles) {
+      if (t.layer === 3) BLOCKING_IDS.add(t.tileId);
     }
   }
 
@@ -201,7 +201,6 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.filter((e) => e.repair !== undefined).map((e) => [e.id, e.repair!])
   );
 
-  /** Set of tile IDs that are inventory items — they cannot be placed on the map. */
   const ITEM_IDS: Set<string> = new Set(defs.filter((e) => e.item === true).map((e) => e.id));
 
   const GROWTH_DEFS: Record<string, GrowthStagesDef> = Object.fromEntries(

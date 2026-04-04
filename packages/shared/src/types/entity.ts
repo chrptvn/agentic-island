@@ -5,25 +5,26 @@ export interface EntityInstance {
   y: number;
   tileId: string;
   stats: EntityStats;
+  /** Human-readable display name for tooltips. */
+  name?: string;
   /** Container entities (chests, log piles, skulls) may hold inventory items. */
   inventory?: { item: string; qty: number }[];
   /** Character IDs currently sheltered inside this entity (tents). */
   occupants?: string[];
 }
 
+export interface TilePlacement {
+  dx: number;
+  dy: number;
+  layer: number;
+  tileId: string;
+}
+
 export interface EntityDef {
   id: string;
-  tileType: "single" | "two-tile" | "quad";
-  topTileId?: string;
-  rightTileId?: string;
-  topRightTileId?: string;
-  stats: EntityStats;
-  harvest?: Record<string, unknown>;
-  build?: Record<string, unknown>;
-  interact?: Record<string, unknown>;
-  container?: Record<string, unknown>;
-  decay?: Record<string, unknown>;
-  growthStages?: Record<string, unknown>[];
+  name?: string;
+  tiles: TilePlacement[];
   blocks?: boolean;
-  spawnWeight?: number;
+  item?: boolean;
+  spawn?: { weight: number };
 }

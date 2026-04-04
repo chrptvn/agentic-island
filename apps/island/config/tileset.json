@@ -291,6 +291,163 @@
     },
 
     {
+      "id": "dried_flower",
+      "col": 4,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Dried flower puff"
+    },
+    {
+      "id": "log",
+      "col": 5,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Horizontal log"
+    },
+    {
+      "id": "fallen_tree_h",
+      "col": 6,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Horizontal fallen tree — left tile"
+    },
+    {
+      "id": "fallen_tree_h_r",
+      "col": 7,
+      "row": 5,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Horizontal fallen tree — right tile"
+    },
+
+    {
+      "id": "succulent",
+      "col": 0,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Small green succulent"
+    },
+    {
+      "id": "dried_plant",
+      "col": 1,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Dried spider plant"
+    },
+    {
+      "id": "leaves",
+      "col": 2,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Scattered green leaves"
+    },
+    {
+      "id": "sprouts",
+      "col": 3,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Tiny green sprouts"
+    },
+    {
+      "id": "plant_cluster",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Yellow-green plant cluster"
+    },
+    {
+      "id": "flowers_mixed",
+      "col": 5,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Mixed colorful flowers"
+    },
+    {
+      "id": "flowers_blue",
+      "col": 6,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Blue flowers"
+    },
+    {
+      "id": "flowers_yellow",
+      "col": 7,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Yellow flowers"
+    },
+
+    {
+      "id": "mushroom",
+      "col": 0,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Brown mushrooms"
+    },
+    {
+      "id": "fallen_tree_v",
+      "col": 7,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Vertical fallen tree — top tile"
+    },
+
+    {
+      "id": "rock_small",
+      "col": 0,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "terrain",
+      "description": "Small rock"
+    },
+    {
+      "id": "rock_large",
+      "col": 1,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "terrain",
+      "description": "Large rock"
+    },
+    {
+      "id": "fallen_tree_v_b",
+      "col": 7,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Vertical fallen tree — bottom tile"
+    },
+
+    {
       "id": "young_berry",
       "col": 23,
       "row": 9,

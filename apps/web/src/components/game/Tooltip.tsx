@@ -133,7 +133,7 @@ function CharacterBox({ character }: { character: CharacterState }) {
 }
 
 function EntityBox({ entity }: { entity: EntityInstance }) {
-  const name = ENTITY_LABELS[entity.tileId] ?? entity.tileId;
+  const name = entity.name ?? ENTITY_LABELS[entity.tileId] ?? entity.tileId;
   const hp = entity.stats?.health;
   const maxHp = entity.stats?.maxHealth;
 
