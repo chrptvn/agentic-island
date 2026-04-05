@@ -39,6 +39,15 @@ function autotileWaterCell(
   return getAutotileId("water_at", x, y, isWater);
 }
 
+/** Returns the water/sand border autotile ID (Water7 sheet) for a water cell at (x, y). */
+function autotileWaterSandCell(
+  x: number,
+  y: number,
+  isWater: (nx: number, ny: number) => boolean,
+): string {
+  return getAutotileId("water_sand_at", x, y, isWater);
+}
+
 /**
  * Returns the layer-1 sand autotile ID for a sand cell at (x, y).
  * The sand tilesheet transitions against grass: "same" = sand, "different" = grass.
@@ -323,9 +332,9 @@ export function buildIslandLayer1(
           result.push({ x, y, layer: 0, tileId: "grass" });
 
           if (hasSandNeighbor) {
-            // Sand on layer 1, water on layer 2 — proper grass → sand → water stack
+            // Sand on layer 1, water/sand border on layer 2 — proper grass → sand → water stack
             result.push({ x, y, layer: 1, tileId: autotileSandCell(x, y, isSandOrWater) });
-            result.push({ x, y, layer: 2, tileId: autotileWaterCell(x, y, isWater) });
+            result.push({ x, y, layer: 2, tileId: autotileWaterSandCell(x, y, isWater) });
             continue;
           }
         }
@@ -406,19 +415,19 @@ export function isPathTileId(tileId: string): boolean {
  * With two-layer rendering, grass cells have no layer-1 override (empty string).
  * Pass l2 when the cell may have a water overlay on layer 2 (sand-adjacent water border). */
 export function isWalkableGround(l1: string, l2?: string): boolean {
-  if (l2?.startsWith("water_at_")) return false;
-  if (l1.startsWith("water_at_")) return false;
+  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_")) return false;
+  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_")) return false;
   return l1 === "" || l1 === "grass" || l1.startsWith("sand_at_") || PATH_TILE_IDS.has(l1);
 }
 
 /**
  * Determine the terrain type from layer overrides.
  * Layer 2 takes priority for water detection (sand-adjacent water border cells
- * have sand_at on layer 1 and water_at on layer 2).
+ * have sand_at on layer 1 and water_sand_at on layer 2).
  */
 export function terrainFromLayer1(l1: string, l2?: string): "grass" | "sand" | "water" {
-  if (l2?.startsWith("water_at_")) return "water";
-  if (l1.startsWith("water_at_")) return "water";
+  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_")) return "water";
+  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_")) return "water";
   if (l1.startsWith("sand_at_")) return "sand";
   return "grass";
 }
