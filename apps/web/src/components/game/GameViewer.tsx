@@ -431,8 +431,10 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
     > = {};
     for (const tile of Object.values(state.tileRegistry)) {
       if (tile.sheet && !sheets[tile.sheet]) {
+        // Encode each path segment individually (preserve slashes)
+        const encodedSheet = tile.sheet.split("/").map(encodeURIComponent).join("/");
         sheets[tile.sheet] = {
-          url: `${spriteBaseUrl}${tile.sheet}${vSuffix}`,
+          url: `${spriteBaseUrl}${encodedSheet}${vSuffix}`,
           tileSize: tile.tileSize,
           gap: tile.gap,
         };
