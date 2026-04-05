@@ -84,9 +84,9 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     lakeRadiusMin:     2,
     lakeRadiusMax:     4,
     vegetationDensity: 0.10,
-    sandSeedProb:      0.25,
-    sandGrowProb:      0.60,
-    sandMaxDepth:      2,
+    sandSeedProb:      0.07,
+    sandGrowProb:      0.80,
+    sandMaxDepth:      3,
   },
 };
 
