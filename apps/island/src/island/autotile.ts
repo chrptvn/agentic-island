@@ -313,8 +313,14 @@ export function buildIslandLayer1(
           || !isWater(x-1,y-1) || !isWater(x+1,y-1) || !isWater(x-1,y+1) || !isWater(x+1,y+1);
 
         if (hasLandNeighbor) {
-          // Border water: override layer 0 to grass so it shows through cliff transparency
-          result.push({ x, y, layer: 0, tileId: "grass" });
+          // If any neighbor is sand, show sand under the water tile; otherwise show grass
+          const hasSandNeighbor =
+            terrain[y]?.[x-1] === "sand" || terrain[y]?.[x+1] === "sand" ||
+            terrain[y-1]?.[x] === "sand" || terrain[y+1]?.[x] === "sand" ||
+            terrain[y-1]?.[x-1] === "sand" || terrain[y-1]?.[x+1] === "sand" ||
+            terrain[y+1]?.[x-1] === "sand" || terrain[y+1]?.[x+1] === "sand";
+          const base = hasSandNeighbor ? autotileSandCell(x, y, isSandOrWater) : "grass";
+          result.push({ x, y, layer: 0, tileId: base });
         }
 
         // ALL water cells get a layer-1 water autotile overlay (animated)
