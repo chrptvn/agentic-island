@@ -322,11 +322,11 @@ export class Island extends EventEmitter {
 
   /** Compute and persist the grass-island layer-1 tiles + vegetation layer 2/3. */
   private applyIslandOverrides(): void {
-    const { overrides: islandTiles, grassGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
+    const { overrides: islandTiles, grassGrid, sandGrid, forestGrid, lakeGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
     this.grassGrid = grassGrid;
 
     const { tileOverrides: vegTiles, entityStats: vegStats } =
-      buildVegetationLayer(this.map.width, this.map.height, this.map.seed, grassGrid);
+      buildVegetationLayer(this.map.width, this.map.height, this.map.seed, grassGrid, sandGrid, forestGrid, lakeGrid);
 
     const allTiles = [...islandTiles, ...vegTiles];
     saveOverridesBatch(allTiles);

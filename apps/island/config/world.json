@@ -31,12 +31,17 @@
     "grassThreshold": 5,
     "waterThreshold": 4,
     "gapFillPasses": 10,
-    "lakeProbability": 0.3,
+    "lakeProbability": 0.01,
     "lakeRadiusMin": 2,
     "lakeRadiusMax": 4,
     "vegetationDensity": 0.1,
-    "sandSeedProb": 0.07,
-    "sandGrowProb": 0.80,
-    "sandMaxDepth": 3
+    "sandSeedProb": 0.05,
+    "sandGrowProb": 2,
+    "sandMaxDepth": 2,
+    "forestCount": 2,
+    "forestRadiusMin": 3,
+    "forestRadiusMax": 15,
+    "forestVegetationDensity": 1,
+    "lilyPadDensity": 0.10
   }
 }

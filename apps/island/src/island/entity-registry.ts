@@ -33,6 +33,14 @@ export interface EntityDef {
   spawn?: {
     /** Relative spawn weight; higher = more frequent. */
     weight: number;
+    /** If true, this entity only spawns inside forest zones. */
+    forestOnly?: boolean;
+    /** If true, this entity never spawns inside forest zones. */
+    noForest?: boolean;
+    /** If true, this entity only spawns on lake-border water cells. */
+    lakeOnly?: boolean;
+    /** If true, this entity only spawns on lake-interior water cells (not adjacent to grass). */
+    lakeInterior?: boolean;
   };
 
   // ── Functional fields (kept for backward compat, currently unused) ──────

@@ -138,7 +138,7 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.1
       }
     },
     {
@@ -188,7 +188,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 3
+        "weight": 3,
+        "noForest": true
       }
     },
     {
@@ -204,7 +205,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 3
+        "weight": 3,
+        "noForest": true
       }
     },
     {
@@ -220,7 +222,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.1,
+        "noForest": true
       }
     },
     {
@@ -236,7 +239,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.3
+        "weight": 0.3,
+        "noForest": true
       }
     },
     {
@@ -251,7 +255,7 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 0.3
       }
     },
     {
@@ -267,7 +271,7 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.3
       }
     },
     {
@@ -289,7 +293,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.1,
+        "forestOnly": true
       }
     },
     {
@@ -304,12 +309,13 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 1.5,
+        "noForest": true
       }
     },
     {
-      "id": "sprouts",
-      "name": "Sprouts",
+      "id": "dead_grass",
+      "name": "Dead Grass",
       "tiles": [
         {
           "dx": 0,
@@ -319,7 +325,8 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 0.3,
+        "noForest": true
       }
     },
     {
@@ -334,7 +341,8 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 1.5,
+        "noForest": true
       }
     },
     {
@@ -349,7 +357,8 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 1.5,
+        "noForest": true
       }
     },
     {
@@ -364,7 +373,8 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 1.5,
+        "noForest": true
       }
     },
     {
@@ -379,7 +389,8 @@
         }
       ],
       "spawn": {
-        "weight": 1.5
+        "weight": 1.5,
+        "noForest": true
       }
     },
     {
@@ -416,7 +427,8 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.1,
+        "forestOnly": true
       }
     },
     {
@@ -432,7 +444,7 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1
+        "weight": 0.3
       }
     },
     {
@@ -448,7 +460,7 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 1.5
+        "weight": 0.1
       }
     },
     {
@@ -616,7 +628,8 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 3
+        "weight": 3,
+        "noForest": true
       }
     },
     {
@@ -632,7 +645,7 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 2
+        "weight": 0.1
       }
     },
     {
@@ -650,6 +663,124 @@
       "spawn": {
         "weight": 1
       }
+    },
+    {
+      "id": "lily_pad_small",
+      "name": "Small Lily Pad",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "lily_pad_small"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 0.2,
+        "lakeInterior": true
+      }
+    },
+    {
+      "id": "lily_pad_big",
+      "name": "Big Lily Pad",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "lily_pad_big"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 0.1,
+        "lakeInterior": true
+      }
+    },
+    {
+      "id": "sprout",
+      "name": "Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 1.0, "noForest": true }
+    },
+    {
+      "id": "carrot_sprout",
+      "name": "Carrot Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 0.5, "noForest": true }
+    },
+    {
+      "id": "carrot",
+      "name": "Carrot",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "carrot" }],
+      "blocks": false,
+      "spawn": { "weight": 0.8, "noForest": true }
+    },
+    {
+      "id": "lettuce_sprout",
+      "name": "Lettuce Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 0.5, "noForest": true }
+    },
+    {
+      "id": "lettuce",
+      "name": "Lettuce",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "lettuce" }],
+      "blocks": false,
+      "spawn": { "weight": 0.8, "noForest": true }
+    },
+    {
+      "id": "pumpkin_sprout",
+      "name": "Pumpkin Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 0.4, "noForest": true }
+    },
+    {
+      "id": "pumpkin",
+      "name": "Pumpkin",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "pumpkin" }],
+      "blocks": false,
+      "spawn": { "weight": 0.6, "noForest": true }
+    },
+    {
+      "id": "cabbage_sprout",
+      "name": "Cabbage Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 0.4, "noForest": true }
+    },
+    {
+      "id": "cabbage",
+      "name": "Cabbage",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "cabbage" }],
+      "blocks": false,
+      "spawn": { "weight": 0.6, "noForest": true }
+    },
+    {
+      "id": "berry_bush_sprout",
+      "name": "Berry Bush Sprout",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "blocks": false,
+      "spawn": { "weight": 0.4, "noForest": true }
+    },
+    {
+      "id": "berry_bush_empty",
+      "name": "Berry Bush (Empty)",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "berry_bush_empty" }],
+      "blocks": true,
+      "spawn": { "weight": 0.8, "noForest": true }
+    },
+    {
+      "id": "berry_bush_full",
+      "name": "Berry Bush (Full)",
+      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "berry_bush_full" }],
+      "blocks": true,
+      "spawn": { "weight": 0.6, "noForest": true }
     }
   ]
 }

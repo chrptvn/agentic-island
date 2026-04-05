@@ -42,7 +42,7 @@
       "row": 1,
       "layer": 0,
       "category": "terrain",
-      "description": "Base water terrain — solid water fill used as layer-0 terrain",
+      "description": "Base water terrain \u2014 solid water fill used as layer-0 terrain",
       "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water7_pipo.png",
       "frames": [
         {
@@ -131,7 +131,7 @@
       "row": 1,
       "layer": 2,
       "category": "item",
-      "description": "Stone pickaxe — useful for mining rocks",
+      "description": "Stone pickaxe \u2014 useful for mining rocks",
       "sheet": "roguelikeChar_transparent.png",
       "item": true
     },
@@ -141,7 +141,7 @@
       "row": 7,
       "layer": 2,
       "category": "item",
-      "description": "Stone knife — useful for cutting",
+      "description": "Stone knife \u2014 useful for cutting",
       "sheet": "roguelikeChar_transparent.png",
       "item": true
     },
@@ -214,7 +214,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — isolated (no connections)"
+      "description": "Dirt path \u2014 isolated (no connections)"
     },
     {
       "id": "path_t",
@@ -222,7 +222,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (top connection only)"
+      "description": "Dirt path \u2014 dead end (top connection only)"
     },
     {
       "id": "path_r",
@@ -230,7 +230,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (right connection only)"
+      "description": "Dirt path \u2014 dead end (right connection only)"
     },
     {
       "id": "path_tr",
@@ -238,7 +238,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner top-right"
+      "description": "Dirt path \u2014 corner top-right"
     },
     {
       "id": "path_b",
@@ -246,7 +246,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (bottom connection only)"
+      "description": "Dirt path \u2014 dead end (bottom connection only)"
     },
     {
       "id": "path_tb",
@@ -254,7 +254,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — straight vertical (top+bottom)"
+      "description": "Dirt path \u2014 straight vertical (top+bottom)"
     },
     {
       "id": "path_rb",
@@ -262,7 +262,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner right-bottom"
+      "description": "Dirt path \u2014 corner right-bottom"
     },
     {
       "id": "path_trb",
@@ -270,7 +270,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+right+bottom, open left)"
+      "description": "Dirt path \u2014 T-intersection (top+right+bottom, open left)"
     },
     {
       "id": "path_l",
@@ -278,7 +278,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — dead end (left connection only)"
+      "description": "Dirt path \u2014 dead end (left connection only)"
     },
     {
       "id": "path_tl",
@@ -286,7 +286,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner top-left"
+      "description": "Dirt path \u2014 corner top-left"
     },
     {
       "id": "path_rl",
@@ -294,7 +294,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — straight horizontal (right+left)"
+      "description": "Dirt path \u2014 straight horizontal (right+left)"
     },
     {
       "id": "path_trl",
@@ -302,7 +302,7 @@
       "row": 8,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+right+left, open bottom)"
+      "description": "Dirt path \u2014 T-intersection (top+right+left, open bottom)"
     },
     {
       "id": "path_bl",
@@ -310,7 +310,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — corner bottom-left"
+      "description": "Dirt path \u2014 corner bottom-left"
     },
     {
       "id": "path_tbl",
@@ -318,7 +318,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (top+bottom+left, open right)"
+      "description": "Dirt path \u2014 T-intersection (top+bottom+left, open right)"
     },
     {
       "id": "path_rbl",
@@ -326,7 +326,7 @@
       "row": 7,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — T-intersection (right+bottom+left, open top)"
+      "description": "Dirt path \u2014 T-intersection (right+bottom+left, open top)"
     },
     {
       "id": "path_all",
@@ -334,7 +334,7 @@
       "row": 12,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path — crossroads (all 4 connections)"
+      "description": "Dirt path \u2014 crossroads (all 4 connections)"
     },
     {
       "id": "path_inner_corner_tl",
@@ -342,7 +342,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner top-left corner"
+      "description": "Dirt path wide \u2014 concave inner top-left corner"
     },
     {
       "id": "path_inner_border_t",
@@ -350,7 +350,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — top border"
+      "description": "Dirt path wide \u2014 top border"
     },
     {
       "id": "path_inner_corner_tr",
@@ -358,7 +358,7 @@
       "row": 9,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner top-right corner"
+      "description": "Dirt path wide \u2014 concave inner top-right corner"
     },
     {
       "id": "path_inner_border_l",
@@ -366,7 +366,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — left border"
+      "description": "Dirt path wide \u2014 left border"
     },
     {
       "id": "path_inner_plain",
@@ -374,7 +374,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — plain interior (all 8 neighbours are path)"
+      "description": "Dirt path wide \u2014 plain interior (all 8 neighbours are path)"
     },
     {
       "id": "path_inner_border_r",
@@ -382,7 +382,7 @@
       "row": 10,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — right border"
+      "description": "Dirt path wide \u2014 right border"
     },
     {
       "id": "path_inner_corner_bl",
@@ -390,7 +390,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner bottom-left corner"
+      "description": "Dirt path wide \u2014 concave inner bottom-left corner"
     },
     {
       "id": "path_inner_border_b",
@@ -398,7 +398,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — bottom border"
+      "description": "Dirt path wide \u2014 bottom border"
     },
     {
       "id": "path_inner_corner_br",
@@ -406,7 +406,7 @@
       "row": 11,
       "layer": 2,
       "category": "path_transition",
-      "description": "Dirt path wide — concave inner bottom-right corner"
+      "description": "Dirt path wide \u2014 concave inner bottom-right corner"
     },
     {
       "id": "plow",
@@ -415,7 +415,7 @@
       "layer": 2,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "Plow tool — equip in hands to till soil faster"
+      "description": "Plow tool \u2014 equip in hands to till soil faster"
     },
     {
       "id": "skull",
@@ -532,7 +532,7 @@
           "row": 0
         }
       ],
-      "description": "Human character — 2-frame walk animation"
+      "description": "Human character \u2014 2-frame walk animation"
     },
     {
       "id": "human_dark",
@@ -551,7 +551,7 @@
           "row": 1
         }
       ],
-      "description": "Human character (dark skin) — 2-frame walk animation"
+      "description": "Human character (dark skin) \u2014 2-frame walk animation"
     },
     {
       "id": "human_darker",
@@ -570,7 +570,7 @@
           "row": 2
         }
       ],
-      "description": "Human character (darker skin) — 2-frame walk animation"
+      "description": "Human character (darker skin) \u2014 2-frame walk animation"
     },
     {
       "id": "hair_brown_1",
@@ -1407,7 +1407,7 @@
       "layer": 3,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "A sturdy leather doublet — plain style"
+      "description": "A sturdy leather doublet \u2014 plain style"
     },
     {
       "id": "leather_doublet_trimmed",
@@ -1416,7 +1416,7 @@
       "layer": 3,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "A sturdy leather doublet — trimmed style"
+      "description": "A sturdy leather doublet \u2014 trimmed style"
     },
     {
       "id": "red_doublet_plain",
@@ -1893,7 +1893,7 @@
       "layer": 3,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "A sturdy leather doublet — plain style"
+      "description": "A sturdy leather doublet \u2014 plain style"
     },
     {
       "id": "leather_doublet_trimmed_alt",
@@ -1902,7 +1902,7 @@
       "layer": 3,
       "category": "item",
       "sheet": "roguelikeChar_transparent.png",
-      "description": "A sturdy leather doublet — trimmed style"
+      "description": "A sturdy leather doublet \u2014 trimmed style"
     },
     {
       "id": "green_doublet_plain",
@@ -7795,6 +7795,24 @@
       "description": "Purple Mushrooms"
     },
     {
+      "id": "lily_pad_small",
+      "col": 2,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Small lily pad floating on water"
+    },
+    {
+      "id": "lily_pad_big",
+      "col": 3,
+      "row": 7,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Big lily pad floating on water"
+    },
+    {
       "id": "fallen_tree_vertical0",
       "col": 7,
       "row": 7,
@@ -7829,6 +7847,69 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "vegetation",
       "description": "Fallen Tree - Bottom"
+    },
+    {
+      "id": "sprout",
+      "col": 4,
+      "row": 19,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Sprout"
+    },
+    {
+      "id": "carrot",
+      "col": 6,
+      "row": 19,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Carrot"
+    },
+    {
+      "id": "lettuce",
+      "col": 7,
+      "row": 19,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Lettuce"
+    },
+    {
+      "id": "pumpkin",
+      "col": 6,
+      "row": 20,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Pumpkin"
+    },
+    {
+      "id": "cabbage",
+      "col": 7,
+      "row": 20,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Cabbage"
+    },
+    {
+      "id": "berry_bush_empty",
+      "col": 6,
+      "row": 21,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Berry Bush (empty)"
+    },
+    {
+      "id": "berry_bush_full",
+      "col": 7,
+      "row": 21,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Berry Bush (full)"
     }
   ]
 }

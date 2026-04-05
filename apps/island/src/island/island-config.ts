@@ -47,6 +47,16 @@ export interface MapGenConfig {
   sandGrowProb: number;
   /** Maximum distance from water (in cells) that sand can reach. */
   sandMaxDepth: number;
+  /** Number of forest zones to generate on the island. */
+  forestCount: number;
+  /** Minimum BFS radius for each forest zone (in cells). */
+  forestRadiusMin: number;
+  /** Maximum BFS radius for each forest zone (in cells). */
+  forestRadiusMax: number;
+  /** Fraction (0–1) of eligible inner cells inside a forest that receive vegetation. */
+  forestVegetationDensity: number;
+  /** Fraction (0–1) of lake-border water cells that receive a lily pad. */
+  lilyPadDensity: number;
 }
 
 export interface IslandConfig {
@@ -87,6 +97,11 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     sandSeedProb:      0.07,
     sandGrowProb:      0.80,
     sandMaxDepth:      3,
+    forestCount:             2,
+    forestRadiusMin:         3,
+    forestRadiusMax:         6,
+    forestVegetationDensity: 0.35,
+    lilyPadDensity:          0.25,
   },
 };
 

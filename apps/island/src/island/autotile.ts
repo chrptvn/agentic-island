@@ -87,7 +87,7 @@ export function buildIslandLayer1(
   w: number,
   h: number,
   seed = 0,
-): { overrides: Array<{ x: number; y: number; layer: number; tileId: string }>; grassGrid: boolean[][] } {
+): { overrides: Array<{ x: number; y: number; layer: number; tileId: string }>; grassGrid: boolean[][]; sandGrid: Set<string>; forestGrid: Set<string>; lakeGrid: Set<string> } {
   const rng = mulberry32(seed);
   const mapGen = getIslandConfig().mapGen;
 
@@ -234,7 +234,89 @@ export function buildIslandLayer1(
 
   fillGaps(); // ── 6. After lake
 
-  // ── 7. Generate natural sand patches near water ───────────────────────────
+  // ── 7. Detect lake water cells ────────────────────────────────────────────
+  // Ocean = water cells reachable from the map border by BFS through water.
+  // Lake  = water cells not reachable (enclosed inside the grass island).
+  const lakeGrid = new Set<string>();
+  {
+    const oceanVis = new Set<string>();
+    const oceanQ: [number, number][] = [];
+    for (let x = 0; x < w; x++) {
+      for (const y of [0, h - 1]) {
+        if (!grid[y][x]) { const k = `${x},${y}`; if (!oceanVis.has(k)) { oceanVis.add(k); oceanQ.push([x, y]); } }
+      }
+    }
+    for (let y = 0; y < h; y++) {
+      for (const x of [0, w - 1]) {
+        if (!grid[y][x]) { const k = `${x},${y}`; if (!oceanVis.has(k)) { oceanVis.add(k); oceanQ.push([x, y]); } }
+      }
+    }
+    for (let qi = 0; qi < oceanQ.length; qi++) {
+      const [cx, cy] = oceanQ[qi];
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+        if (grid[ny][nx]) continue; // grass — stop
+        const nk = `${nx},${ny}`;
+        if (oceanVis.has(nk)) continue;
+        oceanVis.add(nk);
+        oceanQ.push([nx, ny]);
+      }
+    }
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        if (!grid[y][x] && !oceanVis.has(`${x},${y}`)) lakeGrid.add(`${x},${y}`);
+      }
+    }
+  }
+
+  // ── 8. Generate forest zones ──────────────────────────────────────────────
+  // BFS-grow N roughly-circular forest blobs from random deep-interior grass
+  // cells.  Forest zones get higher vegetation density and are the only places
+  // where forestOnly entities (e.g. fallen trees) can spawn.
+  const { forestCount, forestRadiusMin, forestRadiusMax } = mapGen;
+  const forestGrid = new Set<string>();
+
+  if (forestCount > 0) {
+    // Collect deep-interior grass cells (all 8 neighbors are grass) as center candidates
+    const forestCandidates: [number, number][] = [];
+    for (let y = 2; y < h - 2; y++) {
+      for (let x = 2; x < w - 2; x++) {
+        if (!grid[y][x]) continue;
+        let deep = true;
+        for (let dy = -1; dy <= 1 && deep; dy++)
+          for (let dx = -1; dx <= 1 && deep; dx++)
+            if (!grid[y + dy]?.[x + dx]) deep = false;
+        if (deep) forestCandidates.push([x, y]);
+      }
+    }
+
+    for (let f = 0; f < forestCount && forestCandidates.length > 0; f++) {
+      const idx = Math.floor(rng() * forestCandidates.length);
+      const [fx, fy] = forestCandidates.splice(idx, 1)[0];
+      const radius = forestRadiusMin + Math.floor(rng() * (forestRadiusMax - forestRadiusMin + 1));
+
+      // BFS-grow forest zone, staying within grass cells
+      const forestQ: [number, number, number][] = [[fx, fy, 0]];
+      const forestVis = new Set<string>([`${fx},${fy}`]);
+      while (forestQ.length) {
+        const [cx, cy, d] = forestQ.shift()!;
+        forestGrid.add(`${cx},${cy}`);
+        if (d >= radius) continue;
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+          const nx = cx + dx, ny = cy + dy;
+          const key = `${nx},${ny}`;
+          if (forestVis.has(key)) continue;
+          if (nx < 1 || nx >= w - 1 || ny < 1 || ny >= h - 1) continue;
+          if (!grid[ny][nx]) continue;
+          forestVis.add(key);
+          forestQ.push([nx, ny, d + 1]);
+        }
+      }
+    }
+  }
+
+  // ── 8. Generate natural sand patches near water ───────────────────────────
   // Two-pass seeded patch growth:
   //   Phase 1 (seed): ~sandSeedProb of water-adjacent grass cells become sand
   //   Phase 2 (grow): each seeded cell spreads to grass neighbors within sandMaxDepth
@@ -357,7 +439,11 @@ export function buildIslandLayer1(
   const grassOnlyGrid = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) => terrain[y][x] === "grass")
   );
-  return { overrides: result, grassGrid: grassOnlyGrid };
+  const sandGrid = new Set<string>();
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (terrain[y][x] === "sand") sandGrid.add(`${x},${y}`);
+  return { overrides: result, grassGrid: grassOnlyGrid, sandGrid, forestGrid, lakeGrid };
 }
 
 // ── Dirt-path autotiling ──────────────────────────────────────────────────────
@@ -476,6 +562,9 @@ export function buildVegetationLayer(
   h: number,
   seed: number,
   grassGrid: boolean[][],
+  sandGrid: Set<string>,
+  forestGrid: Set<string>,
+  lakeGrid: Set<string>,
 ): {
   tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }>;
   entityStats:   Array<{ x: number; y: number; stats: EntityStats }>;
@@ -489,6 +578,10 @@ export function buildVegetationLayer(
     isBlocking: boolean;
     requiresDeep: boolean;
     requiresWide: boolean;
+    forestOnly: boolean;
+    noForest: boolean;
+    lakeOnly: boolean;
+    lakeInterior: boolean;
   }
 
   const spawnPool: SpawnCandidate[] = [];
@@ -505,16 +598,20 @@ export function buildVegetationLayer(
       isBlocking: def.blocks === true,
       requiresDeep: minDy < 0,
       requiresWide: maxDx > 0,
+      forestOnly: def.spawn.forestOnly === true,
+      noForest: def.spawn.noForest === true,
+      lakeOnly: def.spawn.lakeOnly === true,
+      lakeInterior: def.spawn.lakeInterior === true,
     });
     spawnWeights.push(def.spawn.weight);
   }
 
   const totalWeight = spawnWeights.reduce((a, b) => a + b, 0);
 
-  function pickCandidate(isDeep: boolean, isWide: boolean): SpawnCandidate | null {
+  function pickCandidate(isDeep: boolean, isWide: boolean, inForest: boolean): SpawnCandidate | null {
     const eligible = spawnPool
       .map((c, i) => ({ c, w: spawnWeights[i] }))
-      .filter(({ c }) => (!c.requiresDeep || isDeep) && (!c.requiresWide || isWide));
+      .filter(({ c }) => !c.lakeOnly && !c.lakeInterior && (!c.requiresDeep || isDeep) && (!c.requiresWide || isWide) && (!c.forestOnly || inForest) && (!c.noForest || !inForest));
     if (eligible.length === 0) return null;
     const total = eligible.reduce((s, { w }) => s + w, 0);
     let r = rng() * total;
@@ -526,32 +623,24 @@ export function buildVegetationLayer(
   }
 
   const SPAWN_DENSITY = totalWeight > 0 ? getIslandConfig().mapGen.vegetationDensity : 0;
+  const FOREST_DENSITY = totalWeight > 0 ? getIslandConfig().mapGen.forestVegetationDensity : 0;
 
   const isG = (x: number, y: number) =>
     x >= 0 && x < w && y >= 0 && y < h && grassGrid[y]?.[x] === true;
+  const isSand = (x: number, y: number) =>
+    x >= 0 && x < w && y >= 0 && y < h && sandGrid.has(`${x},${y}`);
 
   // ── Classify cells ────────────────────────────────────────────────────────
-  const inner     = new Set<string>();
-  const deepInner = new Set<string>();
-
-  for (let y = 1; y < h - 1; y++) {
-    for (let x = 1; x < w - 1; x++) {
-      if (!isG(x, y)) continue;
-      if (isG(x, y - 1) && isG(x, y + 1) && isG(x - 1, y) && isG(x + 1, y)) {
-        const key = `${x},${y}`;
-        inner.add(key);
-        if (isG(x, y - 2) && isG(x - 1, y - 1) && isG(x + 1, y - 1)) {
-          deepInner.add(key);
-        }
-      }
-    }
-  }
+  // Any non-border grass cell is a candidate. isDeep/isWide are cheap hints
+  // passed to pickCandidate to avoid wasting attempts on entities whose
+  // footprint can't possibly fit (canPlace is the authoritative check).
 
   const tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }> = [];
   const entityStats:   Array<{ x: number; y: number; stats: EntityStats }> = [];
   const occupied       = new Set<string>();
 
-  /** Check that every layer-3 tile position is valid (inner + unoccupied). */
+  /** Check that every layer-3 tile position lands on valid ground and is unoccupied.
+   *  Grass entities require pure grass; lake entities require lake water cells. */
   function canPlace(x: number, y: number, c: SpawnCandidate): boolean {
     for (const t of c.tiles) {
       const tx = x + t.dx;
@@ -559,7 +648,8 @@ export function buildVegetationLayer(
       if (tx < 0 || tx >= w || ty < 0 || ty >= h) return false;
       if (t.layer === 3) {
         const key = `${tx},${ty}`;
-        if (!inner.has(key) || occupied.has(key)) return false;
+        if (occupied.has(key)) return false;
+        if (c.lakeOnly || c.lakeInterior ? !lakeGrid.has(key) : !isG(tx, ty)) return false;
       }
     }
     return true;
@@ -581,8 +671,13 @@ export function buildVegetationLayer(
 
   // ── Collect density-filtered candidates and shuffle ────────────────────────
   const candidates: string[] = [];
-  for (const key of inner) {
-    if (rng() < SPAWN_DENSITY) candidates.push(key);
+  for (let y = 1; y < h - 1; y++) {
+    for (let x = 1; x < w - 1; x++) {
+      if (!isG(x, y)) continue;
+      const key = `${x},${y}`;
+      const density = forestGrid.has(key) ? FOREST_DENSITY : SPAWN_DENSITY;
+      if (rng() < density) candidates.push(key);
+    }
   }
   for (let i = candidates.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
@@ -594,13 +689,47 @@ export function buildVegetationLayer(
     if (occupied.has(key)) continue;
 
     const [x, y] = key.split(",").map(Number);
-    const isDeep = deepInner.has(key);
-    const isWide = isDeep && deepInner.has(`${x + 1},${y}`);
-    const candidate = pickCandidate(isDeep, isWide);
+    const isDeep = isG(x, y - 1);
+    const isWide = isG(x + 1, y);
+    const inForest = forestGrid.has(key);
+    const candidate = pickCandidate(isDeep, isWide, inForest);
     if (!candidate) continue;
 
     if (!canPlace(x, y, candidate)) continue;
     placeEntity(x, y, candidate);
+  }
+
+  // ── Lily pad placement on lake water cells ────────────────────────────────
+  const lilyPool   = spawnPool.filter(c => c.lakeOnly || c.lakeInterior);
+  const LILY_DENSITY = lilyPool.length > 0 ? getIslandConfig().mapGen.lilyPadDensity : 0;
+
+  if (LILY_DENSITY > 0) {
+    const lilyWeights = lilyPool.map(c => spawnWeights[spawnPool.indexOf(c)]);
+
+    function pickLilyPad(isBorder: boolean): SpawnCandidate | null {
+      // lakeInterior entities are excluded from border cells
+      const eligible = lilyPool
+        .map((c, i) => ({ c, w: lilyWeights[i] }))
+        .filter(({ c }) => !c.lakeInterior || !isBorder);
+      if (eligible.length === 0) return null;
+      const total = eligible.reduce((s, { w }) => s + w, 0);
+      let r = rng() * total;
+      for (const { c, w } of eligible) {
+        r -= w;
+        if (r <= 0) return c;
+      }
+      return eligible[eligible.length - 1].c;
+    }
+
+    for (const key of lakeGrid) {
+      const [x, y] = key.split(",").map(Number);
+      if (occupied.has(key)) continue;
+      if (rng() >= LILY_DENSITY) continue;
+      const isBorder = [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => isG(x + dx, y + dy) || isSand(x + dx, y + dy));
+      const candidate = pickLilyPad(isBorder);
+      if (!candidate) continue;
+      if (canPlace(x, y, candidate)) placeEntity(x, y, candidate);
+    }
   }
 
   return { tileOverrides, entityStats };
