@@ -313,17 +313,24 @@ export function buildIslandLayer1(
           || !isWater(x-1,y-1) || !isWater(x+1,y-1) || !isWater(x-1,y+1) || !isWater(x+1,y+1);
 
         if (hasLandNeighbor) {
-          // If any neighbor is sand, show sand under the water tile; otherwise show grass
           const hasSandNeighbor =
             terrain[y]?.[x-1] === "sand" || terrain[y]?.[x+1] === "sand" ||
             terrain[y-1]?.[x] === "sand" || terrain[y+1]?.[x] === "sand" ||
             terrain[y-1]?.[x-1] === "sand" || terrain[y-1]?.[x+1] === "sand" ||
             terrain[y+1]?.[x-1] === "sand" || terrain[y+1]?.[x+1] === "sand";
-          const base = hasSandNeighbor ? autotileSandCell(x, y, isSandOrWater) : "grass";
-          result.push({ x, y, layer: 0, tileId: base });
+
+          // Always show grass on layer 0 (sand sits on top of grass, never replaces it)
+          result.push({ x, y, layer: 0, tileId: "grass" });
+
+          if (hasSandNeighbor) {
+            // Sand on layer 1, water on layer 2 — proper grass → sand → water stack
+            result.push({ x, y, layer: 1, tileId: autotileSandCell(x, y, isSandOrWater) });
+            result.push({ x, y, layer: 2, tileId: autotileWaterCell(x, y, isWater) });
+            continue;
+          }
         }
 
-        // ALL water cells get a layer-1 water autotile overlay (animated)
+        // Regular border or interior water: water autotile on layer 1
         const tileId = autotileWaterCell(x, y, isWater);
         result.push({ x, y, layer: 1, tileId });
       } else if (t === "sand") {
@@ -396,18 +403,21 @@ export function isPathTileId(tileId: string): boolean {
 }
 
 /** Returns true if the tile ID represents walkable ground.
- * With two-layer rendering, grass cells have no layer-1 override (empty string). */
-export function isWalkableGround(tileId: string): boolean {
-  if (tileId.startsWith("water_at_")) return false;
-  return tileId === "" || tileId === "grass" || tileId.startsWith("sand_at_") || PATH_TILE_IDS.has(tileId);
+ * With two-layer rendering, grass cells have no layer-1 override (empty string).
+ * Pass l2 when the cell may have a water overlay on layer 2 (sand-adjacent water border). */
+export function isWalkableGround(l1: string, l2?: string): boolean {
+  if (l2?.startsWith("water_at_")) return false;
+  if (l1.startsWith("water_at_")) return false;
+  return l1 === "" || l1 === "grass" || l1.startsWith("sand_at_") || PATH_TILE_IDS.has(l1);
 }
 
 /**
- * Determine the terrain type from a layer-1 tile ID.
- * With the two-layer approach: water cells have water_at_* on layer 1,
- * grass cells have no layer 1 override (empty string).
+ * Determine the terrain type from layer overrides.
+ * Layer 2 takes priority for water detection (sand-adjacent water border cells
+ * have sand_at on layer 1 and water_at on layer 2).
  */
-export function terrainFromLayer1(l1: string): "grass" | "sand" | "water" {
+export function terrainFromLayer1(l1: string, l2?: string): "grass" | "sand" | "water" {
+  if (l2?.startsWith("water_at_")) return "water";
   if (l1.startsWith("water_at_")) return "water";
   if (l1.startsWith("sand_at_")) return "sand";
   return "grass";

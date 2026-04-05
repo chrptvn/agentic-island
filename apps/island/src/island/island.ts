@@ -255,11 +255,11 @@ export class Island extends EventEmitter {
         const steps = Math.max(Math.abs(dx), Math.abs(dy));
         // Terrain is tracked via layer-1 overrides ("grass" tile = walkable land)
         const l1 = this.getLayer(cx, cy, 1);
-        const terrain = terrainFromLayer1(l1);
+        const terrain = terrainFromLayer1(l1, this.getLayer(cx, cy, 2));
         const cell: (typeof nearby)[0] = { direction: compassDir(dx, dy), steps, dx, dy, terrain };
         const entity = this.getLayer(cx, cy, 3);
         if (entity) cell.entity = entity;
-        if (this.getLayer(cx, cy, 2)) cell.path = true;
+        if (isPathTileId(this.getLayer(cx, cy, 2))) cell.path = true;
         const charHere = [...this.characters.values()].find(c => c !== character && c.x === cx && c.y === cy);
         if (charHere) cell.character = charHere.id;
         nearby.push(cell);
@@ -268,14 +268,14 @@ export class Island extends EventEmitter {
 
     // Terrain for current cell
     const standingL1 = this.getLayer(x, y, 1);
-    const standingTerrain = terrainFromLayer1(standingL1);
+    const standingTerrain = terrainFromLayer1(standingL1, this.getLayer(x, y, 2));
     return {
       character: characterId,
       position: { x, y },
       standing: {
         terrain: standingTerrain,
         ...(this.getLayer(x, y, 3) ? { entity: this.getLayer(x, y, 3) } : {}),
-        ...(this.getLayer(x, y, 2) ? { path: true } : {}),
+        ...(isPathTileId(this.getLayer(x, y, 2)) ? { path: true } : {}),
       },
       stats:      character.stats,
       action:     character.action,
@@ -471,7 +471,7 @@ export class Island extends EventEmitter {
     }
     // Walkability check uses layer 1 (grass / water-shore marker)
     const l1 = this.getLayer(x, y, 1);
-    if (!isWalkableGround(l1)) {
+    if (!isWalkableGround(l1, this.getLayer(x, y, 2))) {
       throw new Error(`Cannot place path at (${x}, ${y}): cell is not walkable ground.`);
     }
 
@@ -552,7 +552,7 @@ export class Island extends EventEmitter {
 
     // Validate cell — terrain is tracked via layer-1 overrides
     const l1 = this.getLayer(x, y, 1);
-    if (terrainFromLayer1(l1) === "water") throw new Error(`Cannot plow here: cell (${x},${y}) is not land terrain.`);
+    if (terrainFromLayer1(l1, this.getLayer(x, y, 2)) === "water") throw new Error(`Cannot plow here: cell (${x},${y}) is not land terrain.`);
     if (isPathTileId(this.getLayer(x, y, 2))) throw new Error(`Cell (${x},${y}) is already a dirt path.`);
     if (this.getLayer(x, y, 3) !== "") throw new Error(`Cannot plow here: an entity is blocking cell (${x},${y}).`);
 
@@ -601,7 +601,7 @@ export class Island extends EventEmitter {
       for (let x = 0; x < this.map.width; x++) {
         const key = `${x},${y}`;
         const layers = this.overrides.get(key);
-        if (isWalkableGround(layers?.[1] ?? "") && !layers?.[3] && !occupied.has(key)) {
+        if (isWalkableGround(layers?.[1] ?? "", layers?.[2]) && !layers?.[3] && !occupied.has(key)) {
           result.push({ x, y });
         }
       }
@@ -615,7 +615,7 @@ export class Island extends EventEmitter {
     }
     // Grass is tracked via layer-1 overrides (tileId === "grass"), not in map.tiles
     const l1 = this.overrides.get(`${x},${y}`)?.[1] ?? "";
-    if (!isWalkableGround(l1)) {
+    if (!isWalkableGround(l1, this.overrides.get(`${x},${y}`)?.[2])) {
       throw new Error(`Cannot spawn at (${x}, ${y}): cell is not on grass or a path (land only).`);
     }
     const l3 = this.overrides.get(`${x},${y}`)?.[3];
@@ -722,7 +722,7 @@ export class Island extends EventEmitter {
     if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height) return false;
     const key = `${x},${y}`;
     const layers = this.overrides.get(key);
-    if (!isWalkableGround(layers?.[1] ?? "")) return false;
+    if (!isWalkableGround(layers?.[1] ?? "", layers?.[2])) return false;
     if (layers?.[3]) return false;
     // Check for other characters at this position
     for (const c of this.characters.values()) {
@@ -1301,7 +1301,7 @@ export class Island extends EventEmitter {
       const eLayers = this.overrides.get(eKey);
       const l1 = eLayers?.[1] ?? "";
       const l3 = eLayers?.[3] ?? "";
-      if (isWalkableGround(l1) && !l3) {
+      if (isWalkableGround(l1, eLayers?.[2]) && !l3) {
         exitPos = { x: ex, y: ey };
         break;
       }
@@ -1871,7 +1871,7 @@ export class Island extends EventEmitter {
       if (nb.x < 0 || nb.x >= this.map.width || nb.y < 0 || nb.y >= this.map.height) continue;
       const key = `${nb.x},${nb.y}`;
       const layers = this.overrides.get(key);
-      if (!layers || !isWalkableGround(layers[1] ?? "")) continue;
+      if (!layers || !isWalkableGround(layers[1] ?? "", layers[2])) continue;
       const l3 = layers[3] ?? "";
       const l4 = layers[4] ?? "";
       if (l3 || l4) continue; // skip occupied cells (entity at layer 3 or canopy at layer 4)
