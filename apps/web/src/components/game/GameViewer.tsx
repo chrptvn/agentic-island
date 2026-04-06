@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { GameRenderer } from '@agentic-island/game-renderer';
 import type { IslandState } from '@agentic-island/shared';
 import Tooltip, { type TooltipData } from './Tooltip';
@@ -69,7 +69,17 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
     if (state) recActionsRef.current.pushState(state);
   }, [state]);
 
-  const hasTileRegistry = !!state?.tileRegistry;
+  // Track the number of unique sprite sheets in the tile registry.
+  // When a new character connects, their body+head sheets are added to the
+  // registry and this count changes, triggering the sprite-loading effect.
+  const registrySheetCount = useMemo(() => {
+    if (!state?.tileRegistry) return 0;
+    const sheets = new Set<string>();
+    for (const tile of Object.values(state.tileRegistry)) {
+      if (tile.sheet) sheets.add(tile.sheet);
+    }
+    return sheets.size;
+  }, [state?.tileRegistry]);
 
   const prevIsFullscreenRef = useRef(isFullscreen);
   const recStateModeRef = useRef(recState.mode);
@@ -419,10 +429,10 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
     spritesLoadedRef.current = false;
   }, [spriteVersion]);
 
-  // Load sprites
+  // Load sprites — re-runs when new sheets appear (e.g. new character connects).
+  // SpriteCache.loadSheet() deduplicates, so already-loaded sheets are skipped.
   useEffect(() => {
     if (!rendererRef.current || !spriteBaseUrl || !state?.tileRegistry) return;
-    if (spritesLoadedRef.current) return;
 
     const vSuffix = spriteVersion ? `?v=${spriteVersion}` : '';
     const sheets: Record<
@@ -448,7 +458,7 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
       })
       .catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [spriteBaseUrl, spriteVersion, hasTileRegistry]);
+  }, [spriteBaseUrl, spriteVersion, registrySheetCount]);
 
   // Update state — use buffered state when paused/recording, live state otherwise
   useEffect(() => {
