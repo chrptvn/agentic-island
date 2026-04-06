@@ -100,7 +100,7 @@ export class Island extends EventEmitter {
       };
       const now = Date.now();
       const speech = (c.speech && c.speech.expiresAt > now) ? c.speech.text : undefined;
-      characters[id] = { x: c.x, y: c.y, tileId: c.tileId, hairTileId: c.hairTileId, beardTileId: c.beardTileId, appearance: c.appearance, facing: c.facing, stats: roundedStats, path: c.path, action: c.action, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
+      characters[id] = { x: c.x, y: c.y, tileId: c.tileId, hairTileId: c.hairTileId, beardTileId: c.beardTileId, appearance: c.appearance, facing: c.facing, stats: roundedStats, path: c.path, action: c.action, moveTicks: c.moveTicks ?? 0, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
     }
     return { ...base, entities, characters };
   }
@@ -658,7 +658,7 @@ export class Island extends EventEmitter {
     const tileId = bodyTileId(gender, skinColor, facing, "idle");
     const hTileId = hairTileId(gender, hairColor, facing, "idle");
 
-    const character: CharacterInstance = { id, x, y, tileId, hairTileId: hTileId, appearance, facing, stats, path: [], action: "idle" };
+    const character: CharacterInstance = { id, x, y, tileId, hairTileId: hTileId, appearance, facing, stats, path: [], action: "idle", moveTicks: 0 };
 
     this.characters.set(id, character);
     saveCharacter(id, x, y, stats, [], "idle", tileId, hTileId, undefined, undefined, appearance, facing);
@@ -719,6 +719,7 @@ export class Island extends EventEmitter {
         stats,
         path: [],
         action: "idle",
+        moveTicks: 0,
         ...(saved.shelter ? { shelter: saved.shelter } : {}),
       };
 
@@ -2128,6 +2129,7 @@ export class Island extends EventEmitter {
     const passiveRegen = cfg.energyRegenPassive    * TICK_S;
     const moveStepCost       = cfg.energyCosts.moveStep;
     const moveStepOnPathCost = cfg.energyCosts.moveStepOnPath;
+    const moveTickInterval   = cfg.moveTickInterval ?? 1;
 
     // Collect characters whose state changed so we can flush them in one transaction.
     const changedCharacters: CharacterInstance[] = [];
@@ -2223,29 +2225,34 @@ export class Island extends EventEmitter {
         changed = true;
       }
 
-      // ── Movement step ────────────────────────────────────────────────────────
+      // ── Movement step (throttled by moveTickInterval) ─────────────────────
       if (character.path.length > 0) {
         if (s.energy < moveStepCost) {
           // Out of energy — stop moving
           character.path = [];
           character.action = "idle";
+          character.moveTicks = 0;
           changed = true;
         } else {
-          const next = character.path.shift()!;
-          // Compute facing from movement vector
-          const dx = next.x - character.x;
-          const dy = next.y - character.y;
-          if (Math.abs(dx) >= Math.abs(dy)) {
-            character.facing = dx > 0 ? "e" : "w";
-          } else {
-            character.facing = dy > 0 ? "s" : "n";
+          character.moveTicks = (character.moveTicks ?? 0) + 1;
+          if (character.moveTicks >= moveTickInterval) {
+            character.moveTicks = 0;
+            const next = character.path.shift()!;
+            // Compute facing from movement vector
+            const dx = next.x - character.x;
+            const dy = next.y - character.y;
+            if (Math.abs(dx) >= Math.abs(dy)) {
+              character.facing = dx > 0 ? "e" : "w";
+            } else {
+              character.facing = dy > 0 ? "s" : "n";
+            }
+            character.x = next.x;
+            character.y = next.y;
+            const onPath = isPathTileId(this.getLayer(next.x, next.y, 2));
+            s.energy = Math.max(0, s.energy - (onPath ? moveStepOnPathCost : moveStepCost));
+            if (character.path.length === 0) character.action = "idle";
+            changed = true;
           }
-          character.x = next.x;
-          character.y = next.y;
-          const onPath = isPathTileId(this.getLayer(next.x, next.y, 2));
-          s.energy = Math.max(0, s.energy - (onPath ? moveStepOnPathCost : moveStepCost));
-          if (character.path.length === 0) character.action = "idle";
-          changed = true;
         }
       }
 

@@ -45,6 +45,7 @@ export interface CharacterInstance {
   stats:   CharacterStats;
   path:    { x: number; y: number }[];
   action:  string; // "idle" | "moving" | "searching"
+  moveTicks: number; // tick counter for movement throttle
   speech?: CharacterSpeech;
   /** "x,y" key of the tent base position when the character is inside a tent. */
   shelter?: string;

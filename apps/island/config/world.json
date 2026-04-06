@@ -1,5 +1,6 @@
 {
   "tickMs": 500,
+  "moveTickInterval": 2,
   "hungerDrainPerSecond": 0.2,
   "healthDrainPerSecond": 0.5,
   "healthRegenPassive": 0.5,

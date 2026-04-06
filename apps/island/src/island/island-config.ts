@@ -62,6 +62,8 @@ export interface MapGenConfig {
 export interface IslandConfig {
   /** Game simulation tick interval in milliseconds. */
   tickMs:               number;
+  /** How many ticks between movement steps (higher = slower). */
+  moveTickInterval:     number;
   hungerDrainPerSecond: number;
   healthDrainPerSecond: number;
   healthRegenPassive:   number;
@@ -77,6 +79,7 @@ export interface IslandConfig {
 
 const DEFAULT_ISLAND_CONFIG: IslandConfig = {
   tickMs:               500,
+  moveTickInterval:     2,
   hungerDrainPerSecond: 0.2,
   healthDrainPerSecond: 0.5,
   healthRegenPassive:   0.5,
