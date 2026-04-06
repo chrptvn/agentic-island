@@ -18,7 +18,7 @@ import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
-import { bodyTileId, headTileId, buildCharacterTileDefs, SKIN_COLORS, GENDERS } from "./character-sprites.js";
+import { bodyTileId, hairTileId, buildCharacterTileDefs, SKIN_COLORS, GENDERS, HAIR_COLORS } from "./character-sprites.js";
 import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
 
 const MAP_STATE_KEY = "map_config";
@@ -190,16 +190,17 @@ export class Island extends EventEmitter {
     for (const [, c] of this.characters) {
       const speech = (c.speech && c.speech.expiresAt > now) ? { text: c.speech.text, expiresAt: c.speech.expiresAt } : undefined;
 
-      // Compute tile IDs from appearance + facing for the LPC sprite system
-      const computedTileId = bodyTileId(c.appearance.skinColor, c.facing);
-      const computedHeadTileId = headTileId(c.appearance.gender, c.appearance.skinColor, c.facing);
+      // Compute tile IDs from appearance + facing + action for the LPC sprite system
+      const animAction = c.path.length > 0 ? "walk" : "idle";
+      const computedTileId = bodyTileId(c.appearance.gender, c.appearance.skinColor, c.facing, animAction);
+      const computedHairTileId = hairTileId(c.appearance.gender, c.appearance.hairColor, c.facing, animAction);
 
       result.push({
         id: c.id,
         x: c.x,
         y: c.y,
         tileId: computedTileId,
-        hairTileId: computedHeadTileId,
+        hairTileId: computedHairTileId,
         appearance: c.appearance,
         facing: c.facing,
         stats: {
@@ -648,17 +649,19 @@ export class Island extends EventEmitter {
     const gender = requestedAppearance?.gender ?? GENDERS[Math.floor(Math.random() * GENDERS.length)];
     const skinColor = requestedAppearance?.skinColor ??
       SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
-    const appearance: CharacterAppearance = { gender, skinColor };
+    const hairColor = requestedAppearance?.hairColor ??
+      HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
+    const appearance: CharacterAppearance = { gender, skinColor, hairColor };
     const facing: CharacterFacing = "s";
 
     // Compute tile IDs from appearance for persistence
-    const tileId = bodyTileId(skinColor, facing);
-    const hairTileId = headTileId(gender, skinColor, facing);
+    const tileId = bodyTileId(gender, skinColor, facing, "idle");
+    const hTileId = hairTileId(gender, hairColor, facing, "idle");
 
-    const character: CharacterInstance = { id, x, y, tileId, hairTileId, appearance, facing, stats, path: [], action: "idle" };
+    const character: CharacterInstance = { id, x, y, tileId, hairTileId: hTileId, appearance, facing, stats, path: [], action: "idle" };
 
     this.characters.set(id, character);
-    saveCharacter(id, x, y, stats, [], "idle", tileId, hairTileId, undefined, undefined, appearance, facing);
+    saveCharacter(id, x, y, stats, [], "idle", tileId, hTileId, undefined, undefined, appearance, facing);
     this.emit("map:updated", this.map);
     return character;
   }
@@ -709,8 +712,8 @@ export class Island extends EventEmitter {
 
       const character: CharacterInstance = {
         id, x, y,
-        tileId: bodyTileId(appearance.skinColor, facing),
-        hairTileId: headTileId(appearance.gender, appearance.skinColor, facing),
+        tileId: bodyTileId(appearance.gender, appearance.skinColor, facing, "idle"),
+        hairTileId: hairTileId(appearance.gender, appearance.hairColor, facing, "idle"),
         appearance,
         facing,
         stats,
@@ -2134,11 +2137,11 @@ export class Island extends EventEmitter {
       let changed = false;
       const s = character.stats;
 
-      // ── Hunger drain ────────────────────────────────────────────────────────
-      if (s.hunger > 0) {
-        s.hunger = Math.max(0, s.hunger - hungerDrain);
-        changed = true;
-      }
+      // ── Hunger drain (TEMPORARILY DISABLED) ─────────────────────────────
+      // if (s.hunger > 0) {
+      //   s.hunger = Math.max(0, s.hunger - hungerDrain);
+      //   changed = true;
+      // }
 
       // ── Sheltered in tent: boosted regen, skip fire/movement ─────────────
       if (character.shelter) {

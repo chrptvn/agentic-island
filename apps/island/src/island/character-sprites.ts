@@ -1,9 +1,11 @@
 /**
- * Character sprite helpers for the LPC two-layer (body + head) system.
+ * Character sprite helpers for the LPC Universal Sprite Sheet system.
  *
- * Each idle sprite sheet is a 2×4 grid of 64×64 tiles:
- *   Row 0 = North, Row 1 = West, Row 2 = South, Row 3 = East
- *   Col 0 = frame 0, Col 1 = frame 1
+ * Sheets are 832×1344 (13 cols × 21 rows of 64×64 tiles).
+ * Walk rows: 8=N, 9=W, 10=S, 11=E — 9 frames each.
+ * Idle = walk frame 0 (static standing pose).
+ *
+ * Two overlay layers: base body + hair (same sheet dimensions, composited).
  */
 
 import type { CharacterAppearance, CharacterFacing, TileDef } from "@agentic-island/shared";
@@ -11,60 +13,63 @@ import type { CharacterInstance } from "./character-registry.js";
 
 export const TILE_SIZE_LPC = 64;
 
-/** Skin colors common to body and both head sets. */
-export const SKIN_COLORS = [
-  "amber", "black", "blue", "bright_green", "bronze", "brown", "dark_green",
-  "fur_black", "fur_brown", "fur_copper", "fur_gold", "fur_grey", "fur_tan",
-  "fur_white", "green", "lavender", "light", "olive", "pale_green", "taupe",
-  "zombie_green",
-] as const;
+// ── Available options ────────────────────────────────────────────────────────
 
+export const SKIN_COLORS = ["black", "brown", "olive", "peach", "white"] as const;
 export type SkinColor = (typeof SKIN_COLORS)[number];
 
-export const GENDERS = ["male", "female"] as const;
+export const GENDERS = ["man", "woman"] as const;
 
-const FACING_ROW: Record<CharacterFacing, number> = {
-  n: 0,
-  w: 1,
-  s: 2,
-  e: 3,
+export const HAIR_COLORS = [
+  "blonde", "blue", "brunette", "green", "pink", "raven", "redhead", "white-blonde",
+] as const;
+export type HairColor = (typeof HAIR_COLORS)[number];
+
+/** Hair style directory per gender (auto-selected). */
+const HAIR_STYLE: Record<string, string> = {
+  man: "plain-male",
+  woman: "ponytail2-female",
 };
+
+// ── Walk row mapping (direction → sprite sheet row) ──────────────────────────
+
+const WALK_ROW: Record<CharacterFacing, number> = {
+  n: 8,
+  w: 9,
+  s: 10,
+  e: 11,
+};
+
+const WALK_FRAME_COUNT = 9;
+
+const FACINGS: CharacterFacing[] = ["n", "s", "e", "w"];
 
 // ── Tile ID helpers ──────────────────────────────────────────────────────────
 
-export function bodyTileId(skinColor: string, facing: CharacterFacing): string {
-  return `char_body_${skinColor}_${facing}`;
+export function bodyTileId(gender: string, skinColor: string, facing: CharacterFacing, action: "idle" | "walk"): string {
+  return `char_body_${gender}_${skinColor}_${action}_${facing}`;
 }
 
-export function headTileId(
-  gender: CharacterAppearance["gender"],
-  skinColor: string,
-  facing: CharacterFacing,
-): string {
-  return `char_head_${gender}_${skinColor}_${facing}`;
+export function hairTileId(gender: string, hairColor: string, facing: CharacterFacing, action: "idle" | "walk"): string {
+  return `char_hair_${gender}_${hairColor}_${action}_${facing}`;
 }
 
 // ── Sheet path helpers ───────────────────────────────────────────────────────
 
-export function bodySheetPath(skinColor: string): string {
-  return `lpc-character-bases-v3_1/bodies/male/idle/${skinColor}.png`;
+export function bodySheetPath(gender: string, skinColor: string): string {
+  return `lpc-characters/base/${gender}_${skinColor}.png`;
 }
 
-export function headSheetPath(
-  gender: CharacterAppearance["gender"],
-  skinColor: string,
-): string {
-  return `lpc-character-bases-v3_1/heads/human_${gender}/idle/${skinColor}.png`;
+export function hairSheetPath(gender: string, hairColor: string): string {
+  const style = HAIR_STYLE[gender] ?? "plain-male";
+  return `lpc-characters/hair/${style}/${hairColor}.png`;
 }
 
 // ── Dynamic tile defs for active characters ──────────────────────────────────
 
-const FACINGS: CharacterFacing[] = ["n", "s", "e", "w"];
-
 /**
  * Build TileDef entries for the unique appearance combos among active
- * characters.  Returns only the tiles that aren't already in the static
- * registry, so callers should merge the result into the registry object.
+ * characters. Returns idle + walk tiles for each direction.
  */
 export function buildCharacterTileDefs(
   characters: Iterable<CharacterInstance>,
@@ -73,42 +78,60 @@ export function buildCharacterTileDefs(
   const defs: TileDef[] = [];
 
   for (const c of characters) {
-    const { gender, skinColor } = c.appearance;
-    const key = `${gender}:${skinColor}`;
+    const { gender, skinColor, hairColor } = c.appearance;
+    const key = `${gender}:${skinColor}:${hairColor}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
     for (const dir of FACINGS) {
-      const row = FACING_ROW[dir];
+      const walkRow = WALK_ROW[dir];
 
-      // Body tile
+      // ── Body idle (single frame) ──────────────────────────────────────
       defs.push({
-        id: bodyTileId(skinColor, dir),
+        id: bodyTileId(gender, skinColor, dir, "idle"),
         col: 0,
-        row,
-        sheet: bodySheetPath(skinColor),
+        row: walkRow,
+        sheet: bodySheetPath(gender, skinColor),
         tileSize: TILE_SIZE_LPC,
         gap: 0,
-        frames: [
-          { col: 0, row },
-          { col: 1, row },
-        ],
         category: "character",
         layer: 3,
       });
 
-      // Head tile
+      // ── Body walk (9 frames) ──────────────────────────────────────────
       defs.push({
-        id: headTileId(gender, skinColor, dir),
+        id: bodyTileId(gender, skinColor, dir, "walk"),
         col: 0,
-        row,
-        sheet: headSheetPath(gender, skinColor),
+        row: walkRow,
+        sheet: bodySheetPath(gender, skinColor),
         tileSize: TILE_SIZE_LPC,
         gap: 0,
-        frames: [
-          { col: 0, row },
-          { col: 1, row },
-        ],
+        frames: Array.from({ length: WALK_FRAME_COUNT }, (_, i) => ({ col: i, row: walkRow })),
+        category: "character",
+        layer: 3,
+      });
+
+      // ── Hair idle (single frame) ──────────────────────────────────────
+      defs.push({
+        id: hairTileId(gender, hairColor, dir, "idle"),
+        col: 0,
+        row: walkRow,
+        sheet: hairSheetPath(gender, hairColor),
+        tileSize: TILE_SIZE_LPC,
+        gap: 0,
+        category: "character",
+        layer: 3,
+      });
+
+      // ── Hair walk (9 frames) ──────────────────────────────────────────
+      defs.push({
+        id: hairTileId(gender, hairColor, dir, "walk"),
+        col: 0,
+        row: walkRow,
+        sheet: hairSheetPath(gender, hairColor),
+        tileSize: TILE_SIZE_LPC,
+        gap: 0,
+        frames: Array.from({ length: WALK_FRAME_COUNT }, (_, i) => ({ col: i, row: walkRow })),
         category: "character",
         layer: 3,
       });

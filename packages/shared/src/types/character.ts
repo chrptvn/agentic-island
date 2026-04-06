@@ -14,12 +14,13 @@ export interface CharacterStats {
   maxEnergy: number;
 }
 
-export type CharacterGender = "male" | "female";
+export type CharacterGender = "man" | "woman";
 export type CharacterFacing = "n" | "s" | "e" | "w";
 
 export interface CharacterAppearance {
   gender: CharacterGender;
   skinColor: string;
+  hairColor: string;
 }
 
 export interface CharacterState {

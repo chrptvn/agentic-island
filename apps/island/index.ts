@@ -124,8 +124,8 @@ if (!isPrimary) {
   };
 
   // Package all sprites from the unified sprites/ directory.
-  // Exclude non-idle LPC action directories to stay within the upload size limit.
-  const LPC_EXCLUDE = ["/jump/", "/run/", "/sit/", "/universal/"];
+  // Exclude the old LPC sprite directory (superseded by lpc-characters/).
+  const LPC_EXCLUDE = ["/lpc-character-bases-v3_1/"];
   const sprites = await packageSprites(join(__dirname, "sprites"), "", LPC_EXCLUDE).catch(() => []);
 
   // Generate a pixel-art thumbnail from the island's terrain

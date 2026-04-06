@@ -251,7 +251,25 @@ export function clearEntityStats(): void {
 
 import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
 
-const DEFAULT_APPEARANCE: CharacterAppearance = { gender: "male", skinColor: "light" };
+import { SKIN_COLORS, GENDERS, HAIR_COLORS } from "../island/character-sprites.js";
+
+function randomAppearance(): CharacterAppearance {
+  const gender = GENDERS[Math.floor(Math.random() * GENDERS.length)];
+  const skinColor = SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
+  const hairColor = HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
+  return { gender, skinColor, hairColor };
+}
+
+/** Parse stored appearance JSON, filling in any missing fields for backward compat. */
+function parseAppearance(json: string | null): CharacterAppearance {
+  if (!json) return randomAppearance();
+  const parsed = JSON.parse(json) as Partial<CharacterAppearance>;
+  return {
+    gender: (parsed.gender as CharacterAppearance["gender"]) ?? GENDERS[Math.floor(Math.random() * GENDERS.length)],
+    skinColor: parsed.skinColor ?? SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)],
+    hairColor: parsed.hairColor ?? HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)],
+  };
+}
 
 export interface CharacterRow {
   id: string;
@@ -283,7 +301,7 @@ export function loadCharacters(): CharacterRow[] {
     ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
     ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
     ...(r.shelter ? { shelter: r.shelter } : {}),
-    appearance: r.appearance ? JSON.parse(r.appearance) as CharacterAppearance : DEFAULT_APPEARANCE,
+    appearance: parseAppearance(r.appearance),
     facing: (r.facing ?? "s") as CharacterFacing,
   }));
 }
@@ -326,7 +344,7 @@ export function loadCharacter(id: string): CharacterRow | null {
     ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
     ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
     ...(r.shelter ? { shelter: r.shelter } : {}),
-    appearance: r.appearance ? JSON.parse(r.appearance) as CharacterAppearance : DEFAULT_APPEARANCE,
+    appearance: parseAppearance(r.appearance),
     facing: (r.facing ?? "s") as CharacterFacing,
   };
 }
