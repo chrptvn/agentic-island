@@ -119,6 +119,12 @@ db.exec(`
   if (!cols.some((c) => c.name === "shelter")) {
     db.exec(`ALTER TABLE characters ADD COLUMN shelter TEXT`);
   }
+  if (!cols.some((c) => c.name === "appearance")) {
+    db.exec(`ALTER TABLE characters ADD COLUMN appearance TEXT`);
+  }
+  if (!cols.some((c) => c.name === "facing")) {
+    db.exec(`ALTER TABLE characters ADD COLUMN facing TEXT NOT NULL DEFAULT 's'`);
+  }
 }
 
 
@@ -243,10 +249,29 @@ export function clearEntityStats(): void {
 
 // ── Characters ────────────────────────────────────────────────────────────────
 
-export function loadCharacters(): { id: string; x: number; y: number; stats: object; path: object[]; action: string; tileId: string; hairTileId?: string; beardTileId?: string; shelter?: string }[] {
+import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
+
+const DEFAULT_APPEARANCE: CharacterAppearance = { gender: "male", skinColor: "light" };
+
+export interface CharacterRow {
+  id: string;
+  x: number;
+  y: number;
+  stats: object;
+  path: object[];
+  action: string;
+  tileId: string;
+  hairTileId?: string;
+  beardTileId?: string;
+  shelter?: string;
+  appearance: CharacterAppearance;
+  facing: CharacterFacing;
+}
+
+export function loadCharacters(): CharacterRow[] {
   const rows = db
-    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter FROM characters")
-    .all() as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null }[];
+    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter, appearance, facing FROM characters")
+    .all() as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null; appearance: string | null; facing: string | null }[];
   return rows.map((r) => ({
     id: r.id,
     x: r.x,
@@ -258,19 +283,37 @@ export function loadCharacters(): { id: string; x: number; y: number; stats: obj
     ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
     ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
     ...(r.shelter ? { shelter: r.shelter } : {}),
+    appearance: r.appearance ? JSON.parse(r.appearance) as CharacterAppearance : DEFAULT_APPEARANCE,
+    facing: (r.facing ?? "s") as CharacterFacing,
   }));
 }
 
-export function saveCharacter(id: string, x: number, y: number, stats: object, path: object[] = [], action = "idle", tileId = "human", hairTileId?: string, beardTileId?: string, shelter?: string): void {
+export function saveCharacter(
+  id: string, x: number, y: number, stats: object,
+  path: object[] = [], action = "idle",
+  tileId = "human", hairTileId?: string, beardTileId?: string,
+  shelter?: string,
+  appearance?: CharacterAppearance, facing: CharacterFacing = "s",
+): void {
   db.prepare(
-    "INSERT INTO characters (id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET x=excluded.x, y=excluded.y, stats=excluded.stats, path=excluded.path, action=excluded.action, tile_id=excluded.tile_id, hair_tile_id=excluded.hair_tile_id, beard_tile_id=excluded.beard_tile_id, shelter=excluded.shelter"
-  ).run(id, x, y, JSON.stringify(stats), JSON.stringify(path), action, tileId, hairTileId ?? null, beardTileId ?? null, shelter ?? null);
+    `INSERT INTO characters (id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter, appearance, facing)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       x=excluded.x, y=excluded.y, stats=excluded.stats, path=excluded.path,
+       action=excluded.action, tile_id=excluded.tile_id, hair_tile_id=excluded.hair_tile_id,
+       beard_tile_id=excluded.beard_tile_id, shelter=excluded.shelter,
+       appearance=excluded.appearance, facing=excluded.facing`
+  ).run(
+    id, x, y, JSON.stringify(stats), JSON.stringify(path), action,
+    tileId, hairTileId ?? null, beardTileId ?? null, shelter ?? null,
+    appearance ? JSON.stringify(appearance) : null, facing,
+  );
 }
 
-export function loadCharacter(id: string): { id: string; x: number; y: number; stats: object; path: object[]; action: string; tileId: string; hairTileId?: string; beardTileId?: string; shelter?: string } | null {
+export function loadCharacter(id: string): CharacterRow | null {
   const r = db
-    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter FROM characters WHERE id = ?")
-    .get(id) as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null } | undefined;
+    .prepare("SELECT id, x, y, stats, path, action, tile_id, hair_tile_id, beard_tile_id, shelter, appearance, facing FROM characters WHERE id = ?")
+    .get(id) as { id: string; x: number; y: number; stats: string; path: string; action: string; tile_id: string; hair_tile_id: string | null; beard_tile_id: string | null; shelter: string | null; appearance: string | null; facing: string | null } | undefined;
   if (!r) return null;
   return {
     id: r.id,
@@ -283,6 +326,8 @@ export function loadCharacter(id: string): { id: string; x: number; y: number; s
     ...(r.hair_tile_id ? { hairTileId: r.hair_tile_id } : {}),
     ...(r.beard_tile_id ? { beardTileId: r.beard_tile_id } : {}),
     ...(r.shelter ? { shelter: r.shelter } : {}),
+    appearance: r.appearance ? JSON.parse(r.appearance) as CharacterAppearance : DEFAULT_APPEARANCE,
+    facing: (r.facing ?? "s") as CharacterFacing,
   };
 }
 

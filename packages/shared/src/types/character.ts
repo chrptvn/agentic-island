@@ -14,6 +14,14 @@ export interface CharacterStats {
   maxEnergy: number;
 }
 
+export type CharacterGender = "male" | "female";
+export type CharacterFacing = "n" | "s" | "e" | "w";
+
+export interface CharacterAppearance {
+  gender: CharacterGender;
+  skinColor: string;
+}
+
 export interface CharacterState {
   id: string;
   x: number;
@@ -21,6 +29,8 @@ export interface CharacterState {
   tileId?: string;
   hairTileId?: string;
   beardTileId?: string;
+  appearance?: CharacterAppearance;
+  facing?: CharacterFacing;
   stats: CharacterStats;
   inventory: InventoryItem[];
   equipment: EquipmentSlots;

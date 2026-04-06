@@ -1,4 +1,5 @@
 import { getIslandConfig } from "./island-config.js";
+import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
 
 export interface Point { x: number; y: number }
 
@@ -39,6 +40,8 @@ export interface CharacterInstance {
   tileId:  string;
   hairTileId?:  string;
   beardTileId?: string;
+  appearance: CharacterAppearance;
+  facing:  CharacterFacing;
   stats:   CharacterStats;
   path:    { x: number; y: number }[];
   action:  string; // "idle" | "moving" | "searching"

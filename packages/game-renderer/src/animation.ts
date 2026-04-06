@@ -94,20 +94,22 @@ export function drawCharacter(
   const tileId = character.tileId ?? CHARACTER_TILE_ID;
   drawTile(ctx, tileId, registry, sprites, cx, cy, size, size, animFrame);
 
-  // Draw hair & beard overlays (before equipment so hats could cover hair)
+  // Draw head / hair overlay (animated in sync with body)
   if (character.hairTileId && registry[character.hairTileId]) {
-    drawTile(ctx, character.hairTileId, registry, sprites, cx, cy, size, size);
-  }
-  if (character.beardTileId && registry[character.beardTileId]) {
-    drawTile(ctx, character.beardTileId, registry, sprites, cx, cy, size, size);
+    drawTile(ctx, character.hairTileId, registry, sprites, cx, cy, size, size, animFrame);
   }
 
-  // Draw equipped items on top of character
-  if (character.equipment) {
-    for (const slot of Object.keys(character.equipment)) {
-      const equip = character.equipment[slot];
-      if (equip && registry[equip.item]) {
-        drawTile(ctx, equip.item, registry, sprites, cx, cy, size, size);
+  // Legacy overlays — only for characters without the new appearance system
+  if (!character.appearance) {
+    if (character.beardTileId && registry[character.beardTileId]) {
+      drawTile(ctx, character.beardTileId, registry, sprites, cx, cy, size, size);
+    }
+    if (character.equipment) {
+      for (const slot of Object.keys(character.equipment)) {
+        const equip = character.equipment[slot];
+        if (equip && registry[equip.item]) {
+          drawTile(ctx, equip.item, registry, sprites, cx, cy, size, size);
+        }
       }
     }
   }
