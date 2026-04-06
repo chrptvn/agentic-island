@@ -90,6 +90,11 @@ export function drawCharacter(
   const cy = Math.round(screenRow * tileSize + offsetY);
   const size = Math.round(tileSize);
 
+  // Draw shadow under character
+  if (character.shadowTileId && registry[character.shadowTileId]) {
+    drawTile(ctx, character.shadowTileId, registry, sprites, cx, cy, size, size, animFrame);
+  }
+
   // Draw base character sprite
   const tileId = character.tileId ?? CHARACTER_TILE_ID;
   drawTile(ctx, tileId, registry, sprites, cx, cy, size, size, animFrame);

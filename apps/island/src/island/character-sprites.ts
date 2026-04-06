@@ -54,7 +54,13 @@ export function hairTileId(gender: string, hairColor: string, facing: CharacterF
   return `char_hair_${gender}_${hairColor}_${action}_${facing}`;
 }
 
+export function shadowTileId(facing: CharacterFacing, action: "idle" | "walk"): string {
+  return `char_shadow_${action}_${facing}`;
+}
+
 // ── Sheet path helpers ───────────────────────────────────────────────────────
+
+const SHADOW_SHEET = "lpc-characters/lpc_shadow.png";
 
 export function bodySheetPath(gender: string, skinColor: string): string {
   return `lpc-characters/base/${gender}_${skinColor}.png`;
@@ -77,7 +83,32 @@ export function buildCharacterTileDefs(
   const seen = new Set<string>();
   const defs: TileDef[] = [];
 
+  // Shadow tiles — universal, registered once for all characters
+  let shadowAdded = false;
+
   for (const c of characters) {
+    if (!shadowAdded) {
+      shadowAdded = true;
+      for (const dir of FACINGS) {
+        const walkRow = WALK_ROW[dir];
+        defs.push({
+          id: shadowTileId(dir, "idle"),
+          col: 0, row: walkRow,
+          sheet: SHADOW_SHEET,
+          tileSize: TILE_SIZE_LPC, gap: 0,
+          category: "character", layer: 3,
+        });
+        defs.push({
+          id: shadowTileId(dir, "walk"),
+          col: 0, row: walkRow,
+          sheet: SHADOW_SHEET,
+          tileSize: TILE_SIZE_LPC, gap: 0,
+          frames: Array.from({ length: WALK_FRAME_COUNT }, (_, i) => ({ col: i, row: walkRow })),
+          category: "character", layer: 3,
+        });
+      }
+    }
+
     const { gender, skinColor, hairColor } = c.appearance;
     const key = `${gender}:${skinColor}:${hairColor}`;
     if (seen.has(key)) continue;

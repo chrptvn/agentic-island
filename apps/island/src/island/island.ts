@@ -18,7 +18,7 @@ import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
-import { bodyTileId, hairTileId, buildCharacterTileDefs, SKIN_COLORS, GENDERS, HAIR_COLORS } from "./character-sprites.js";
+import { bodyTileId, hairTileId, shadowTileId, buildCharacterTileDefs, SKIN_COLORS, GENDERS, HAIR_COLORS } from "./character-sprites.js";
 import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
 
 const MAP_STATE_KEY = "map_config";
@@ -194,11 +194,13 @@ export class Island extends EventEmitter {
       const animAction = c.path.length > 0 ? "walk" : "idle";
       const computedTileId = bodyTileId(c.appearance.gender, c.appearance.skinColor, c.facing, animAction);
       const computedHairTileId = hairTileId(c.appearance.gender, c.appearance.hairColor, c.facing, animAction);
+      const computedShadowTileId = shadowTileId(c.facing, animAction);
 
       result.push({
         id: c.id,
         x: c.x,
         y: c.y,
+        shadowTileId: computedShadowTileId,
         tileId: computedTileId,
         hairTileId: computedHairTileId,
         appearance: c.appearance,

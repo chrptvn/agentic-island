@@ -28,6 +28,7 @@ export interface CharacterState {
   x: number;
   y: number;
   tileId?: string;
+  shadowTileId?: string;
   hairTileId?: string;
   beardTileId?: string;
   appearance?: CharacterAppearance;
