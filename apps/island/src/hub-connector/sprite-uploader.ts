@@ -21,11 +21,16 @@ export async function packageSprites(
   spriteDir: string,
   /** Optional path prefix prepended to all filenames. */
   prefix = "",
+  /** Optional list of path segment substrings to exclude (e.g. ["/run/", "/jump/"]). */
+  excludePatterns: string[] = [],
 ): Promise<SpritePayload[]> {
   const relPaths = await collectImageFiles(spriteDir, spriteDir);
   const payloads: SpritePayload[] = [];
 
   for (const relativePath of relPaths) {
+    if (excludePatterns.length > 0 && excludePatterns.some(p => relativePath.includes(p))) {
+      continue;
+    }
     const filePath = join(spriteDir, relativePath);
     const ext = extname(filePath).toLowerCase();
     const mime = MIME_MAP[ext];

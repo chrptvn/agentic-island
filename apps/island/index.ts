@@ -123,8 +123,10 @@ if (!isPrimary) {
     console.error("[island] Hub connector error:", err.message);
   };
 
-  // Package all sprites from the unified sprites/ directory
-  const sprites = await packageSprites(join(__dirname, "sprites")).catch(() => []);
+  // Package all sprites from the unified sprites/ directory.
+  // Exclude non-idle LPC action directories to stay within the upload size limit.
+  const LPC_EXCLUDE = ["/jump/", "/run/", "/sit/", "/universal/"];
+  const sprites = await packageSprites(join(__dirname, "sprites"), "", LPC_EXCLUDE).catch(() => []);
 
   // Generate a pixel-art thumbnail from the island's terrain
   const thumbnailData = island.getThumbnailBase64();
