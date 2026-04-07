@@ -18,7 +18,7 @@ import { drawSpeechBubble } from "./overlays.js";
 import { Camera, type CameraOptions } from "./camera.js";
 import { InputHandler } from "./input.js";
 
-const DEFAULT_TILE_SIZE = 32;
+const DEFAULT_TILE_SIZE = 64;
 const DEFAULT_SCALE_FACTOR = 1;
 const ZOOM_STEP = 1.25;
 

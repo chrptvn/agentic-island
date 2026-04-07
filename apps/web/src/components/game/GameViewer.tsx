@@ -11,7 +11,7 @@ import { useRecording } from '@/hooks/useRecording';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
-const TILE_SIZE = 32;
+const TILE_SIZE = 64;
 const SCALE_FACTOR = 1;
 
 // Fixed viewport resolution (16:9)
