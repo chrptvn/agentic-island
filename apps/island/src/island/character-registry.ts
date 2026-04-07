@@ -37,9 +37,6 @@ export interface CharacterInstance {
   id:      string;
   x:       number;
   y:       number;
-  tileId:  string;
-  hairTileId?:  string;
-  beardTileId?: string;
   appearance: CharacterAppearance;
   facing:  CharacterFacing;
   stats:   CharacterStats;

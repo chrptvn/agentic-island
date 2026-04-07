@@ -18,8 +18,27 @@ import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
-import { bodyTileId, hairTileId, shadowTileId, buildCharacterTileDefs, SKIN_COLORS, GENDERS, HAIR_COLORS } from "./character-sprites.js";
-import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
+import { layerTileId, shadowLayerTileId, buildCharacterTileDefs, RENDER_LAYERS, randomAppearance } from "./character-sprites.js";
+import type { CharacterAppearance, CharacterFacing, CharacterLayerTiles } from "@agentic-island/shared";
+
+/** Compute per-layer tile IDs from appearance + facing + action. */
+function computeLayerTiles(
+  appearance: CharacterAppearance,
+  facing: CharacterFacing,
+  action: "idle" | "walk",
+): CharacterLayerTiles {
+  const tiles: CharacterLayerTiles = {
+    shadow: shadowLayerTileId(facing, action),
+  };
+  for (const layer of RENDER_LAYERS) {
+    if (layer === "shadow") continue;
+    const catalogId = appearance[layer];
+    if (catalogId) {
+      tiles[layer] = layerTileId(catalogId, facing, action);
+    }
+  }
+  return tiles;
+}
 
 const MAP_STATE_KEY = "map_config";
 
@@ -100,7 +119,7 @@ export class Island extends EventEmitter {
       };
       const now = Date.now();
       const speech = (c.speech && c.speech.expiresAt > now) ? c.speech.text : undefined;
-      characters[id] = { x: c.x, y: c.y, tileId: c.tileId, hairTileId: c.hairTileId, beardTileId: c.beardTileId, appearance: c.appearance, facing: c.facing, stats: roundedStats, path: c.path, action: c.action, moveTicks: c.moveTicks ?? 0, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
+      characters[id] = { x: c.x, y: c.y, appearance: c.appearance, facing: c.facing, stats: roundedStats, path: c.path, action: c.action, moveTicks: c.moveTicks ?? 0, ...(speech ? { speech: { text: speech, expiresAt: c.speech!.expiresAt } } : {}) };
     }
     return { ...base, entities, characters };
   }
@@ -190,19 +209,15 @@ export class Island extends EventEmitter {
     for (const [, c] of this.characters) {
       const speech = (c.speech && c.speech.expiresAt > now) ? { text: c.speech.text, expiresAt: c.speech.expiresAt } : undefined;
 
-      // Compute tile IDs from appearance + facing + action for the LPC sprite system
+      // Compute per-layer tile IDs from appearance + facing + action
       const animAction = c.path.length > 0 ? "walk" : "idle";
-      const computedTileId = bodyTileId(c.appearance.gender, c.appearance.skinColor, c.facing, animAction);
-      const computedHairTileId = hairTileId(c.appearance.gender, c.appearance.hairColor, c.facing, animAction);
-      const computedShadowTileId = shadowTileId(c.facing, animAction);
+      const layerTiles = computeLayerTiles(c.appearance, c.facing, animAction as "idle" | "walk");
 
       result.push({
         id: c.id,
         x: c.x,
         y: c.y,
-        shadowTileId: computedShadowTileId,
-        tileId: computedTileId,
-        hairTileId: computedHairTileId,
+        layerTiles,
         appearance: c.appearance,
         facing: c.facing,
         stats: {
@@ -628,7 +643,7 @@ export class Island extends EventEmitter {
     return result;
   }
 
-  spawnCharacter(x: number, y: number, id = "hero", requestedAppearance?: Partial<CharacterAppearance>): CharacterInstance {
+  spawnCharacter(x: number, y: number, id = "hero", requestedAppearance?: CharacterAppearance): CharacterInstance {
     if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height) {
       throw new Error(`Position (${x}, ${y}) is outside map bounds (${this.map.width}×${this.map.height}).`);
     }
@@ -647,23 +662,14 @@ export class Island extends EventEmitter {
 
     const stats: CharacterStats = { ...getDefaultCharacterStats(), equipment: defaultEquipment(), inventory: [{ item: "rocks", qty: 1 }] };
 
-    // Resolve appearance: use requested values, fall back to random
-    const gender = requestedAppearance?.gender ?? GENDERS[Math.floor(Math.random() * GENDERS.length)];
-    const skinColor = requestedAppearance?.skinColor ??
-      SKIN_COLORS[Math.floor(Math.random() * SKIN_COLORS.length)];
-    const hairColor = requestedAppearance?.hairColor ??
-      HAIR_COLORS[Math.floor(Math.random() * HAIR_COLORS.length)];
-    const appearance: CharacterAppearance = { gender, skinColor, hairColor };
+    // Resolve appearance: catalog-driven random if not specified
+    const appearance: CharacterAppearance = requestedAppearance ?? randomAppearance();
     const facing: CharacterFacing = "s";
 
-    // Compute tile IDs from appearance for persistence
-    const tileId = bodyTileId(gender, skinColor, facing, "idle");
-    const hTileId = hairTileId(gender, hairColor, facing, "idle");
-
-    const character: CharacterInstance = { id, x, y, tileId, hairTileId: hTileId, appearance, facing, stats, path: [], action: "idle", moveTicks: 0 };
+    const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0 };
 
     this.characters.set(id, character);
-    saveCharacter(id, x, y, stats, [], "idle", tileId, hTileId, undefined, undefined, appearance, facing);
+    saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
     this.emit("map:updated", this.map);
     return character;
   }
@@ -685,7 +691,7 @@ export class Island extends EventEmitter {
    * - If the character is new, create them at a random spawnable position.
    * - If the character is already active in-memory, just return them.
    */
-  connect(username: string, requestedAppearance?: Partial<CharacterAppearance>): { character: CharacterInstance; reconnected: boolean } {
+  connect(username: string, requestedAppearance?: CharacterAppearance): { character: CharacterInstance; reconnected: boolean } {
     const id = username;
     // Already active — just return
     const existing = this.characters.get(id);
@@ -714,8 +720,6 @@ export class Island extends EventEmitter {
 
       const character: CharacterInstance = {
         id, x, y,
-        tileId: bodyTileId(appearance.gender, appearance.skinColor, facing, "idle"),
-        hairTileId: hairTileId(appearance.gender, appearance.hairColor, facing, "idle"),
         appearance,
         facing,
         stats,
@@ -726,7 +730,7 @@ export class Island extends EventEmitter {
       };
 
       this.characters.set(id, character);
-      saveCharacter(id, x, y, stats, [], "idle", character.tileId, character.hairTileId, undefined, undefined, appearance, facing);
+      saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
       this.emit("map:updated", this.map);
       return { character, reconnected: true };
     }
@@ -913,7 +917,7 @@ export class Island extends EventEmitter {
       saveEntityStat(entityX, entityY, raw);
     }
 
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.emit("map:updated", this.map);
     return { harvested, entity: { tileId, destroyed } };
   }
@@ -950,7 +954,7 @@ export class Island extends EventEmitter {
         // Only removed when all resources are drained (handled in _harvestByDrain).
         this.entityStats.set(key, updatedStats);
         saveEntityStat(entityX, entityY, updatedStats);
-        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+        saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
         this.emit("map:updated", this.map);
         return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: false } };
       }
@@ -1010,7 +1014,7 @@ export class Island extends EventEmitter {
         saveEntityStat(entityX, entityY, spawnStats);
       }
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: true } };
     } else {
@@ -1018,7 +1022,7 @@ export class Island extends EventEmitter {
       this.entityStats.set(key, updatedStats);
       saveEntityStat(entityX, entityY, updatedStats);
 
-      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
       this.emit("map:updated", this.map);
       return { harvested, entity: { tileId, health: newHealth, maxHealth, destroyed: false } };
     }
@@ -1075,7 +1079,7 @@ export class Island extends EventEmitter {
       (newStats as unknown as Record<string, number>)[res] =
         Math.max(0, ((newStats as unknown as Record<string, number>)[res] ?? 0) - amt);
     }
-    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
 
     // Only trigger visual swap / disappear if ALL resources are now depleted
     const remaining = getResources(newStats);
@@ -1251,7 +1255,7 @@ export class Island extends EventEmitter {
       if (Object.keys(initStats).length > 0) {
         saveEntityStat(targetX, targetY, initStats as EntityStats);
       }
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     });
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
@@ -1289,7 +1293,7 @@ export class Island extends EventEmitter {
     character.action = "resting";
 
     runTransaction(() => {
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     });
     this.emit("map:updated", this.map);
     return { entered: tileId };
@@ -1340,7 +1344,7 @@ export class Island extends EventEmitter {
     character.action = "idle";
 
     runTransaction(() => {
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     });
     this.emit("map:updated", this.map);
     return exitPos;
@@ -1412,7 +1416,7 @@ export class Island extends EventEmitter {
       saveEntityStat(targetX, targetY, initStats as EntityStats);
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.overridesVersion = loadOverridesVersion();
     this.emit("map:updated", this.map);
     return { result: def.result, consumed: def.costs };
@@ -1458,7 +1462,7 @@ export class Island extends EventEmitter {
     if (slot!.qty <= 0) inv.splice(inv.indexOf(slot!), 1);
 
     saveEntityStat(x, y, stats);
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.emit("map:updated", this.map);
 
     return { fed: amount, health: stats.health, maxHealth: stats.maxHealth };
@@ -1500,7 +1504,7 @@ export class Island extends EventEmitter {
       else inv.push({ item: outputItem, qty });
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     return { crafted: recipe.output };
   }
 
@@ -1524,7 +1528,7 @@ export class Island extends EventEmitter {
     slot.qty -= 1;
     if (slot.qty <= 0) inv.splice(inv.indexOf(slot), 1);
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     return { eaten: item, hungerRestored: restored, stats: { hunger: character.stats.hunger, maxHunger: character.stats.maxHunger } };
   }
 
@@ -1600,7 +1604,7 @@ export class Island extends EventEmitter {
     if (contSlot) contSlot.qty += amount;
     else stats.inventory.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     saveEntityStat(x, y, stats);
     this.emit("map:updated", this.map);
     return { transferred: amount, contents: stats.inventory };
@@ -1627,7 +1631,7 @@ export class Island extends EventEmitter {
     if (charSlot) charSlot.qty += amount;
     else charInv.push({ item, qty: amount });
 
-    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(charId, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
 
     // Auto-remove container tile when all items have been taken
     // (skip removal for multi-tile entities like tents — they should persist)
@@ -1739,7 +1743,7 @@ export class Island extends EventEmitter {
     // Place in slot
     eq[slot] = { item, qty: 1 };
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.emit("map:updated", this.map);
     return { equipped: { item, qty: 1 }, swapped };
   }
@@ -1763,7 +1767,7 @@ export class Island extends EventEmitter {
 
     eq[slot] = null;
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.emit("map:updated", this.map);
     return slotItem;
   }
@@ -1876,7 +1880,7 @@ export class Island extends EventEmitter {
       // path.length === 0 means already at the destination — success, no movement needed
     }
 
-    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.emit("map:updated", this.map);
     return { character, entityPos };
   }
@@ -1960,7 +1964,7 @@ export class Island extends EventEmitter {
     runTransaction(() => {
       saveOverride(character.x, character.y, 3, sproutId);
       saveEntityStat(character.x, character.y, sproutStats);
-      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, character.tileId, character.hairTileId, character.beardTileId, character.shelter, character.appearance, character.facing);
+      saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     });
     this.overridesVersion = loadOverridesVersion();
 
@@ -2373,7 +2377,7 @@ export class Island extends EventEmitter {
         statWrites.length > 0 || statDeletes.length > 0 || decayedEntities.length > 0) {
       runTransaction(() => {
         for (const c of changedCharacters) {
-          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action, c.tileId, c.hairTileId, c.beardTileId, c.shelter, c.appearance, c.facing);
+          saveCharacter(c.id, c.x, c.y, c.stats, c.path, c.action, undefined, undefined, undefined, c.shelter, c.appearance, c.facing);
         }
         for (const deadChar of deadCharacters) deleteCharacter(deadChar.id);
         for (const { x, y, layer, tileId } of overrideWrites) saveOverride(x, y, layer, tileId);

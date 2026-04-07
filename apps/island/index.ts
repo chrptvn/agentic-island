@@ -124,8 +124,8 @@ if (!isPrimary) {
   };
 
   // Package all sprites from the unified sprites/ directory.
-  // Exclude the old LPC sprite directory (superseded by lpc-characters/).
-  const LPC_EXCLUDE = ["/lpc-character-bases-v3_1/"];
+  // Exclude old LPC directories (superseded by characters/).
+  const LPC_EXCLUDE = ["/lpc-character-bases-v3_1/", "/lpc-characters/"];
   const sprites = await packageSprites(join(__dirname, "sprites"), "", LPC_EXCLUDE).catch(() => []);
 
   // Generate a pixel-art thumbnail from the island's terrain

@@ -90,33 +90,18 @@ export function drawCharacter(
   const cy = Math.round(screenRow * tileSize + offsetY);
   const size = Math.round(tileSize);
 
-  // Draw shadow under character
-  if (character.shadowTileId && registry[character.shadowTileId]) {
-    drawTile(ctx, character.shadowTileId, registry, sprites, cx, cy, size, size, animFrame);
-  }
-
-  // Draw base character sprite
-  const tileId = character.tileId ?? CHARACTER_TILE_ID;
-  drawTile(ctx, tileId, registry, sprites, cx, cy, size, size, animFrame);
-
-  // Draw head / hair overlay (animated in sync with body)
-  if (character.hairTileId && registry[character.hairTileId]) {
-    drawTile(ctx, character.hairTileId, registry, sprites, cx, cy, size, size, animFrame);
-  }
-
-  // Legacy overlays — only for characters without the new appearance system
-  if (!character.appearance) {
-    if (character.beardTileId && registry[character.beardTileId]) {
-      drawTile(ctx, character.beardTileId, registry, sprites, cx, cy, size, size);
-    }
-    if (character.equipment) {
-      for (const slot of Object.keys(character.equipment)) {
-        const equip = character.equipment[slot];
-        if (equip && registry[equip.item]) {
-          drawTile(ctx, equip.item, registry, sprites, cx, cy, size, size);
-        }
+  // Draw all character layers in render order: shadow → base → legs → body → hair
+  const LAYER_ORDER = ["shadow", "base", "legs", "body", "hair"];
+  if (character.layerTiles) {
+    for (const layer of LAYER_ORDER) {
+      const tid = character.layerTiles[layer];
+      if (tid && registry[tid]) {
+        drawTile(ctx, tid, registry, sprites, cx, cy, size, size, animFrame);
       }
     }
+  } else {
+    // Fallback for legacy characters without layerTiles
+    drawTile(ctx, CHARACTER_TILE_ID, registry, sprites, cx, cy, size, size, animFrame);
   }
 }
 

@@ -6,8 +6,8 @@ import { Island } from "../../island/island.js";
 import { allItemDefs } from "../../island/item-registry.js";
 import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, INTERACT_DEFS, GROWTH_DEFS } from "../../island/entity-registry.js";
 import { RECIPES } from "../../island/craft-registry.js";
-import { SKIN_COLORS, GENDERS, HAIR_COLORS } from "../../island/character-sprites.js";
-import type { CharacterAppearance } from "@agentic-island/shared";
+// Character sprites are now catalog-driven; no per-field enums needed at connect time
+// Character appearance is now randomized by the catalog system
 import {
   humanizeSurroundings, humanizeMoveResult, humanizeHarvestResult,
   humanizeEatResult, humanizeFeedResult, humanizePlowResult,
@@ -192,11 +192,8 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "Connect to the world. Call this once at the start of a session. Returns a session_token (use it on every subsequent tool call), game rules, and your initial surroundings. If reconnecting, your character's state (position, inventory, stats) is restored.",
     {
       username: z.string().min(1).describe("Your username (e.g. 'Carl')"),
-      skin_color: z.enum(SKIN_COLORS as unknown as [string, ...string[]]).optional().describe("Skin color for a new character (e.g. 'peach', 'olive'). Ignored on reconnect."),
-      gender: z.enum(GENDERS as unknown as [string, ...string[]]).optional().describe("Gender for a new character ('man' or 'woman'). Ignored on reconnect."),
-      hair_color: z.enum(HAIR_COLORS as unknown as [string, ...string[]]).optional().describe("Hair color for a new character (e.g. 'brunette', 'blonde'). Ignored on reconnect."),
     },
-    async ({ username, skin_color, gender, hair_color }) => {
+    async ({ username }) => {
       if (session.username) {
         return { content: [{ type: "text", text: `Already connected as "${session.username}". Disconnect first.` }], isError: true };
       }
@@ -211,14 +208,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         // check above) so no other session can grab it before world.connect().
         session.username = username;
 
-        const requestedAppearance = (skin_color || gender || hair_color)
-          ? { skinColor: skin_color, gender, hairColor: hair_color } as Partial<CharacterAppearance>
-          : undefined;
-
         const world = Island.getInstance();
         let reconnected: boolean;
         try {
-          ({ reconnected } = world.connect(username, requestedAppearance));
+          ({ reconnected } = world.connect(username));
         } catch (err) {
           // Roll back the claim if connect fails
           session.username = null;
