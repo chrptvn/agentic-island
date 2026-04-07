@@ -498,8 +498,8 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
         onTouchEnd={handleTap}
-        className="block w-full h-full cursor-crosshair"
-        style={{ imageRendering: 'pixelated' }}
+        className="block w-full h-full"
+        style={{ imageRendering: 'pixelated', touchAction: 'none' }}
       />
       <canvas
         ref={overlayCanvasRef}
