@@ -309,7 +309,7 @@ export function saveCharacter(
        appearance=excluded.appearance, facing=excluded.facing`
   ).run(
     id, x, y, JSON.stringify(stats), JSON.stringify(path), action,
-    null, null, null, shelter ?? null,
+    "unused", null, null, shelter ?? null,
     appearance ? JSON.stringify(appearance) : null, facing,
   );
 }
