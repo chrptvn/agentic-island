@@ -70,7 +70,8 @@ function checkIdleSessions(): void {
   }
 }
 
-setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
+// TODO: re-enable idle disconnect once dev/testing is done
+// setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
 
 /** Returns true if another active session already owns this username. */
 export function isUsernameClaimed(username: string, excludeSession?: McpSession): boolean {
