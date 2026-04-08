@@ -90,8 +90,9 @@ export function drawCharacter(
   const cy = Math.round(screenRow * tileSize + offsetY);
   const size = Math.round(tileSize);
 
-  // Draw all character layers in render order: shadow → base → legs → body → hair
-  const LAYER_ORDER = ["shadow", "base", "legs", "body", "hair"];
+  // Draw all character layers in render order: base → legs → body → hair
+  // TODO: re-enable shadow layer when shadow sprite is finalized
+  const LAYER_ORDER = ["base", "legs", "body", "hair"];
   if (character.layerTiles) {
     for (const layer of LAYER_ORDER) {
       const tid = character.layerTiles[layer];
