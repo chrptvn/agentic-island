@@ -244,7 +244,9 @@ export class GameRenderer {
       3,
     );
 
-    // Render characters to off-screen buffer
+    // Render characters with bilinear smoothing for cleaner LPC sprites
+    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = true;
+    (buf as CanvasRenderingContext2D).imageSmoothingQuality = "medium";
     for (const char of characters) {
       const visual = this.getVisualPositionAt(char.id, now);
       drawCharacter(
@@ -259,6 +261,8 @@ export class GameRenderer {
         visual?.y,
       );
     }
+    // Restore pixel-perfect rendering for canopy layer
+    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = false;
 
     // Render layer 4 (canopy) above characters for walk-under effect
     renderLayers(
