@@ -39,12 +39,10 @@ Maps tile IDs to sprite sheet coordinates.
 
 ```json
 {
-  "sheet": "roguelikeSheet_transparent.png",  // Default sprite sheet
   "tileSize": 16,                              // Tile size in pixels
   "tileGap": 1,                                // Gap between tiles in sheet
   "sheets": {                                  // Per-sheet overrides
-    "food.png": { "tileGap": 0 },
-    "roguelikeChar_transparent.png": { "tileGap": 1 }
+    "food.png": { "tileGap": 0 }
   },
   "tiles": [ ... ]
 }

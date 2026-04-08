@@ -27,7 +27,7 @@ export interface SheetOverride {
 }
 
 interface TilesetConfig {
-  sheet: string;
+  sheet?: string;
   tileSize: number;
   tileGap: number;
   /** Per-sheet overrides for tileSize/tileGap (keyed by sheet path relative to /public). */
@@ -53,7 +53,7 @@ export const CHAR_TO_TILE: Record<string, string> = {
 
 export let TILE_SIZE     = _config.tileSize;
 export let TILE_GAP      = _config.tileGap;
-export let TILE_SHEET    = _config.sheet;
+export let TILE_SHEET    = _config.sheet ?? "";
 export let SHEET_OVERRIDES: Record<string, SheetOverride> = _config.sheets ?? {};
 
 export function reloadTiles(): void {
@@ -64,7 +64,7 @@ export function reloadTiles(): void {
   for (const t of TILES) TILE_BY_ID.set(t.id, t);
   TILE_SIZE        = _config.tileSize;
   TILE_GAP         = _config.tileGap;
-  TILE_SHEET       = _config.sheet;
+  TILE_SHEET       = _config.sheet ?? "";
   SHEET_OVERRIDES  = _config.sheets ?? {};
 }
 
