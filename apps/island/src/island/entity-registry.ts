@@ -24,12 +24,11 @@ export interface EntityDef {
   id: string;
   /** Human-readable display name shown in tooltips. */
   name?: string;
-  /** All tiles that compose this entity, relative to the anchor at (0,0). */
+  /** All tiles that compose this entity, relative to the anchor at (0,0).
+   *  Omit or leave empty for pure inventory items that are never rendered on the map. */
   tiles: TilePlacement[];
   /** If true, this entity is a solid obstacle — characters cannot walk through layer-3 tiles. */
   blocks?: boolean;
-  /** If true, this entity is an inventory item and cannot be placed directly on the map. */
-  item?: boolean;
   spawn?: {
     /** Relative spawn weight; higher = more frequent. */
     weight: number;
@@ -59,6 +58,10 @@ export interface EntityDef {
   fireDamage?: number;
   growthStages?: GrowthStagesDef;
   randomStats?: Record<string, { min: number; max: number }>;
+  /** Fires a sensory event when a character moves within range. */
+  proximityTrigger?: ProximityTriggerDef;
+  /** Fires effects when a character interacts with this entity. */
+  interactionEffect?: InteractionEffectDef;
 }
 
 /** Recipe cost to build an entity onto the map from an adjacent cell. */
@@ -77,6 +80,36 @@ export interface InteractDef {
   minHealth?: number;
   /** If true, carry the current entity's health over to the resulting entity's stats. */
   preserveHealth?: boolean;
+}
+
+/** Triggered when a character moves within range of this entity. */
+export interface ProximityTriggerDef {
+  /** Sensory message added to the nearby character's buffer (e.g. "It smells so good"). */
+  message: string;
+  /** Chebyshev distance to check; default 1 (strictly adjacent). */
+  radius?: number;
+}
+
+/** Emotion delta applied by an interaction effect. */
+export interface EmotionEffectDef {
+  /** EmotionPair key, e.g. "anxious_confident". */
+  key: string;
+  /** How much to shift the emotion (positive = toward high pole, negative = toward low pole). */
+  delta: number;
+  /** If true, also apply to the interacting character. Default false. */
+  self?: boolean;
+}
+
+/** Triggered when a character interacts with this entity. */
+export interface InteractionEffectDef {
+  /** Message added to the interacting character's sensory buffer. */
+  message?: string;
+  /** Message added to nearby characters' sensory buffers (e.g. "You hear a squeaky sound"). */
+  nearbyMessage?: string;
+  /** Chebyshev radius to affect nearby characters; default 3. */
+  radius?: number;
+  /** Permanent emotion changes applied to nearby characters (and self if self:true). */
+  emotionEffects?: EmotionEffectDef[];
 }
 
 /** Gradual health decay: entity loses health over time, replenished by adding fuel items. */
@@ -158,7 +191,12 @@ export interface HarvestDef {
 // ── Load config ───────────────────────────────────────────────────────────────
 
 function loadConfig(): EntitiesConfig {
-  return JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  const raw: EntitiesConfig = JSON.parse(readFileSync(CONFIG_PATH, "utf-8"));
+  // Normalize: ensure every entity has a tiles array (items may omit it in JSON)
+  for (const e of raw.entities) {
+    (e as { tiles?: TilePlacement[] }).tiles ??= [];
+  }
+  return raw;
 }
 
 function buildDerivedExports(defs: EntityDef[]) {
@@ -166,7 +204,7 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.map((e) => [e.id, e.stats ?? { health: 0, maxHealth: 0 }])
   );
 
-  const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tiles.length <= 1 && !e.item).map((e) => e.id);
+  const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tiles.length <= 1).map((e) => e.id);
 
   // Legacy: two-tile tree pairs for backward compat (empty if no entities use old format)
   const TWO_TILE_TREE_PAIRS: [string, string][] = [];
@@ -229,8 +267,6 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.filter((e) => e.repair !== undefined).map((e) => [e.id, e.repair!])
   );
 
-  const ITEM_IDS: Set<string> = new Set(defs.filter((e) => e.item === true).map((e) => e.id));
-
   const GROWTH_DEFS: Record<string, GrowthStagesDef> = Object.fromEntries(
     defs.filter((e) => e.growthStages !== undefined).map((e) => [e.id, e.growthStages!])
   );
@@ -239,7 +275,16 @@ function buildDerivedExports(defs: EntityDef[]) {
     defs.filter((e) => e.randomStats !== undefined).map((e) => [e.id, e.randomStats!])
   );
 
-  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, ITEM_IDS, GROWTH_DEFS, RANDOM_STATS };
+  const PROXIMITY_TRIGGERS: Map<string, ProximityTriggerDef> = new Map();
+  const INTERACTION_EFFECTS: Map<string, InteractionEffectDef> = new Map();
+  for (const e of defs) {
+    const anchor = e.tiles?.find((t) => t.dx === 0 && t.dy === 0);
+    if (!anchor) continue;
+    if (e.proximityTrigger) PROXIMITY_TRIGGERS.set(anchor.tileId, e.proximityTrigger);
+    if (e.interactionEffect) INTERACTION_EFFECTS.set(anchor.tileId, e.interactionEffect);
+  }
+
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, GROWTH_DEFS, RANDOM_STATS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS };
 }
 
 /** Full entity definitions as loaded from config/entities.json. */
@@ -279,9 +324,6 @@ export let SINGLE_TILE_IDS: string[] = _derived.SINGLE_TILE_IDS;
  */
 export let TWO_TILE_TREE_PAIRS: [string, string][] = _derived.TWO_TILE_TREE_PAIRS;
 
-/** Set of entity tile IDs that are inventory items and cannot be placed on the map. */
-export let ITEM_IDS: Set<string> = _derived.ITEM_IDS;
-
 export let HARVEST_DEFS: Record<string, HarvestDef> = _derived.HARVEST_DEFS;
 
 export let BUILD_DEFS: Record<string, BuildDef> = _derived.BUILD_DEFS;
@@ -299,6 +341,12 @@ export let GROWTH_DEFS: Record<string, GrowthStagesDef> = _derived.GROWTH_DEFS;
 
 /** Per-entity stat randomization rules. Keys are entity IDs → stat name → { min, max }. */
 export let RANDOM_STATS: Record<string, Record<string, { min: number; max: number }>> = _derived.RANDOM_STATS;
+
+/** Maps anchor tileId → ProximityTriggerDef for entities with proximity sensory triggers. */
+export let PROXIMITY_TRIGGERS: Map<string, ProximityTriggerDef> = _derived.PROXIMITY_TRIGGERS;
+
+/** Maps anchor tileId → InteractionEffectDef for entities with interaction sensory/emotion effects. */
+export let INTERACTION_EFFECTS: Map<string, InteractionEffectDef> = _derived.INTERACTION_EFFECTS;
 
 /** Set of entity tile IDs that are solid obstacles — never walkable, harvest requires adjacency. */
 export let BLOCKING_IDS: Set<string> = _derived.BLOCKING_IDS;
@@ -332,9 +380,10 @@ export function reloadEntities(): void {
   ENTITY_DEF_BY_ID  = _derived.ENTITY_DEF_BY_ID;
   ENTITY_DEF_BY_TILE_ID = _derived.ENTITY_DEF_BY_TILE_ID;
   SEARCH_TARGET_MAP = _derived.SEARCH_TARGET_MAP;
-  ITEM_IDS          = _derived.ITEM_IDS;
   GROWTH_DEFS       = _derived.GROWTH_DEFS;
   RANDOM_STATS      = _derived.RANDOM_STATS;
+  PROXIMITY_TRIGGERS    = _derived.PROXIMITY_TRIGGERS;
+  INTERACTION_EFFECTS   = _derived.INTERACTION_EFFECTS;
 }
 
 export function CONFIG_PATH_ENTITIES() { return CONFIG_PATH; }

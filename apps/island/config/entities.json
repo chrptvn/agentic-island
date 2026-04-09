@@ -10,34 +10,7 @@
           "layer": 3,
           "tileId": "berries"
         }
-      ],
-      "item": true
-    },
-    {
-      "id": "branches",
-      "name": "Branches",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "branches"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "acorns",
-      "name": "Acorns",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "acorns"
-        }
-      ],
-      "item": true
+      ]
     },
     {
       "id": "big_tree_light",
@@ -71,6 +44,33 @@
       "blocks": true,
       "spawn": {
         "weight": 4
+      },
+      "stats": {
+        "branches": 3,
+        "bark": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 3,
+          "max": 6
+        },
+        "bark": {
+          "min": 1,
+          "max": 3
+        },
+        "vine": {
+          "min": 0,
+          "max": 2
+        },
+        "feather": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "tree_light2",
+        "emptyBase": "tree_light2",
+        "regrowMs": 300000
       }
     },
     {
@@ -105,6 +105,33 @@
       "blocks": true,
       "spawn": {
         "weight": 4
+      },
+      "stats": {
+        "branches": 3,
+        "bark": 2
+      },
+      "randomStats": {
+        "branches": {
+          "min": 3,
+          "max": 6
+        },
+        "bark": {
+          "min": 2,
+          "max": 4
+        },
+        "moss": {
+          "min": 0,
+          "max": 2
+        },
+        "mysterious_key": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "tree_dark2",
+        "emptyBase": "tree_dark2",
+        "regrowMs": 300000
       }
     },
     {
@@ -139,6 +166,29 @@
       "blocks": true,
       "spawn": {
         "weight": 0.1
+      },
+      "stats": {
+        "branches": 2,
+        "pine_cone": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 2,
+          "max": 5
+        },
+        "pine_cone": {
+          "min": 1,
+          "max": 4
+        },
+        "sap": {
+          "min": 0,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "tree_orange2",
+        "emptyBase": "tree_orange2",
+        "regrowMs": 300000
       }
     },
     {
@@ -173,6 +223,32 @@
       "blocks": true,
       "spawn": {
         "weight": 0.5
+      },
+      "stats": {
+        "branches": 2
+      },
+      "randomStats": {
+        "branches": {
+          "min": 2,
+          "max": 4
+        },
+        "dried_grass": {
+          "min": 0,
+          "max": 2
+        },
+        "rusty_nail": {
+          "min": 0,
+          "max": 2
+        },
+        "shed_fang": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "tree_dead2",
+        "emptyBase": "tree_dead2",
+        "regrowMs": 300000
       }
     },
     {
@@ -190,6 +266,28 @@
       "spawn": {
         "weight": 3,
         "noForest": true
+      },
+      "stats": {
+        "branches": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 1,
+          "max": 3
+        },
+        "bark": {
+          "min": 0,
+          "max": 2
+        },
+        "feather": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "bush_light",
+        "emptyBase": "bush_light",
+        "regrowMs": 240000
       }
     },
     {
@@ -207,6 +305,28 @@
       "spawn": {
         "weight": 3,
         "noForest": true
+      },
+      "stats": {
+        "branches": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 1,
+          "max": 3
+        },
+        "moss": {
+          "min": 0,
+          "max": 2
+        },
+        "bent_spoon": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "bush_dark",
+        "emptyBase": "bush_dark",
+        "regrowMs": 240000
       }
     },
     {
@@ -224,6 +344,29 @@
       "spawn": {
         "weight": 0.1,
         "noForest": true
+      },
+      "stats": {
+        "branches": 1,
+        "pine_cone": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 1,
+          "max": 3
+        },
+        "pine_cone": {
+          "min": 1,
+          "max": 3
+        },
+        "coin": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "bush_orange",
+        "emptyBase": "bush_orange",
+        "regrowMs": 240000
       }
     },
     {
@@ -241,6 +384,32 @@
       "spawn": {
         "weight": 0.3,
         "noForest": true
+      },
+      "stats": {
+        "branches": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 1,
+          "max": 3
+        },
+        "dried_grass": {
+          "min": 0,
+          "max": 2
+        },
+        "rusty_nail": {
+          "min": 0,
+          "max": 1
+        },
+        "miniature_portrait": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "bush_dead",
+        "emptyBase": "bush_dead",
+        "regrowMs": 240000
       }
     },
     {
@@ -256,6 +425,29 @@
       ],
       "spawn": {
         "weight": 0.3
+      },
+      "stats": {
+        "bark": 1,
+        "moss": 1
+      },
+      "randomStats": {
+        "bark": {
+          "min": 0,
+          "max": 2
+        },
+        "moss": {
+          "min": 0,
+          "max": 2
+        },
+        "mushroom": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "small_stump",
+        "emptyBase": "small_stump",
+        "regrowMs": 420000
       }
     },
     {
@@ -272,6 +464,33 @@
       "blocks": true,
       "spawn": {
         "weight": 0.3
+      },
+      "stats": {
+        "bark": 1,
+        "moss": 1
+      },
+      "randomStats": {
+        "bark": {
+          "min": 1,
+          "max": 2
+        },
+        "moss": {
+          "min": 1,
+          "max": 3
+        },
+        "mushroom": {
+          "min": 0,
+          "max": 2
+        },
+        "pressed_fern": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "large_stump",
+        "emptyBase": "large_stump",
+        "regrowMs": 420000
       }
     },
     {
@@ -295,6 +514,34 @@
       "spawn": {
         "weight": 0.1,
         "forestOnly": true
+      },
+      "stats": {
+        "branches": 2,
+        "bark": 1,
+        "moss": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 2,
+          "max": 5
+        },
+        "bark": {
+          "min": 1,
+          "max": 3
+        },
+        "moss": {
+          "min": 1,
+          "max": 3
+        },
+        "love_letter": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "fallen_tree_horrizontal0",
+        "emptyBase": "fallen_tree_horrizontal0",
+        "regrowMs": 600000
       }
     },
     {
@@ -311,6 +558,36 @@
       "spawn": {
         "weight": 1.5,
         "noForest": true
+      },
+      "stats": {
+        "vine": 1
+      },
+      "randomStats": {
+        "vine": {
+          "min": 1,
+          "max": 3
+        },
+        "wild_herb": {
+          "min": 0,
+          "max": 2
+        },
+        "reed": {
+          "min": 0,
+          "max": 2
+        },
+        "dried_grass": {
+          "min": 0,
+          "max": 1
+        },
+        "candy_wrapper": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "plant",
+        "emptyBase": "plant",
+        "regrowMs": 180000
       }
     },
     {
@@ -327,6 +604,32 @@
       "spawn": {
         "weight": 0.3,
         "noForest": true
+      },
+      "stats": {
+        "dried_grass": 1
+      },
+      "randomStats": {
+        "dried_grass": {
+          "min": 1,
+          "max": 3
+        },
+        "pebble": {
+          "min": 0,
+          "max": 1
+        },
+        "candy_wrapper": {
+          "min": 0,
+          "max": 1
+        },
+        "mitten": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "dead_grass_patch",
+        "emptyBase": "dead_grass_patch",
+        "regrowMs": 240000
       }
     },
     {
@@ -343,6 +646,32 @@
       "spawn": {
         "weight": 1.5,
         "noForest": true
+      },
+      "stats": {
+        "flower_white": 1
+      },
+      "randomStats": {
+        "flower_white": {
+          "min": 1,
+          "max": 3
+        },
+        "wild_herb": {
+          "min": 0,
+          "max": 1
+        },
+        "three_leaf_clover": {
+          "min": 0,
+          "max": 1
+        },
+        "jar_of_nothing": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "white_flowers",
+        "emptyBase": "white_flowers",
+        "regrowMs": 180000
       }
     },
     {
@@ -359,6 +688,35 @@
       "spawn": {
         "weight": 1.5,
         "noForest": true
+      },
+      "stats": {
+        "flower_pink": 1
+      },
+      "randomStats": {
+        "flower_pink": {
+          "min": 1,
+          "max": 3
+        },
+        "feather": {
+          "min": 0,
+          "max": 1
+        },
+        "cracked_lens": {
+          "min": 0,
+          "max": 1
+        },
+        "toy_sword": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "pink_flowers",
+        "emptyBase": "pink_flowers",
+        "regrowMs": 180000
+      },
+      "proximityTrigger": {
+        "message": "You catch a sweet floral scent."
       }
     },
     {
@@ -375,6 +733,35 @@
       "spawn": {
         "weight": 1.5,
         "noForest": true
+      },
+      "stats": {
+        "flower_blue": 1
+      },
+      "randomStats": {
+        "flower_blue": {
+          "min": 1,
+          "max": 3
+        },
+        "wild_herb": {
+          "min": 0,
+          "max": 1
+        },
+        "message_in_a_bottle": {
+          "min": 0,
+          "max": 1
+        },
+        "moon_fragment": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "blue_flowers",
+        "emptyBase": "blue_flowers",
+        "regrowMs": 180000
+      },
+      "proximityTrigger": {
+        "message": "A delicate floral fragrance drifts by."
       }
     },
     {
@@ -391,6 +778,35 @@
       "spawn": {
         "weight": 1.5,
         "noForest": true
+      },
+      "stats": {
+        "flower_yellow": 1
+      },
+      "randomStats": {
+        "flower_yellow": {
+          "min": 1,
+          "max": 3
+        },
+        "feather": {
+          "min": 0,
+          "max": 1
+        },
+        "coin": {
+          "min": 0,
+          "max": 1
+        },
+        "bottlecap": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "yellow_flowers",
+        "emptyBase": "yellow_flowers",
+        "regrowMs": 180000
+      },
+      "proximityTrigger": {
+        "message": "The air smells faintly of honey and petals."
       }
     },
     {
@@ -406,6 +822,25 @@
       ],
       "spawn": {
         "weight": 0.8
+      },
+      "stats": {
+        "mushroom": 1
+      },
+      "randomStats": {
+        "mushroom": {
+          "min": 1,
+          "max": 3
+        },
+        "suspicious_mushroom": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "orange_mushrooms"
+      },
+      "proximityTrigger": {
+        "message": "A warm, earthy smell fills your nose."
       }
     },
     {
@@ -429,6 +864,34 @@
       "spawn": {
         "weight": 0.1,
         "forestOnly": true
+      },
+      "stats": {
+        "branches": 2,
+        "bark": 1,
+        "moss": 1
+      },
+      "randomStats": {
+        "branches": {
+          "min": 2,
+          "max": 5
+        },
+        "bark": {
+          "min": 1,
+          "max": 3
+        },
+        "moss": {
+          "min": 1,
+          "max": 3
+        },
+        "pocket_diary": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "fallen_tree_vertical0",
+        "emptyBase": "fallen_tree_vertical0",
+        "regrowMs": 600000
       }
     },
     {
@@ -445,6 +908,37 @@
       "blocks": true,
       "spawn": {
         "weight": 0.3
+      },
+      "stats": {
+        "rocks": 1,
+        "pebble": 1
+      },
+      "randomStats": {
+        "rocks": {
+          "min": 1,
+          "max": 3
+        },
+        "pebble": {
+          "min": 1,
+          "max": 3
+        },
+        "flint": {
+          "min": 0,
+          "max": 2
+        },
+        "broken_compass": {
+          "min": 0,
+          "max": 1
+        },
+        "compass_needle": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "small_rock",
+        "emptyBase": "small_rock",
+        "regrowMs": 1800000
       }
     },
     {
@@ -461,33 +955,47 @@
       "blocks": true,
       "spawn": {
         "weight": 0.1
+      },
+      "stats": {
+        "rocks": 2,
+        "pebble": 2,
+        "flint": 1
+      },
+      "randomStats": {
+        "rocks": {
+          "min": 2,
+          "max": 5
+        },
+        "pebble": {
+          "min": 2,
+          "max": 4
+        },
+        "flint": {
+          "min": 1,
+          "max": 3
+        },
+        "clay": {
+          "min": 0,
+          "max": 2
+        },
+        "ancient_coin": {
+          "min": 0,
+          "max": 1
+        },
+        "crystal_shard": {
+          "min": 0,
+          "max": 1
+        },
+        "tiny_anchor": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "big_rock",
+        "emptyBase": "big_rock",
+        "regrowMs": 1800000
       }
-    },
-    {
-      "id": "wood",
-      "name": "Wood",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "wood"
-        }
-      ],
-      "item": true
-    },
-    {
-      "id": "stone_axe",
-      "name": "Stone Axe",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "stone_axe"
-        }
-      ],
-      "item": true
     },
     {
       "id": "campfire_extinct",
@@ -513,7 +1021,11 @@
           "tileId": "campfire_lit"
         }
       ],
-      "blocks": true
+      "blocks": true,
+      "proximityTrigger": {
+        "message": "You feel a comforting warmth and smell woodsmoke.",
+        "radius": 2
+      }
     },
     {
       "id": "chest",
@@ -538,7 +1050,22 @@
           "layer": 3,
           "tileId": "skull"
         }
-      ]
+      ],
+      "interactionEffect": {
+        "message": "You stare into the empty eye sockets. A chill runs down your spine.",
+        "nearbyMessage": "You notice someone examining a skull. It makes you uneasy.",
+        "radius": 4,
+        "emotionEffects": [
+          {
+            "key": "sad_happy",
+            "delta": -8
+          },
+          {
+            "key": "anxious_confident",
+            "delta": -6
+          }
+        ]
+      }
     },
     {
       "id": "log_pile",
@@ -630,6 +1157,31 @@
       "spawn": {
         "weight": 3,
         "noForest": true
+      },
+      "stats": {
+        "wild_herb": 1
+      },
+      "randomStats": {
+        "wild_herb": {
+          "min": 0,
+          "max": 2
+        },
+        "dried_grass": {
+          "min": 0,
+          "max": 1
+        },
+        "three_leaf_clover": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "grass_patch",
+        "emptyBase": "grass_patch",
+        "regrowMs": 180000
+      },
+      "proximityTrigger": {
+        "message": "The smell of fresh grass is oddly calming."
       }
     },
     {
@@ -646,6 +1198,32 @@
       "blocks": false,
       "spawn": {
         "weight": 0.1
+      },
+      "stats": {
+        "dried_grass": 1
+      },
+      "randomStats": {
+        "dried_grass": {
+          "min": 1,
+          "max": 2
+        },
+        "vine": {
+          "min": 0,
+          "max": 1
+        },
+        "rusty_nail": {
+          "min": 0,
+          "max": 1
+        },
+        "expired_map": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "dead_plant",
+        "emptyBase": "dead_plant",
+        "regrowMs": 240000
       }
     },
     {
@@ -662,6 +1240,25 @@
       "blocks": false,
       "spawn": {
         "weight": 1
+      },
+      "stats": {
+        "purple_mushroom": 1
+      },
+      "randomStats": {
+        "purple_mushroom": {
+          "min": 1,
+          "max": 3
+        },
+        "suspicious_mushroom": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "purple_mushrooms"
+      },
+      "proximityTrigger": {
+        "message": "Something smells... strange. Slightly sweet, slightly wrong."
       }
     },
     {
@@ -701,86 +1298,279 @@
     {
       "id": "sprout",
       "name": "Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 1.0, "noForest": true }
+      "spawn": {
+        "weight": 1.0,
+        "noForest": true
+      }
     },
     {
       "id": "carrot_sprout",
       "name": "Carrot Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.5, "noForest": true }
+      "spawn": {
+        "weight": 0.5,
+        "noForest": true
+      }
     },
     {
       "id": "carrot",
       "name": "Carrot",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "carrot" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "carrot"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.8, "noForest": true }
+      "spawn": {
+        "weight": 0.8,
+        "noForest": true
+      },
+      "stats": {
+        "carrot": 1
+      },
+      "randomStats": {
+        "carrot": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "carrot"
+      }
     },
     {
       "id": "lettuce_sprout",
       "name": "Lettuce Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.5, "noForest": true }
+      "spawn": {
+        "weight": 0.5,
+        "noForest": true
+      }
     },
     {
       "id": "lettuce",
       "name": "Lettuce",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "lettuce" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "lettuce"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.8, "noForest": true }
+      "spawn": {
+        "weight": 0.8,
+        "noForest": true
+      },
+      "stats": {
+        "lettuce": 1
+      },
+      "randomStats": {
+        "lettuce": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "lettuce"
+      }
     },
     {
       "id": "pumpkin_sprout",
       "name": "Pumpkin Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.4, "noForest": true }
+      "spawn": {
+        "weight": 0.4,
+        "noForest": true
+      }
     },
     {
       "id": "pumpkin",
       "name": "Pumpkin",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "pumpkin" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "pumpkin"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.6, "noForest": true }
+      "spawn": {
+        "weight": 0.6,
+        "noForest": true
+      },
+      "stats": {
+        "pumpkin": 1
+      },
+      "randomStats": {
+        "pumpkin": {
+          "min": 1,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "pumpkin"
+      }
     },
     {
       "id": "cabbage_sprout",
       "name": "Cabbage Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.4, "noForest": true }
+      "spawn": {
+        "weight": 0.4,
+        "noForest": true
+      }
     },
     {
       "id": "cabbage",
       "name": "Cabbage",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "cabbage" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cabbage"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.6, "noForest": true }
+      "spawn": {
+        "weight": 0.6,
+        "noForest": true
+      },
+      "stats": {
+        "cabbage": 1
+      },
+      "randomStats": {
+        "cabbage": {
+          "min": 1,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "cabbage"
+      }
     },
     {
       "id": "berry_bush_sprout",
       "name": "Berry Bush Sprout",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "sprout" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
       "blocks": false,
-      "spawn": { "weight": 0.4, "noForest": true }
+      "spawn": {
+        "weight": 0.4,
+        "noForest": true
+      }
     },
     {
       "id": "berry_bush_empty",
       "name": "Berry Bush (Empty)",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "berry_bush_empty" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "berry_bush_empty"
+        }
+      ],
       "blocks": true,
-      "spawn": { "weight": 0.8, "noForest": true }
+      "spawn": {
+        "weight": 0.8,
+        "noForest": true
+      }
     },
     {
       "id": "berry_bush_full",
       "name": "Berry Bush (Full)",
-      "tiles": [{ "dx": 0, "dy": 0, "layer": 3, "tileId": "berry_bush_full" }],
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "berry_bush_full"
+        }
+      ],
       "blocks": true,
-      "spawn": { "weight": 0.6, "noForest": true }
+      "spawn": {
+        "weight": 0.6,
+        "noForest": true
+      },
+      "stats": {
+        "berries": 2
+      },
+      "randomStats": {
+        "berries": {
+          "min": 2,
+          "max": 5
+        },
+        "wild_herb": {
+          "min": 0,
+          "max": 1
+        },
+        "bottle": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "berry_bush_full",
+        "emptyBase": "berry_bush_empty",
+        "regrowMs": 180000
+      },
+      "proximityTrigger": {
+        "message": "You smell ripe berries nearby."
+      }
     }
   ]
 }

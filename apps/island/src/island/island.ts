@@ -10,16 +10,26 @@ import {
 import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
-import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, ITEM_IDS, GROWTH_DEFS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import type { SensoryEvent } from "./character-registry.js";
 import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
 import { resolveTargetFilter } from "./goal-executor.js";
 import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js";
-import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
+import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, getItemDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
 import { layerTileId, shadowLayerTileId, buildCharacterTileDefs, RENDER_LAYERS, randomAppearance } from "./character-sprites.js";
 import type { CharacterAppearance, CharacterFacing, CharacterLayerTiles } from "@agentic-island/shared";
+
+/**
+ * Resolves an anchor tile override ID to its entity definition ID.
+ * Spawned entities store the anchor tileId in overrides (e.g. "tree_light2"),
+ * but HARVEST_DEFS / ENTITY_DEFAULTS are keyed by entity ID (e.g. "big_tree_light").
+ */
+function resolveEntityId(tileId: string): string {
+  return ENTITY_DEF_BY_TILE_ID.get(tileId)?.id ?? tileId;
+}
 
 /** Compute per-layer tile IDs from appearance + facing + action. */
 function computeLayerTiles(
@@ -46,11 +56,7 @@ const TERRAIN_TYPES = new Set(["grass", "water", "sand"]);
 
 /** Returns true if the given tile ID is an inventory item that cannot be placed on the map. */
 function isItemTile(tileId: string): boolean {
-  // Check entity registry (has item:true flag)
-  if (ITEM_IDS.has(tileId)) return true;
-  // Check tile registry (category === "item")
-  const tileDef = TILE_BY_ID.get(tileId);
-  return tileDef?.category === "item";
+  return TILE_BY_ID.get(tileId)?.category === "item";
 }
 
 export class Island extends EventEmitter {
@@ -108,7 +114,7 @@ export class Island extends EventEmitter {
     for (const [key, stats] of this.entityStats) {
       entities[key] = stats;
     }
-    const characters: Record<string, Omit<CharacterInstance, "id">> = {};
+    const characters: Record<string, Omit<CharacterInstance, "id" | "sensoryEvents" | "sensoryProximityCooldowns">> = {};
     for (const [id, c] of this.characters) {
       const s = c.stats;
       const roundedStats = {
@@ -227,6 +233,7 @@ export class Island extends EventEmitter {
           maxHealth: c.stats.maxHealth,
           maxHunger: c.stats.maxHunger,
           maxEnergy: c.stats.maxEnergy,
+          emotions: c.stats.emotions ?? {},
         },
         inventory: c.stats.inventory ?? [],
         equipment: c.stats.equipment ?? {},
@@ -242,6 +249,13 @@ export class Island extends EventEmitter {
   getCharacter(id: string): { id: string; x: number; y: number } | null {
     const c = this.characters.get(id);
     return c ? { id: c.id, x: c.x, y: c.y } : null;
+  }
+
+  /** Add a sensory event to a character's buffer. Can be called by any game system. */
+  addSensoryEvent(characterId: string, text: string): void {
+    const c = this.characters.get(characterId);
+    if (!c) return;
+    c.sensoryEvents.push({ text, createdAt: Date.now() });
   }
 
   getOverrides(): Array<{ x: number; y: number; layer: number; tileId: string }> {
@@ -315,6 +329,16 @@ export class Island extends EventEmitter {
       action:     character.action,
       pathLength: character.path.length,
       nearby,
+      ...(() => {
+        const now = Date.now();
+        const cfg = getIslandConfig();
+        // Prune expired events, then drain all remaining ones
+        character.sensoryEvents = character.sensoryEvents.filter(
+          (e) => now - e.createdAt < cfg.sensoryBufferTimeoutMs
+        );
+        const events = character.sensoryEvents.splice(0);
+        return events.length > 0 ? { sensoryEvents: events } : {};
+      })(),
     };
   }
 
@@ -666,7 +690,7 @@ export class Island extends EventEmitter {
     const appearance: CharacterAppearance = requestedAppearance ?? randomAppearance();
     const facing: CharacterFacing = "s";
 
-    const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0 };
+    const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0, sensoryEvents: [], sensoryProximityCooldowns: new Map() };
 
     this.characters.set(id, character);
     saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
@@ -726,6 +750,8 @@ export class Island extends EventEmitter {
         path: [],
         action: "idle",
         moveTicks: 0,
+        sensoryEvents: [],
+        sensoryProximityCooldowns: new Map(),
         ...(saved.shelter ? { shelter: saved.shelter } : {}),
       };
 
@@ -822,7 +848,8 @@ export class Island extends EventEmitter {
     }
 
     const tileId = this.overrides.get(key)?.[3] ?? "";
-    const def = HARVEST_DEFS[tileId];
+    const entityId = resolveEntityId(tileId);
+    const def = HARVEST_DEFS[entityId];
     if (!def) {
       // Fallback: if the entity is a container, treat harvest as "take items from it"
       if (ENTITY_DEF_BY_TILE_ID.get(tileId)?.container) {
@@ -856,7 +883,7 @@ export class Island extends EventEmitter {
 
     // ── Health-damage mode (trees, destructible entities) ────────────────────
     if (def.damage !== undefined) {
-      const currentStats = this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[tileId] };
+      const currentStats = this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[entityId] };
       const currentHealth = (currentStats as EntityStats).health ?? 0;
       // Route to drain if: caller requested a specific item, OR entity is already dead (health=0)
       if (item !== undefined || currentHealth <= 0) {
@@ -929,8 +956,9 @@ export class Island extends EventEmitter {
     def: typeof HARVEST_DEFS[string],
   ): { harvested: Record<string, number>; entity: { tileId: string; health: number; maxHealth: number; destroyed: boolean } } {
     const [entityX, entityY] = key.split(",").map(Number);
-    const stats = (this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[tileId] }) as EntityStats;
-    const maxHealth = stats.maxHealth ?? (ENTITY_DEFAULTS[tileId]?.maxHealth ?? 0);
+    const entityId = resolveEntityId(tileId);
+    const stats = (this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[entityId] }) as EntityStats;
+    const maxHealth = stats.maxHealth ?? (ENTITY_DEFAULTS[entityId]?.maxHealth ?? 0);
     const newHealth = (stats.health ?? 0) - def.damage!;
     const harvested: Record<string, number> = {};
 
@@ -1036,7 +1064,8 @@ export class Island extends EventEmitter {
     item?: string,
   ): { harvested: Record<string, number>; entity: { tileId: string; destroyed: boolean } } {
     const [entityX, entityY] = key.split(",").map(Number);
-    const stats = this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[tileId] };
+    const entityId = resolveEntityId(tileId);
+    const stats = this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[entityId] };
     const allResources = getResources(stats as EntityStats);
 
     // Filter to requested item if specified
@@ -1125,7 +1154,7 @@ export class Island extends EventEmitter {
       const existingTimer = this.regrowTimers.get(key);
       if (existingTimer) clearTimeout(existingTimer);
       const timer = setTimeout(() => {
-        this.regrowEntity(entityX, entityY, tileId, def);
+        this.regrowEntity(entityX, entityY, entityId, def);
       }, def.regrowMs);
       if (timer.unref) timer.unref();
       this.regrowTimers.set(key, timer);
@@ -1418,8 +1447,93 @@ export class Island extends EventEmitter {
 
     saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
     this.overridesVersion = loadOverridesVersion();
+
+    // ── Interaction effects ───────────────────────────────────────────────────
+    const effect = INTERACTION_EFFECTS.get(tileId);
+    if (effect) {
+      const now = Date.now();
+      if (effect.message) {
+        character.sensoryEvents.push({ text: effect.message, createdAt: now });
+      }
+      const radius = effect.radius ?? 3;
+      for (const nearby of this.characters.values()) {
+        if (nearby === character) continue;
+        const dx = Math.abs(nearby.x - targetX), dy = Math.abs(nearby.y - targetY);
+        if (Math.max(dx, dy) > radius) continue;
+        if (effect.nearbyMessage) {
+          nearby.sensoryEvents.push({ text: effect.nearbyMessage, createdAt: now });
+        }
+        if (effect.emotionEffects) {
+          for (const emotionEffect of effect.emotionEffects) {
+            const current = nearby.stats.emotions?.[emotionEffect.key] ?? 50;
+            const next = Math.max(0, Math.min(100, current + emotionEffect.delta));
+            if (nearby.stats.emotions) nearby.stats.emotions[emotionEffect.key] = next;
+          }
+        }
+      }
+      // Apply self-targeted emotion effects to the interacting character
+      if (effect.emotionEffects) {
+        for (const emotionEffect of effect.emotionEffects) {
+          if (!emotionEffect.self) continue;
+          const current = character.stats.emotions?.[emotionEffect.key] ?? 50;
+          const next = Math.max(0, Math.min(100, current + emotionEffect.delta));
+          if (character.stats.emotions) character.stats.emotions[emotionEffect.key] = next;
+        }
+      }
+    }
+
     this.emit("map:updated", this.map);
     return { result: def.result, consumed: def.costs };
+  }
+
+  /**
+   * Perform a special item interaction (e.g. squish a rubber duck).
+   * The item must be in the character's inventory and the verb must match a special action
+   * defined in item-defs.json.
+   */
+  useItem(charId: string, item: string, verb: string): void {
+    const character = this.characters.get(charId);
+    if (!character) throw new Error(`No character named "${charId}".`);
+
+    const inv = character.stats.inventory as { item: string; qty: number }[];
+    if (!inv.find(s => s.item === item && s.qty > 0)) {
+      throw new Error(`"${item}" is not in your inventory.`);
+    }
+    const def = getItemDef(item);
+    const action = (def.special ?? []).find(s => s.verb === verb);
+    if (!action) {
+      throw new Error(`"${item}" has no "${verb}" action. Use examine_item to see available actions.`);
+    }
+
+    const now = Date.now();
+    if (action.message) {
+      character.sensoryEvents.push({ text: action.message, createdAt: now });
+    }
+    const radius = action.radius ?? 3;
+    for (const nearby of this.characters.values()) {
+      if (nearby === character) continue;
+      const dx = Math.abs(nearby.x - character.x), dy = Math.abs(nearby.y - character.y);
+      if (Math.max(dx, dy) > radius) continue;
+      if (action.nearbyMessage) {
+        nearby.sensoryEvents.push({ text: action.nearbyMessage, createdAt: now });
+      }
+      if (action.emotionEffects) {
+        for (const eff of action.emotionEffects) {
+          const current = nearby.stats.emotions?.[eff.key] ?? 50;
+          const next = Math.max(0, Math.min(100, current + eff.delta));
+          if (nearby.stats.emotions) nearby.stats.emotions[eff.key] = next;
+        }
+      }
+    }
+    // Self emotion effects
+    if (action.emotionEffects) {
+      for (const eff of action.emotionEffects) {
+        if (!eff.self) continue;
+        const current = character.stats.emotions?.[eff.key] ?? 50;
+        const next = Math.max(0, Math.min(100, current + eff.delta));
+        if (character.stats.emotions) character.stats.emotions[eff.key] = next;
+      }
+    }
   }
 
   /**
@@ -1796,7 +1910,7 @@ export class Island extends EventEmitter {
     saveOverride(x, y, 3, def.fullBase);
 
     // Restore extra tiles for multi-tile entities
-    const entityDef = ENTITY_DEF_BY_TILE_ID.get(tileId);
+    const entityDef = ENTITY_DEF_BY_ID.get(tileId) ?? ENTITY_DEF_BY_TILE_ID.get(tileId);
     if (entityDef) {
       for (const t of entityDef.tiles) {
         if (t.dx === 0 && t.dy === 0) continue;
@@ -2258,6 +2372,26 @@ export class Island extends EventEmitter {
             s.energy = Math.max(0, s.energy - (onPath ? moveStepOnPathCost : moveStepCost));
             if (character.path.length === 0) character.action = "idle";
             changed = true;
+
+            // ── Proximity trigger checks ─────────────────────────────────────
+            const now = Date.now();
+            const proxCooldownMs = cfg.sensoryProximityCooldownMs;
+            const newX = character.x, newY = character.y;
+            for (const [tileId, trigger] of PROXIMITY_TRIGGERS) {
+              const radius = trigger.radius ?? 1;
+              for (let cy = newY - radius; cy <= newY + radius; cy++) {
+                for (let cx = newX - radius; cx <= newX + radius; cx++) {
+                  if (cx === newX && cy === newY) continue;
+                  if (this.getLayer(cx, cy, 3) !== tileId) continue;
+                  const entityKey = `${cx},${cy}`;
+                  const lastFired = character.sensoryProximityCooldowns.get(entityKey) ?? 0;
+                  if (now - lastFired >= proxCooldownMs) {
+                    character.sensoryEvents.push({ text: trigger.message, createdAt: now });
+                    character.sensoryProximityCooldowns.set(entityKey, now);
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -2266,6 +2400,17 @@ export class Island extends EventEmitter {
       if (character.speech && Date.now() >= character.speech.expiresAt) {
         delete character.speech;
         changed = true;
+      }
+
+      // ── Sensory event expiry ─────────────────────────────────────────────────
+      if (character.sensoryEvents.length > 0) {
+        const bufferTimeout = cfg.sensoryBufferTimeoutMs;
+        const nowExpiry = Date.now();
+        const before = character.sensoryEvents.length;
+        character.sensoryEvents = character.sensoryEvents.filter(
+          (e) => nowExpiry - e.createdAt < bufferTimeout
+        );
+        if (character.sensoryEvents.length !== before) changed = true;
       }
 
       if (changed) {
