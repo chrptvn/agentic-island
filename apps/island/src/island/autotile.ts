@@ -639,16 +639,16 @@ export function buildVegetationLayer(
   const entityStats:   Array<{ x: number; y: number; stats: EntityStats }> = [];
   const occupied       = new Set<string>();
 
-  /** Check that every layer-3 tile position lands on valid ground and is unoccupied.
-   *  Grass entities require pure grass; lake entities require lake water cells. */
+  /** Check that every tile position (layer-3 base and layer-4 canopy) is unoccupied.
+   *  Layer-3 tiles additionally must land on valid ground (grass or lake cell). */
   function canPlace(x: number, y: number, c: SpawnCandidate): boolean {
     for (const t of c.tiles) {
       const tx = x + t.dx;
       const ty = y + t.dy;
       if (tx < 0 || tx >= w || ty < 0 || ty >= h) return false;
+      const key = `${tx},${ty}`;
+      if (occupied.has(key)) return false;
       if (t.layer === 3) {
-        const key = `${tx},${ty}`;
-        if (occupied.has(key)) return false;
         if (c.lakeOnly || c.lakeInterior ? !lakeGrid.has(key) : !isG(tx, ty)) return false;
       }
     }
@@ -662,10 +662,8 @@ export function buildVegetationLayer(
     const stats = { ...ENTITY_DEFAULTS[c.id] } as Record<string, unknown>;
     applyRandomStats(c.id, stats, rng);
     entityStats.push({ x, y, stats: stats as EntityStats });
-    if (c.isBlocking) {
-      for (const t of c.tiles) {
-        if (t.layer === 3) occupied.add(`${x + t.dx},${y + t.dy}`);
-      }
+    for (const t of c.tiles) {
+      occupied.add(`${x + t.dx},${y + t.dy}`);
     }
   }
 
