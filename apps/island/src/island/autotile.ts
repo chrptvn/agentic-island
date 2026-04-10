@@ -639,17 +639,18 @@ export function buildVegetationLayer(
   const entityStats:   Array<{ x: number; y: number; stats: EntityStats }> = [];
   const occupied       = new Set<string>();
 
-  /** Check that every tile position (layer-3 base and layer-4 canopy) is unoccupied.
+  /** Check that every tile position is unoccupied on its own layer.
+   *  Layer-4 canopy tiles may share (x,y) with layer-3 entities (depth occlusion).
    *  Layer-3 tiles additionally must land on valid ground (grass or lake cell). */
   function canPlace(x: number, y: number, c: SpawnCandidate): boolean {
     for (const t of c.tiles) {
       const tx = x + t.dx;
       const ty = y + t.dy;
       if (tx < 0 || tx >= w || ty < 0 || ty >= h) return false;
-      const key = `${tx},${ty}`;
-      if (occupied.has(key)) return false;
+      if (occupied.has(`${tx},${ty},${t.layer}`)) return false;
       if (t.layer === 3) {
-        if (c.lakeOnly || c.lakeInterior ? !lakeGrid.has(key) : !isG(tx, ty)) return false;
+        const gkey = `${tx},${ty}`;
+        if (c.lakeOnly || c.lakeInterior ? !lakeGrid.has(gkey) : !isG(tx, ty)) return false;
       }
     }
     return true;
@@ -663,7 +664,7 @@ export function buildVegetationLayer(
     applyRandomStats(c.id, stats, rng);
     entityStats.push({ x, y, stats: stats as EntityStats });
     for (const t of c.tiles) {
-      occupied.add(`${x + t.dx},${y + t.dy}`);
+      occupied.add(`${x + t.dx},${y + t.dy},${t.layer}`);
     }
   }
 
@@ -684,7 +685,7 @@ export function buildVegetationLayer(
 
   // ── Place entities ─────────────────────────────────────────────────────────
   for (const key of candidates) {
-    if (occupied.has(key)) continue;
+    if (occupied.has(`${key},3`)) continue;
 
     const [x, y] = key.split(",").map(Number);
     const isDeep = isG(x, y - 1);
@@ -721,7 +722,7 @@ export function buildVegetationLayer(
 
     for (const key of lakeGrid) {
       const [x, y] = key.split(",").map(Number);
-      if (occupied.has(key)) continue;
+      if (occupied.has(`${key},3`)) continue;
       if (rng() >= LILY_DENSITY) continue;
       const isBorder = [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => isG(x + dx, y + dy) || isSand(x + dx, y + dy));
       const candidate = pickLilyPad(isBorder);
