@@ -200,8 +200,9 @@ function loadConfig(): EntitiesConfig {
 }
 
 function buildDerivedExports(defs: EntityDef[]) {
+  // Deep-copy stats objects to prevent mutations from contaminating the source objects.
   const ENTITY_DEFAULTS: Record<string, EntityStats> = Object.fromEntries(
-    defs.map((e) => [e.id, e.stats ?? { health: 0, maxHealth: 0 }])
+    defs.map((e) => [e.id, { ...(e.stats ?? { health: 0, maxHealth: 0 }) }])
   );
 
   const SINGLE_TILE_IDS: string[] = defs.filter((e) => e.tiles.length <= 1).map((e) => e.id);
