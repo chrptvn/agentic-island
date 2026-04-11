@@ -282,21 +282,38 @@ export async function handleMcpRequest(
 
   if (sessionId) {
     const session = mcpSessions.get(sessionId);
-    if (!session) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Session not found" }));
+    if (session) {
+      await (session.transport as StreamableHTTPServerTransport).handleRequest(req, res, body);
       return;
     }
-    await (session.transport as StreamableHTTPServerTransport).handleRequest(req, res, body);
+
+    // Stale session (e.g. after server restart) — handle gracefully
+    if (req.method === "DELETE") {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+    if (req.method !== "POST") {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Session expired. Send a new initialize request to reconnect." }));
+      return;
+    }
+    // POST with stale session — fall through to allow re-initialization
+  }
+
+  // No session ID (or stale session) — must be an initialize request.
+  const msg = body as Record<string, unknown>;
+  if (msg?.method !== "initialize") {
+    const error = sessionId
+      ? "Session expired after server restart. Send a new initialize request to reconnect."
+      : "Mcp-Session-Id header required for non-initialize requests";
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error }));
     return;
   }
 
-  // No session ID — must be an initialize request.
-  const msg = body as Record<string, unknown>;
-  if (msg?.method !== "initialize") {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "Mcp-Session-Id header required for non-initialize requests" }));
-    return;
+  if (sessionId) {
+    console.log("[mcp] Replacing stale session", sessionId);
   }
 
   const session = makeHttpSession();

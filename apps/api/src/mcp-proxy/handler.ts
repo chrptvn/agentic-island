@@ -119,18 +119,28 @@ export async function handleMcpProxy(
   // Existing session — route to its transport
   if (sessionId) {
     const proxySession = getProxySession(sessionId);
-    if (!proxySession) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "MCP session not found" }));
+    if (proxySession) {
+      const body = req.method === "POST" ? await readBody(req).catch(() => undefined) : undefined;
+      await proxySession.transport.handleRequest(req, res, body);
       return;
     }
 
-    const body = req.method === "POST" ? await readBody(req).catch(() => undefined) : undefined;
-    await proxySession.transport.handleRequest(req, res, body);
-    return;
+    // Stale session (e.g. after server restart) — handle gracefully
+    if (req.method === "DELETE") {
+      // Session already gone — acknowledge
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+    if (req.method !== "POST") {
+      res.writeHead(404, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Session expired. Send a new initialize request to reconnect." }));
+      return;
+    }
+    // POST with stale session — fall through to allow re-initialization
   }
 
-  // No session — must be a POST with an initialize request
+  // No session (or stale session) — must be a POST with an initialize request
   if (req.method !== "POST") {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "Mcp-Session-Id header required for non-initialize requests" }));
@@ -140,11 +150,17 @@ export async function handleMcpProxy(
   const body = await readBody(req).catch(() => undefined);
   const msg = body as Record<string, unknown>;
   if (msg?.method !== "initialize") {
+    const error = sessionId
+      ? "Session expired after server restart. Send a new initialize request to reconnect."
+      : "First request must be an initialize";
     res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "First request must be an initialize" }));
+    res.end(JSON.stringify({ error }));
     return;
   }
 
+  if (sessionId) {
+    console.log(PREFIX, `Replacing stale session ${sessionId} for island ${islandId}`);
+  }
   console.log(PREFIX, `New MCP proxy session for island ${islandId}`);
   const transport = createProxySession(islandId, island.ws);
   await transport.handleRequest(req, res, body);
