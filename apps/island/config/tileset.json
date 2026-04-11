@@ -2,6 +2,10 @@
   "tileSize": 16,
   "tileGap": 1,
   "sheets": {
+    "decoration_medieval/decoration_medieval/decorations-medieval.png": {
+      "tileSize": 32,
+      "tileGap": 0
+    },
     "food.png": {
       "tileGap": 0
     },
@@ -5182,6 +5186,45 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "vegetation",
       "description": "Berry Bush (full)"
+    },
+    {
+      "id": "campfire_extinct",
+      "col": 10,
+      "row": 49,
+      "layer": 3,
+      "sheet": "decoration_medieval/decoration_medieval/decorations-medieval.png",
+      "category": "structure",
+      "description": "Campfire (extinguished)"
+    },
+    {
+      "id": "campfire_lit",
+      "layer": 3,
+      "sheet": "decoration_medieval/decoration_medieval/decorations-medieval.png",
+      "category": "structure",
+      "description": "Campfire (lit) — base with flames",
+      "frames": [
+        { "col": 8, "row": 48 },
+        { "col": 9, "row": 48 },
+        { "col": 10, "row": 48 },
+        { "col": 11, "row": 48 },
+        { "col": 12, "row": 48 }
+      ],
+      "fps": 10
+    },
+    {
+      "id": "campfire_lit_top",
+      "layer": 4,
+      "sheet": "decoration_medieval/decoration_medieval/decorations-medieval.png",
+      "category": "structure",
+      "description": "Campfire (lit) — upper flame sparks",
+      "frames": [
+        { "col": 8, "row": 47 },
+        { "col": 9, "row": 47 },
+        { "col": 10, "row": 47 },
+        { "col": 11, "row": 47 },
+        { "col": 12, "row": 47 }
+      ],
+      "fps": 10
     }
   ]
 }

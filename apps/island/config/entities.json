@@ -1008,7 +1008,27 @@
           "tileId": "campfire_extinct"
         }
       ],
-      "blocks": true
+      "blocks": true,
+      "build": {
+        "costs": { "wood": 3, "branches": 2, "rocks": 5 }
+      },
+      "repair": {
+        "fuelItem": "wood",
+        "healthPerFuel": 10
+      },
+      "interact": {
+        "costs": {},
+        "result": "campfire_lit",
+        "preserveHealth": true,
+        "minHealth": 10
+      },
+      "interactionEffect": {
+        "message": "You light the campfire."
+      },
+      "stats": {
+        "health": 0,
+        "maxHealth": 100
+      }
     },
     {
       "id": "campfire_lit",
@@ -1019,9 +1039,33 @@
           "dy": 0,
           "layer": 3,
           "tileId": "campfire_lit"
+        },
+        {
+          "dx": 0,
+          "dy": -1,
+          "layer": 4,
+          "tileId": "campfire_lit_top"
         }
       ],
       "blocks": true,
+      "decay": {
+        "ratePerSecond": 0.017,
+        "fuelItem": "wood",
+        "healthPerFuel": 10,
+        "onEmpty": "campfire_extinct"
+      },
+      "interact": {
+        "costs": {},
+        "result": "campfire_extinct",
+        "preserveHealth": true
+      },
+      "interactionEffect": {
+        "message": "You extinguish the campfire."
+      },
+      "stats": {
+        "health": 100,
+        "maxHealth": 100
+      },
       "proximityTrigger": {
         "message": "You feel a comforting warmth and smell woodsmoke.",
         "radius": 2

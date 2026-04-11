@@ -7,7 +7,7 @@ import {
   loadEntityStats, saveEntityStat, deleteEntityStat, saveEntityStatsBatch, clearEntityStats,
   saveCharacter, deleteCharacter, loadCharacter, clearAllCharacters, runTransaction,
 } from "../persistence/db.js";
-import { TILE_BY_ID, reloadTiles, CONFIG_PATH_TILES, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
+import { TILE_BY_ID, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
 import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
@@ -1429,6 +1429,37 @@ export class Island extends EventEmitter {
     layers[3] = def.result;
     this.overrides.set(targetKey, layers);
 
+    // Clear extra tiles from the old entity (e.g. campfire_lit_top when extinguishing)
+    const oldEntityDef = ENTITY_DEF_BY_ID.get(tileId);
+    if (oldEntityDef) {
+      for (const t of oldEntityDef.tiles) {
+        if (t.dx === 0 && t.dy === 0) continue;
+        const ex = targetX + t.dx, ey = targetY + t.dy;
+        const eKey = `${ex},${ey}`;
+        const eLayers = this.overrides.get(eKey);
+        if (eLayers) {
+          eLayers[t.layer] = "";
+          this.overrides.set(eKey, eLayers);
+        }
+        clearTileOverride(ex, ey, t.layer);
+      }
+    }
+
+    // Place extra tiles for the new entity (e.g. campfire_lit_top when lighting)
+    const newEntityDef = ENTITY_DEF_BY_ID.get(def.result);
+    if (newEntityDef) {
+      for (const t of newEntityDef.tiles) {
+        if (t.dx === 0 && t.dy === 0) continue;
+        const ex = targetX + t.dx, ey = targetY + t.dy;
+        const eKey = `${ex},${ey}`;
+        const eLayers = this.overrides.get(eKey) ?? [];
+        while (eLayers.length <= t.layer) eLayers.push("");
+        eLayers[t.layer] = t.tileId;
+        this.overrides.set(eKey, eLayers);
+        saveOverride(ex, ey, t.layer, t.tileId);
+      }
+    }
+
     // Re-init entity stats for the new entity (if any)
     this.entityStats.delete(targetKey);
     deleteEntityStat(targetX, targetY);
@@ -2454,6 +2485,35 @@ export class Island extends EventEmitter {
             this.entityStats.set(key, initStats as EntityStats);
             statWrites.push({ x, y, stats: initStats as EntityStats });
           }
+          // Clear extra tiles from the old entity (e.g. campfire_lit_top when fire burns out)
+          const oldEntityDef = ENTITY_DEF_BY_ID.get(tileId);
+          if (oldEntityDef) {
+            for (const t of oldEntityDef.tiles) {
+              if (t.dx === 0 && t.dy === 0) continue;
+              const ex = x + t.dx, ey = y + t.dy;
+              const eKey = `${ex},${ey}`;
+              const eLayers = this.overrides.get(eKey);
+              if (eLayers) {
+                eLayers[t.layer] = "";
+                this.overrides.set(eKey, eLayers);
+              }
+              overrideClears.push({ x: ex, y: ey, layer: t.layer });
+            }
+          }
+          // Place extra tiles for the new entity (if any)
+          const newEntityDef = ENTITY_DEF_BY_ID.get(decay.onEmpty);
+          if (newEntityDef) {
+            for (const t of newEntityDef.tiles) {
+              if (t.dx === 0 && t.dy === 0) continue;
+              const ex = x + t.dx, ey = y + t.dy;
+              const eKey = `${ex},${ey}`;
+              const eLayers = this.overrides.get(eKey) ?? [];
+              while (eLayers.length <= t.layer) eLayers.push("");
+              eLayers[t.layer] = t.tileId;
+              this.overrides.set(eKey, eLayers);
+              overrideWrites.push({ x: ex, y: ey, layer: t.layer, tileId: t.tileId });
+            }
+          }
         } else {
           layers[3] = "";
           this.overrides.set(key, layers);
@@ -2548,7 +2608,6 @@ export class Island extends EventEmitter {
   /** Watch config/*.json files and hot-reload the relevant registry on change. */
   watchConfigs(): void {
     const configs: Array<{ path: () => string; reload: () => void; name: string }> = [
-      { path: CONFIG_PATH_TILES,    reload: reloadTiles,        name: "tileset.json"   },
       { path: CONFIG_PATH_ENTITIES, reload: reloadEntities,     name: "entities.json"  },
       { path: CONFIG_PATH_RECIPES,  reload: reloadRecipes,      name: "recipes.json"   },
       { path: CONFIG_PATH_ITEMS,    reload: reloadItemDefs,     name: "item-defs.json" },

@@ -124,9 +124,16 @@ if (!isPrimary) {
   };
 
   // Package all sprites from the unified sprites/ directory.
-  // Exclude old LPC directories (superseded by characters/).
-  const LPC_EXCLUDE = ["/lpc-character-bases-v3_1/", "/lpc-characters/"];
-  const sprites = await packageSprites(join(__dirname, "sprites"), "", LPC_EXCLUDE).catch(() => []);
+  // Exclude old LPC directories (superseded by characters/) and source tileset
+  // sheets (superseded by the build-time atlas tileset-atlas.png).
+  const SPRITE_EXCLUDE = [
+    "/lpc-character-bases-v3_1/",
+    "/lpc-characters/",
+    "/Pipoya RPG Tileset 32x32/",
+    "/decoration_medieval/",
+    "/food.png",
+  ];
+  const sprites = await packageSprites(join(__dirname, "sprites"), "", SPRITE_EXCLUDE).catch(() => []);
 
   // Generate a pixel-art thumbnail from the island's terrain
   const thumbnailData = island.getThumbnailBase64();

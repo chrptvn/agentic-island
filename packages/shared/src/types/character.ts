@@ -5,6 +5,21 @@ export interface InventoryItem {
 
 export type EquipmentSlots = Record<string, InventoryItem | null>;
 
+export interface EmotionPair {
+  /** Storage key (e.g. "enraged_glad"). */
+  key: string;
+  /** Adjective when value < 50 (e.g. "enraged"). */
+  low: string;
+  /** Adjective when value ≥ 50 (e.g. "glad"). */
+  high: string;
+}
+
+export const EMOTION_PAIRS: EmotionPair[] = [
+  { key: "enraged_glad",      low: "enraged",  high: "glad"      },
+  { key: "anxious_confident", low: "anxious",  high: "confident" },
+  { key: "sad_happy",         low: "sad",      high: "happy"     },
+];
+
 export interface CharacterStats {
   health: number;
   hunger: number;
@@ -12,6 +27,8 @@ export interface CharacterStats {
   maxHealth: number;
   maxHunger: number;
   maxEnergy: number;
+  /** Bipolar emotion stats keyed by EmotionPair.key, each 0–100. */
+  emotions?: Record<string, number>;
 }
 
 export type CharacterGender = "male" | "female";

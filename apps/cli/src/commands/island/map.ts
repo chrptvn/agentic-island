@@ -16,11 +16,11 @@ interface CharactersResult {
 }
 
 const SIZE_PRESETS = {
-  very_small: { width: 30,  height: 20  },
-  small:      { width: 60,  height: 40  },
-  medium:     { width: 100, height: 66  },
-  large:      { width: 150, height: 100 },
-  very_large: { width: 200, height: 133 },
+  very_small: { width: 120, height: 80  },
+  small:      { width: 160, height: 110 },
+  medium:     { width: 210, height: 140 },
+  large:      { width: 280, height: 190 },
+  very_large: { width: 400, height: 270 },
 } as const;
 
 type SizePreset = keyof typeof SIZE_PRESETS;
@@ -58,7 +58,7 @@ export function registerIslandMapCommand(program: Command): void {
     .description("Wipe all characters and regenerate the map")
     .option(
       "--size <preset>",
-      `Map size preset: very_small (30×20) | small (60×40) | medium (100×66) | large (150×100) | very_large (200×133) (default: medium)`,
+      `Map size preset: very_small (120×80) | small (160×110) | medium (210×140) | large (280×190) | very_large (400×270) (default: medium)`,
     )
     .option("--seed <n>", "RNG seed for deterministic generation; omit for a random seed", parseInt)
     .option("--fill-probability <n>", "Initial cave-fill probability, 0–1 (default: 0.45)", parseFloat)

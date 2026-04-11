@@ -3,6 +3,8 @@
  * Stats are humanized (feelings), but positions are exposed as (x, y).
  */
 
+import { EMOTION_PAIRS } from "@agentic-island/shared";
+
 // ─── Stat labels ─────────────────────────────────────────────────────────────
 
 type StatLevel = string;
@@ -56,6 +58,36 @@ export function humanizeEntityCondition(health: number, maxHealth: number): stri
 
 function prettifyName(id: string): string {
   return id.replace(/_/g, " ");
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ─── Prominence helpers ───────────────────────────────────────────────────────
+
+function mostProminentPhysical(stats: { health: number; maxHealth: number; hunger: number; maxHunger: number; energy: number; maxEnergy: number }): string {
+  const healthDev = stats.maxHealth > 0 ? 1 - stats.health / stats.maxHealth : 0;
+  const hungerDev  = stats.maxHunger > 0 ? 1 - stats.hunger / stats.maxHunger : 0;
+  const energyDev  = stats.maxEnergy > 0 ? 1 - stats.energy / stats.maxEnergy : 0;
+  if (healthDev >= hungerDev && healthDev >= energyDev) return humanizeHealth(stats.health, stats.maxHealth);
+  if (hungerDev >= energyDev) return humanizeHunger(stats.hunger, stats.maxHunger);
+  return humanizeEnergy(stats.energy, stats.maxEnergy);
+}
+
+function mostProminentEmotion(emotions: Record<string, number> | undefined): string | null {
+  if (!emotions) return null;
+  let maxDev = 0;
+  let label: string | null = null;
+  for (const pair of EMOTION_PAIRS) {
+    const val = emotions[pair.key] ?? 50;
+    const dev = Math.abs(val - 50);
+    if (dev > maxDev) {
+      maxDev = dev;
+      label = val < 50 ? pair.low : pair.high;
+    }
+  }
+  return label;
 }
 
 // ─── Entity description (tile ID → natural language) ─────────────────────────
@@ -119,6 +151,7 @@ interface RawSurroundings {
   action: string;
   pathLength: number;
   nearby: RawNearbyCell[];
+  sensoryEvents?: { text: string; createdAt: number }[];
 }
 
 interface TileInfo {
@@ -213,11 +246,11 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
   return {
     character: raw.character,
     position: raw.position,
-    feeling: {
-      health: humanizeHealth(raw.stats.health, raw.stats.maxHealth),
-      hunger: humanizeHunger(raw.stats.hunger, raw.stats.maxHunger),
-      energy: humanizeEnergy(raw.stats.energy, raw.stats.maxEnergy),
-    },
+    feeling: (() => {
+      const physical = mostProminentPhysical(raw.stats);
+      const emotion = mostProminentEmotion((raw.stats as { emotions?: Record<string, number> }).emotions);
+      return emotion ? `${capitalize(emotion)} and ${physical}` : capitalize(physical);
+    })(),
     standing: standingParts.join(", "),
     doing: describeAction(raw.action, raw.pathLength),
     carrying: describeInventory(raw.stats.inventory),
@@ -225,6 +258,9 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
     surroundings,
     ...(nearby.length > 0 ? { nearby } : {}),
     ...(farAway.length > 0 ? { far_away: farAway } : {}),
+    ...(raw.sensoryEvents && raw.sensoryEvents.length > 0
+      ? { sensations: raw.sensoryEvents.map((e) => e.text) }
+      : {}),
   };
 }
 

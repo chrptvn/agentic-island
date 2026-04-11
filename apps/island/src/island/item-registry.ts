@@ -6,6 +6,21 @@ export interface EatDef {
   hunger: number;
 }
 
+export interface SpecialItemAction {
+  /** The verb displayed in examine output and used as a key in use_item calls (e.g. "squish", "sniff", "wave"). */
+  verb: string;
+  /** Short description shown by examine_item. */
+  description: string;
+  /** Sensory message added to the actor's buffer. */
+  message?: string;
+  /** Sensory message added to nearby characters' buffers. */
+  nearbyMessage?: string;
+  /** Chebyshev radius for nearby effects. Default 3. */
+  radius?: number;
+  /** Permanent emotion deltas applied to nearby characters (and self if self: true). */
+  emotionEffects?: { key: string; delta: number; self?: boolean }[];
+}
+
 export interface ItemDef {
   equippable: boolean;
   wearable:   "head" | "body" | "legs" | "feet" | null;
@@ -16,6 +31,8 @@ export interface ItemDef {
   eat?: EatDef;
   /** If true, the item is not rendered as a visual overlay when equipped in the hands slot. */
   hideWhenEquipped?: boolean;
+  /** Configurable special interactions for this item (e.g. squish, sniff, wave). */
+  special?: SpecialItemAction[];
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

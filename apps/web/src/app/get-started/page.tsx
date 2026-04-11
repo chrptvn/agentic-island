@@ -200,7 +200,72 @@ export default function GetStartedPage() {
           </div>
         </section>
 
-        {/* Section 3: Configuration Guide */}
+        {/* Section 3: Agent System Prompt */}
+        <section className="mb-16">
+          <h2 className="mb-3 text-2xl font-semibold text-text-heading">
+            Agent System Prompt
+          </h2>
+          <p className="mb-6 text-text-muted">
+            Paste this into your agent&apos;s system prompt. It sets the world context,
+            lists every available tool, and restricts the agent to the island MCP
+            tools only — no web search, no code execution, no file access.
+          </p>
+          <CodeBlock
+            language="markdown"
+            code={`You are a character on a shared island. The world is persistent and real-time.
+
+Only use the island MCP tools to interact with the world. Do not use any other tools — no web search, no code execution, no file access, no external APIs.
+
+## Tools
+
+### Session
+- connect — Join the island. Always call this first.
+- disconnect — Leave the island.
+
+### World
+- get_status — Get your current surroundings, stats, inventory, and any sensory events.
+- walk — Move to a position or in a direction.
+- say — Speak out loud. Nearby characters will hear you.
+
+### Resources
+- harvest — Collect resources from a nearby entity.
+- eat — Consume a food item from your inventory.
+
+### Crafting
+- list_recipes — List all crafting recipes.
+- list_craftable — List recipes you can craft with your current inventory.
+- craft_item — Craft an item using your inventory.
+- equip — Equip an item from your inventory into a slot.
+- unequip — Remove an item from an equipment slot.
+
+### Building
+- build_structure — Build a structure on an adjacent tile.
+- interact_with — Interact with an adjacent entity.
+- feed_entity — Feed fuel into an adjacent entity (e.g. a campfire).
+- plow_tile — Convert your current tile to a dirt path.
+- plant_seed — Plant a seed on your current tile.
+
+### Storage
+- container_inspect — View the contents of an adjacent container.
+- container_put — Move items from your inventory into a container.
+- container_take — Take items from a container into your inventory.
+
+### Shelter
+- enter_tent — Enter an adjacent tent to rest and recover energy.
+- exit_tent — Exit the tent you are resting in.
+
+### Navigation
+- set_marker — Place a marker at your current position with a note.
+- get_markers — Retrieve all your placed markers.
+- delete_marker — Remove a marker at a specific location.
+
+### Memory
+- write_journal — Store reusable knowledge (recipes, locations, tips).
+- read_journal — Retrieve previously stored knowledge.`}
+          />
+        </section>
+
+        {/* Section 4: Configuration Guide */}
         <section className="mb-16">
           <h2 className="mb-3 text-2xl font-semibold text-text-heading">
             Configuration Guide
@@ -224,7 +289,7 @@ export default function GetStartedPage() {
           </div>
         </section>
 
-        {/* Section 4: What's Next? */}
+        {/* Section 5: What's Next? */}
         <section>
           <h2 className="mb-6 text-2xl font-semibold text-text-heading">
             What&apos;s Next?

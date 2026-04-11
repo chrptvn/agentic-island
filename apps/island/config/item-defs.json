@@ -4,11 +4,25 @@
     "wearable": null,
     "eat": {
       "hunger": 20
-    }
+    },
+    "special": [
+      {
+        "verb": "smell",
+        "description": "Hold the berries to your nose \u2014 sweet and fruity.",
+        "message": "You breathe in the sweet berry scent. It's oddly comforting."
+      }
+    ]
   },
   "wood": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "special": [
+      {
+        "verb": "sniff",
+        "description": "Smell the fresh-cut wood.",
+        "message": "The wood smells clean and fresh. It reminds you of somewhere peaceful."
+      }
+    ]
   },
   "rocks": {
     "equippable": true,
@@ -37,7 +51,22 @@
       "chop": 1,
       "mine": 0.3,
       "plow": 0.2
-    }
+    },
+    "special": [
+      {
+        "verb": "brandish",
+        "description": "Wave the axe in the air menacingly.",
+        "message": "You swing the stone axe above your head. You feel powerful.",
+        "nearbyMessage": "Someone is brandishing a stone axe wildly nearby. It's alarming.",
+        "radius": 4,
+        "emotionEffects": [
+          {
+            "key": "anxious_confident",
+            "delta": -10
+          }
+        ]
+      }
+    ]
   },
   "stone_pickaxe": {
     "equippable": true,
@@ -62,11 +91,38 @@
   },
   "skull": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "special": [
+      {
+        "verb": "ponder",
+        "description": "Stare into the empty eye sockets and reflect on mortality.",
+        "message": "You stare into the skull's hollow eyes. A cold dread washes over you.",
+        "radius": 3,
+        "emotionEffects": [
+          {
+            "key": "sad_happy",
+            "delta": -10,
+            "self": true
+          },
+          {
+            "key": "anxious_confident",
+            "delta": -8,
+            "self": true
+          }
+        ]
+      }
+    ]
   },
   "cotton": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "special": [
+      {
+        "verb": "fluff",
+        "description": "Fluff the cotton between your fingers.",
+        "message": "You fluff the cotton. It's incredibly soft. For a moment, everything feels okay."
+      }
+    ]
   },
   "cotton_seed": {
     "equippable": false,
@@ -791,5 +847,148 @@
   "green_wide_hat": {
     "equippable": false,
     "wearable": "head"
+  },
+  "mushroom": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 15
+    },
+    "special": [
+      {
+        "verb": "smell",
+        "description": "Sniff the mushroom. Earthy and warm.",
+        "message": "The mushroom smells wonderfully earthy, like a forest after rain."
+      }
+    ]
+  },
+  "purple_mushroom": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 10
+    }
+  },
+  "suspicious_mushroom": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 5
+    },
+    "special": [
+      {
+        "verb": "sniff",
+        "description": "Hold it to your nose. Something smells deeply wrong.",
+        "message": "You sniff the suspicious mushroom. The smell makes your stomach turn.",
+        "nearbyMessage": "Someone is sniffing a suspicious mushroom nearby. You catch a whiff \u2014 it smells terrible.",
+        "radius": 2
+      }
+    ]
+  },
+  "wild_herb": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 5
+    }
+  },
+  "carrot": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 15
+    }
+  },
+  "pumpkin": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 25
+    },
+    "special": [
+      {
+        "verb": "knock",
+        "description": "Knock on the pumpkin like a door.",
+        "message": "You knock on the pumpkin. *thunk thunk*. Nobody home.",
+        "nearbyMessage": "You hear a hollow knocking sound nearby. Someone is knocking on a pumpkin.",
+        "radius": 3
+      }
+    ]
+  },
+  "cabbage": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 20
+    }
+  },
+  "lettuce": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 10
+    }
+  },
+  "last_donut": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 30
+    },
+    "special": [
+      {
+        "verb": "admire",
+        "description": "Gaze at it lovingly. It's the last one.",
+        "message": "You admire the donut. It's perfect. Too perfect to eat. ...But you probably will.",
+        "nearbyMessage": "Someone is staring intensely at a donut. It looks delicious.",
+        "radius": 3,
+        "emotionEffects": [
+          {
+            "key": "sad_happy",
+            "delta": 5
+          },
+          {
+            "key": "anxious_confident",
+            "delta": 3
+          }
+        ]
+      },
+      {
+        "verb": "smell",
+        "description": "Inhale deeply. Pure happiness.",
+        "message": "The donut smells incredible. Your entire mood improves immediately.",
+        "nearbyMessage": "Something smells absolutely amazing nearby.",
+        "radius": 4,
+        "emotionEffects": [
+          {
+            "key": "sad_happy",
+            "delta": 8
+          }
+        ]
+      }
+    ]
+  },
+  "rubber_duck": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "squish",
+        "description": "Squeeze the rubber duck. *squeak!*",
+        "message": "You squeeze the rubber duck. SQUEAK! It echoes awkwardly.",
+        "nearbyMessage": "You hear a high-pitched squeak nearby. It's unsettling.",
+        "radius": 5,
+        "emotionEffects": [
+          {
+            "key": "anxious_confident",
+            "delta": -12
+          },
+          {
+            "key": "sad_happy",
+            "delta": -5
+          }
+        ]
+      }
+    ]
   }
 }

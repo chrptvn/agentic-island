@@ -6,6 +6,7 @@
   "scripts": {
     "start": "tsx index.ts",
     "dev": "node --env-file-if-exists=.env --import tsx/esm --watch index.ts",
+    "prebuild": "python3 ../../scripts/build-tileset.py",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

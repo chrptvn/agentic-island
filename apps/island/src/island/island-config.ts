@@ -75,6 +75,10 @@ export interface IslandConfig {
   equipmentSlots:       string[];
   /** Procedural map generation tuning. */
   mapGen:               MapGenConfig;
+  /** How long (ms) before an unread sensory event expires from a character's buffer. */
+  sensoryBufferTimeoutMs:    number;
+  /** Cooldown (ms) before the same entity can fire another proximity event for the same character. */
+  sensoryProximityCooldownMs: number;
 }
 
 const DEFAULT_ISLAND_CONFIG: IslandConfig = {
@@ -87,6 +91,8 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
   energyCosts: { moveStep: 1, moveStepOnPath: 0.5, plow: 8, harvest: 5, build: 10, interact: 5, craft: 3, eat: 0 },
   characterStats: { maxHealth: 100, maxHunger: 100, maxEnergy: 100 },
   equipmentSlots: ["hands", "head", "body", "legs", "feet"],
+  sensoryBufferTimeoutMs:     10_000,
+  sensoryProximityCooldownMs: 30_000,
   mapGen: {
     fillProbability:   0.55,
     smoothingPasses:   5,

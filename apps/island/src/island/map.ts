@@ -3,11 +3,11 @@ export type TileType = "grass" | "water" | "sand";
 export type MapSize = "very_small" | "small" | "medium" | "large" | "very_large";
 
 export const MAP_SIZE_PRESETS: Record<MapSize, { width: number; height: number }> = {
-  very_small: { width: 30,  height: 20 },
-  small:      { width: 45,  height: 30 },
-  medium:     { width: 60,  height: 40 },
-  large:      { width: 80,  height: 54 },
-  very_large: { width: 120, height: 80 },
+  very_small: { width: 120, height: 80  },
+  small:      { width: 160, height: 110 },
+  medium:     { width: 210, height: 140 },
+  large:      { width: 280, height: 190 },
+  very_large: { width: 400, height: 270 },
 };
 
 export interface MapOptions {

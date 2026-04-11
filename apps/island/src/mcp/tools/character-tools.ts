@@ -3,8 +3,8 @@ import { randomUUID } from "crypto";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
 import { Island } from "../../island/island.js";
-import { allItemDefs } from "../../island/item-registry.js";
-import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, INTERACT_DEFS, GROWTH_DEFS } from "../../island/entity-registry.js";
+import { allItemDefs, getItemDef } from "../../island/item-registry.js";
+import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, REPAIR_DEFS, INTERACT_DEFS, GROWTH_DEFS } from "../../island/entity-registry.js";
 import { RECIPES } from "../../island/craft-registry.js";
 // Character sprites are now catalog-driven; no per-field enums needed at connect time
 // Character appearance is now randomized by the catalog system
@@ -394,6 +394,97 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         buildable[id] = { costs: def.costs };
       }
       return { content: [{ type: "text", text: JSON.stringify({ crafting: RECIPES, building: buildable }, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "examine_item",
+    "Returns every action that can be performed with a specific item — eat, equip, craft, plant, feed entities, build structures, and any special interactions. Does not require a character.",
+    {
+      item: z.string().min(1).describe("Item name to examine (e.g. 'berries', 'stone_axe', 'rubber_duck')"),
+    },
+    async ({ item }) => {
+      // ── Build fuel reverse-index once ──────────────────────────────────────
+      const fuelToEntities: Record<string, string[]> = {};
+      for (const [entityId, def] of Object.entries(DECAY_DEFS)) {
+        (fuelToEntities[def.fuelItem] ??= []).push(entityId);
+      }
+      for (const [entityId, def] of Object.entries(REPAIR_DEFS)) {
+        if (!fuelToEntities[def.fuelItem]?.includes(entityId))
+          (fuelToEntities[def.fuelItem] ??= []).push(entityId);
+      }
+
+      const def = getItemDef(item);
+      const known = allItemDefs().has(item);
+      const actions: object[] = [];
+
+      // eat
+      if (def.eat) {
+        actions.push({ action: "eat", item, restores: { hunger: def.eat.hunger } });
+      }
+      // equip (hands)
+      if (def.equippable) {
+        const caps = def.capabilities ? Object.keys(def.capabilities) : [];
+        actions.push({ action: "equip", item, slot: "hands", ...(caps.length ? { capabilities: caps } : {}) });
+      }
+      // equip (wearable slot)
+      if (def.wearable) {
+        actions.push({ action: "equip", item, slot: def.wearable });
+      }
+      // craft_item — recipes using this item as an ingredient
+      for (const [recipe, r] of Object.entries(RECIPES)) {
+        if (item in r.ingredients) {
+          actions.push({ action: "craft_item", recipe, produces: r.output, needs: r.ingredients });
+        }
+      }
+      // plant_seed
+      const PLANTABLE = new Set(["acorns", "berries", "cotton_seed", "flower_blue_seed", "flower_red_seed", "flower_purple_seed", "flower_white_seed"]);
+      if (PLANTABLE.has(item)) {
+        actions.push({ action: "plant_seed", item });
+      }
+      // feed_entity
+      if (fuelToEntities[item]) {
+        actions.push({ action: "feed_entity", entities: fuelToEntities[item] });
+      }
+      // build_structure — structures that require this item in their costs
+      const buildable: string[] = [];
+      for (const [entityId, buildDef] of Object.entries(BUILD_DEFS)) {
+        if (item in buildDef.costs) buildable.push(entityId);
+      }
+      if (buildable.length) {
+        actions.push({ action: "build_structure", entities: buildable });
+      }
+      // special actions
+      for (const special of def.special ?? []) {
+        actions.push({ action: "use_item", verb: special.verb, description: special.description });
+      }
+      // fallback — always something to do
+      if (actions.length === 0) {
+        actions.push({ action: "hold", description: "You hold it in your hands. Maybe it has sentimental value." });
+      }
+
+      return { content: [{ type: "text", text: JSON.stringify({ item, known, actions }, null, 2) }] };
+    }
+  );
+
+  server.tool(
+    "use_item",
+    "Perform a special interaction with an item in your inventory (e.g. squish a rubber duck, sniff a suspicious mushroom). Use examine_item to discover available verbs.",
+    {
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
+      item: z.string().min(1).describe("Item name from your inventory (e.g. 'rubber_duck')"),
+      verb: z.string().min(1).describe("The action verb to perform (e.g. 'squish', 'sniff', 'ponder')"),
+    },
+    async ({ session_token, item, verb }) => {
+      const check = requireSession(session, session_token);
+      if (typeof check !== "string") return check;
+      const character_id = check;
+      try {
+        Island.getInstance().useItem(character_id, item, verb);
+        return { content: [{ type: "text", text: JSON.stringify({ done: true, verb, item }, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
     }
   );
 

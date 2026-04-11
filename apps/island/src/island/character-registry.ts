@@ -1,5 +1,6 @@
 import { getIslandConfig } from "./island-config.js";
 import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
+import { EMOTION_PAIRS } from "@agentic-island/shared";
 
 export interface Point { x: number; y: number }
 
@@ -26,11 +27,18 @@ export interface CharacterStats {
   inventory: unknown[];
   equipment: Equipment;
   goal:      string;
+  /** Bipolar emotion stats keyed by EmotionPair.key, each 0–100. */
+  emotions:  Record<string, number>;
 }
 
 export interface CharacterSpeech {
   text:      string;
   expiresAt: number; // Unix ms timestamp
+}
+
+export interface SensoryEvent {
+  text:      string;
+  createdAt: number; // Unix ms timestamp
 }
 
 export interface CharacterInstance {
@@ -46,6 +54,10 @@ export interface CharacterInstance {
   speech?: CharacterSpeech;
   /** "x,y" key of the tent base position when the character is inside a tent. */
   shelter?: string;
+  /** Pending sensory events waiting to be read by the agent. Not persisted. */
+  sensoryEvents: SensoryEvent[];
+  /** Maps "x,y" entity key → last-fired timestamp for proximity cooldown. Not persisted. */
+  sensoryProximityCooldowns: Map<string, number>;
 }
 
 export function getDefaultCharacterStats(): CharacterStats {
@@ -60,6 +72,9 @@ export function getDefaultCharacterStats(): CharacterStats {
     inventory: [],
     equipment: defaultEquipment(),
     goal:      "",
+    emotions:  Object.fromEntries(
+      EMOTION_PAIRS.map(({ key }) => [key, Math.floor(Math.random() * 26) + 50])
+    ),
   };
 }
 
@@ -74,4 +89,7 @@ export const DEFAULT_CHARACTER_STATS: CharacterStats = {
   inventory: [],
   equipment: { hands: null, head: null, body: null, legs: null, feet: null },
   goal:      "",
+  emotions:  Object.fromEntries(
+    EMOTION_PAIRS.map(({ key }) => [key, Math.floor(Math.random() * 26) + 50])
+  ),
 };

@@ -2,6 +2,7 @@
 
 import { createPortal } from 'react-dom';
 import type { CharacterState, EntityInstance } from '@agentic-island/shared';
+import { EMOTION_PAIRS } from '@agentic-island/shared';
 
 const ENTITY_LABELS: Record<string, string> = {
   young_tree: 'Oak Tree',
@@ -73,35 +74,71 @@ function prettifyName(name: string): string {
   return name.replace(/_/g, ' ');
 }
 
+// ── Feelings (mirrors humanize.ts in the island app) ─────────────────────────
+
+function ratioLabel(value: number, max: number, scale: [string, string, string, string, string, string]): string {
+  const pct = max > 0 ? value / max : 0;
+  if (pct <= 0)    return scale[0];
+  if (pct <= 0.15) return scale[1];
+  if (pct <= 0.35) return scale[2];
+  if (pct <= 0.6)  return scale[3];
+  if (pct <= 0.85) return scale[4];
+  return scale[5];
+}
+
+function healthFeeling(v: number, max: number) {
+  return ratioLabel(v, max, ['dead', 'dying', 'badly wounded', 'hurt', 'healthy', 'in perfect health']);
+}
+function hungerFeeling(v: number, max: number) {
+  return ratioLabel(v, max, ['starving', 'very hungry', 'hungry', 'peckish', 'satisfied', 'full']);
+}
+function energyFeeling(v: number, max: number) {
+  return ratioLabel(v, max, ['exhausted', 'very tired', 'tired', 'rested', 'energetic', 'full of energy']);
+}
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function mostProminentPhysical(stats: CharacterState['stats']): string {
+  const healthDev = stats.maxHealth > 0 ? 1 - stats.health / stats.maxHealth : 0;
+  const hungerDev  = stats.maxHunger > 0 ? 1 - stats.hunger / stats.maxHunger : 0;
+  const energyDev  = stats.maxEnergy > 0 ? 1 - stats.energy / stats.maxEnergy : 0;
+  if (healthDev >= hungerDev && healthDev >= energyDev) return healthFeeling(stats.health, stats.maxHealth);
+  if (hungerDev >= energyDev) return hungerFeeling(stats.hunger, stats.maxHunger);
+  return energyFeeling(stats.energy, stats.maxEnergy);
+}
+
+function mostProminentEmotion(emotions: Record<string, number> | undefined): string | null {
+  if (!emotions) return null;
+  let maxDev = 0;
+  let label: string | null = null;
+  for (const pair of EMOTION_PAIRS) {
+    const val = emotions[pair.key] ?? 50;
+    const dev = Math.abs(val - 50);
+    if (dev > maxDev) {
+      maxDev = dev;
+      label = val < 50 ? pair.low : pair.high;
+    }
+  }
+  return label;
+}
+
 function CharacterBox({ character }: { character: CharacterState }) {
   const { stats, inventory, equipment } = character;
   const equippedSlots = Object.entries(equipment).filter(
     ([, v]) => v !== null && v !== undefined,
   );
+  const physical = mostProminentPhysical(stats);
+  const emotion = mostProminentEmotion(stats.emotions);
+  const feeling = emotion ? `${capitalize(emotion)} and ${physical}` : capitalize(physical);
   return (
     <div className="space-y-1">
       <p className="font-bold text-accent-cyan">{character.id}</p>
       {character.goal && (
         <p className="text-text-muted">&quot;{character.goal}&quot;</p>
       )}
-      <StatBar
-        label="❤️ HP"
-        value={stats.health}
-        max={stats.maxHealth}
-        color="bg-accent-red"
-      />
-      <StatBar
-        label="🍖 Food"
-        value={stats.hunger}
-        max={stats.maxHunger}
-        color="bg-accent-gold"
-      />
-      <StatBar
-        label="⚡ NRG"
-        value={stats.energy}
-        max={stats.maxEnergy}
-        color="bg-accent-emerald"
-      />
+      <p className="text-text-muted italic">{feeling}</p>
       {inventory.length > 0 && (
         <>
           <hr className="my-1 border-border-muted" />
