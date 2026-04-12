@@ -1,3 +1,4 @@
+import type { TileRegistry } from "@agentic-island/shared";
 import { startHttpServer } from "./src/server/http.js";
 import { initTileRegistry, getAtlasPng } from "./src/island/tile-registry.js";
 import { Island } from "./src/island/island.js";
@@ -117,10 +118,15 @@ if (!isPrimary) {
     data: thumbnailData,
   };
 
-  // Wire state streaming (delta-based)
+  // Wire state streaming (delta-based with tile ID compression)
   const streamer = new StateStreamer({ minIntervalMs: 200, charIntervalMs: 100 });
-  streamer.onStateReady((state) => {
-    connector.sendStateUpdate(state);
+  streamer.setTileRegistry(island.getTileRegistry() as TileRegistry);
+
+  streamer.onMapReady(({ map, tileRegistry, tileLookup }) => {
+    connector.sendMapInit(map, tileRegistry, tileLookup);
+  });
+  streamer.onStateReady(({ entities, characters, overrides }) => {
+    connector.sendStateUpdate(entities, characters, overrides);
   });
   streamer.onCharacterReady((characters) => {
     connector.sendCharacterUpdate(characters);

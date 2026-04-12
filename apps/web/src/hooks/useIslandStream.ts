@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { IslandState, HubToViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
-import { computeStateHash } from '@agentic-island/shared';
+import type { IslandState, MapData, TileRegistry, HubToViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
+import { computeStateHash, decodeMap, decodeEntities, decodeCharacters, decodeOverrides, decodeDelta } from '@agentic-island/shared';
 
 export interface IslandStream {
   state: IslandState | null;
@@ -71,6 +71,10 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
 
   // Track the last known hash so we can detect mismatches
   const lastHashRef = useRef<string | null>(null);
+  // Static map data — set once on map_init, persists across dynamic updates
+  const mapRef = useRef<MapData | null>(null);
+  const tileRegistryRef = useRef<TileRegistry | null>(null);
+  const tileLookupRef = useRef<string[] | null>(null);
 
   useEffect(() => {
     if (!islandId) return;
@@ -107,53 +111,79 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
         try {
           const msg: HubToViewerMessage = JSON.parse(event.data as string);
           switch (msg.type) {
-            case 'island_state':
-              setState(msg.state);
+            case 'map_init': {
+              const lookup = msg.tileLookup;
+              tileLookupRef.current = lookup;
+              tileRegistryRef.current = msg.tileRegistry;
+              mapRef.current = decodeMap(msg.map, lookup);
               setSpriteBaseUrl(msg.spriteBaseUrl);
               setSpriteVersion(msg.spriteVersion ?? null);
               setIslandName(msg.islandName);
-              // Seed hash from the full state
-              lastHashRef.current = computeStateHash(
-                msg.state.characters,
-                msg.state.entities,
-                msg.state.overrides.length,
-              );
               break;
-            case 'state_delta':
+            }
+            case 'dynamic_state': {
+              const lookup = tileLookupRef.current;
+              const map = mapRef.current;
+              const tileRegistry = tileRegistryRef.current;
+              if (!lookup || !map || !tileRegistry) {
+                // Map init hasn't arrived yet — request resync
+                sendResync();
+                break;
+              }
+              const entities = decodeEntities(msg.entities, lookup);
+              const characters = decodeCharacters(msg.characters, lookup);
+              const overrides = decodeOverrides(msg.overrides, lookup);
+              const fullState: IslandState = { map, tileRegistry, entities, characters, overrides };
+              setState(fullState);
+              lastHashRef.current = computeStateHash(characters, entities, overrides.length);
+              break;
+            }
+            case 'state_delta': {
+              const lookup = tileLookupRef.current;
+              if (!lookup) {
+                sendResync();
+                break;
+              }
+              const delta = decodeDelta(msg.delta, lookup);
               setState((prev) => {
                 if (!prev) {
-                  // No base state yet — request full snapshot
                   sendResync();
                   return prev;
                 }
-                const updated = applyDelta(prev, msg.delta);
-                // Verify hash
+                const updated = applyDelta(prev, delta);
                 const localHash = computeStateHash(
                   updated.characters,
                   updated.entities,
                   updated.overrides.length,
                 );
-                if (localHash !== msg.delta.stateHash) {
-                  // Hash mismatch — request resync
+                if (localHash !== delta.stateHash) {
                   sendResync();
-                  return prev; // keep old state until resync arrives
+                  return prev;
                 }
                 lastHashRef.current = localHash;
                 return updated;
               });
               break;
-            case 'character_update':
+            }
+            case 'character_update': {
+              const lookup = tileLookupRef.current;
+              if (!lookup) break;
+              const characters = decodeCharacters(msg.characters, lookup);
               setState((prev) => {
                 if (!prev) return prev;
-                return { ...prev, characters: msg.characters };
+                return { ...prev, characters };
               });
               break;
+            }
             case 'sprite_version':
               setSpriteVersion(msg.spriteVersion ?? null);
               break;
             case 'island_offline':
               setError('Island went offline');
               setState(null);
+              mapRef.current = null;
+              tileLookupRef.current = null;
+              tileRegistryRef.current = null;
               lastHashRef.current = null;
               break;
             case 'error':

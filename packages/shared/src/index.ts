@@ -7,3 +7,4 @@ export * from "./protocol/island-hub.js";
 export * from "./protocol/hub-viewer.js";
 export * from "./delta.js";
 export * from "./constants.js";
+export * from "./codec.js";

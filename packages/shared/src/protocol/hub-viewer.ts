@@ -1,6 +1,13 @@
-import type { IslandState } from "../types/island.js";
+import type { IslandState, TileRegistry } from "../types/island.js";
 import type { IslandMeta } from "../types/hub.js";
 import type { StateDelta } from "../delta.js";
+import type {
+  WireMapData,
+  WireEntityInstance,
+  WireCharacterState,
+  WireOverride,
+  WireStateDelta,
+} from "../codec.js";
 
 // Viewer → Hub messages
 
@@ -24,6 +31,31 @@ export interface ViewerUnsubscribeLobbyMessage {
 
 // Hub → Viewer messages
 
+/** Static map data — sent once per subscription, cached at hub. */
+export interface ViewerMapInitMessage {
+  type: "map_init";
+  islandId: string;
+  islandName: string;
+  map: WireMapData;
+  tileRegistry: TileRegistry;
+  tileLookup: string[];
+  spriteBaseUrl: string;
+  spriteVersion?: string;
+}
+
+/** Dynamic state (entities, characters, overrides) — no map. */
+export interface ViewerDynamicStateMessage {
+  type: "dynamic_state";
+  islandId: string;
+  entities: WireEntityInstance[];
+  characters: WireCharacterState[];
+  overrides: WireOverride[];
+}
+
+/**
+ * @deprecated Legacy full-state message. Kept for backward compatibility.
+ * New code uses map_init + dynamic_state instead.
+ */
 export interface ViewerIslandStateMessage {
   type: "island_state";
   islandId: string;
@@ -62,13 +94,13 @@ export interface ViewerIslandRemovedMessage {
 export interface ViewerCharacterUpdateMessage {
   type: "character_update";
   islandId: string;
-  characters: import("../types/character.js").CharacterState[];
+  characters: WireCharacterState[];
 }
 
 export interface ViewerStateDeltaMessage {
   type: "state_delta";
   islandId: string;
-  delta: StateDelta;
+  delta: WireStateDelta;
 }
 
 export interface ViewerErrorMessage {
@@ -92,6 +124,8 @@ export interface ViewerResyncRequestMessage {
 }
 
 export type HubToViewerMessage =
+  | ViewerMapInitMessage
+  | ViewerDynamicStateMessage
   | ViewerIslandStateMessage
   | ViewerSpriteVersionMessage
   | ViewerIslandOfflineMessage

@@ -22,7 +22,15 @@ const connectedIslands = new Map<string, ConnectedIsland>();
 // islandId → set of viewer WebSockets (shared with viewer-handler)
 export const islandViewers = new Map<string, Set<WebSocket>>();
 
-// Cache the last state payload per island so new viewers get an immediate snapshot
+// Cache the last map init and dynamic state per island separately
+// so late-joining viewers get an immediate snapshot
+export const lastMapInit = new Map<string, string>();
+export const lastDynamicState = new Map<string, string>();
+
+/**
+ * @deprecated Kept for backward compatibility during rollout.
+ * New code uses lastMapInit + lastDynamicState.
+ */
 export const lastIslandState = new Map<string, string>();
 
 // Cache the sprite content hash per island for URL cache busting
@@ -174,11 +182,35 @@ export function handleIslandConnection(ws: WebSocket): void {
           break;
         }
 
+        case "map_init": {
+          if (!core) return;
+          const spriteHash = spriteHashes.get(core.islandId);
+          const baseUrl = `/sprites/${core.islandId}/`;
+          const mapRelay = JSON.stringify({
+            type: "map_init",
+            islandId: core.islandId,
+            islandName: core.islandName,
+            map: msg.map,
+            tileRegistry: msg.tileRegistry,
+            tileLookup: msg.tileLookup,
+            spriteBaseUrl: baseUrl,
+            spriteVersion: spriteHash ?? undefined,
+          });
+          lastMapInit.set(core.islandId, mapRelay);
+          const mapViewers = islandViewers.get(core.islandId);
+          if (mapViewers) {
+            for (const viewer of mapViewers) {
+              if (viewer.readyState === 1) viewer.send(mapRelay);
+            }
+          }
+          break;
+        }
+
         case "state_update": {
           if (!core) return;
 
-          // Only write player_count when it actually changed
-          const agentCount = msg.state.characters?.length ?? 0;
+          // Update player count from characters
+          const agentCount = msg.characters?.length ?? 0;
           const prevCount = lastPlayerCounts.get(core.islandId);
           if (prevCount !== agentCount) {
             db.prepare(
@@ -190,22 +222,18 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Notify lobby viewers of metadata changes (throttled)
           broadcastIslandUpdate(core.islandId);
 
-          const spriteHash = spriteHashes.get(core.islandId);
-          const baseUrl = `/sprites/${core.islandId}/`;
-          const relay = JSON.stringify({
-            type: "island_state",
+          const dynamicRelay = JSON.stringify({
+            type: "dynamic_state",
             islandId: core.islandId,
-            islandName: core.islandName,
-            state: msg.state,
-            spriteBaseUrl: baseUrl,
-            spriteVersion: spriteHash ?? undefined,
+            entities: msg.entities,
+            characters: msg.characters,
+            overrides: msg.overrides,
           });
-          // Cache so late-joining viewers get an immediate snapshot
-          lastIslandState.set(core.islandId, relay);
+          lastDynamicState.set(core.islandId, dynamicRelay);
           const viewers = islandViewers.get(core.islandId);
           if (viewers) {
             for (const viewer of viewers) {
-              if (viewer.readyState === 1) viewer.send(relay);
+              if (viewer.readyState === 1) viewer.send(dynamicRelay);
             }
           }
           break;
@@ -299,12 +327,12 @@ export function handleIslandConnection(ws: WebSocket): void {
             const hash = await saveSprites(core.islandId, msg.sprites);
             spriteHashes.set(core.islandId, hash);
 
-            // Update cached state so late-joining viewers get the correct hash
-            const cached = lastIslandState.get(core.islandId);
+            // Update cached map init so late-joining viewers get the correct sprite hash
+            const cached = lastMapInit.get(core.islandId);
             if (cached) {
               const parsed = JSON.parse(cached);
               parsed.spriteVersion = hash;
-              lastIslandState.set(core.islandId, JSON.stringify(parsed));
+              lastMapInit.set(core.islandId, JSON.stringify(parsed));
             }
 
             // Notify viewers immediately so they reload the changed sprite
@@ -334,6 +362,8 @@ export function handleIslandConnection(ws: WebSocket): void {
         "UPDATE islands SET status = 'offline', player_count = 0, updated_at = datetime('now') WHERE id = ?",
       ).run(core.islandId);
       connectedIslands.delete(core.islandId);
+      lastMapInit.delete(core.islandId);
+      lastDynamicState.delete(core.islandId);
       lastIslandState.delete(core.islandId);
       spriteHashes.delete(core.islandId);
       lastPlayerCounts.delete(core.islandId);

@@ -1,4 +1,22 @@
-import type { IslandState, CharacterState, StateDelta, TileOverride } from "@agentic-island/shared";
+import type {
+  TileRegistry,
+  CharacterState,
+  TileOverride,
+  WireMapData,
+  WireEntityInstance,
+  WireCharacterState,
+  WireOverride,
+  WireStateDelta,
+} from "@agentic-island/shared";
+import {
+  buildTileLookup,
+  buildEncoderMap,
+  encodeMap,
+  encodeEntities,
+  encodeCharacters,
+  encodeOverrides,
+  encodeDelta,
+} from "@agentic-island/shared";
 import { DirtyTracker } from "../island/dirty-tracker.js";
 
 export interface StateStreamerOptions {
@@ -8,6 +26,20 @@ export interface StateStreamerOptions {
   charIntervalMs?: number;
 }
 
+/** Payload for the static map init message. */
+export interface MapInitPayload {
+  map: WireMapData;
+  tileRegistry: TileRegistry;
+  tileLookup: string[];
+}
+
+/** Payload for the dynamic state update message (no map). */
+export interface DynamicStatePayload {
+  entities: WireEntityInstance[];
+  characters: WireCharacterState[];
+  overrides: WireOverride[];
+}
+
 const DEFAULT_MIN_INTERVAL_MS = 200;
 const DEFAULT_CHAR_INTERVAL_MS = 100;
 
@@ -15,10 +47,14 @@ export class StateStreamer {
   private lastSendTime = 0;
   private lastCharSendTime = 0;
   private options: Required<StateStreamerOptions>;
-  private snapshotFn: ((state: IslandState) => void) | null = null;
-  private charSendFn: ((characters: CharacterState[]) => void) | null = null;
-  private deltaFn: ((delta: StateDelta) => void) | null = null;
+  private mapFn: ((payload: MapInitPayload) => void) | null = null;
+  private stateFn: ((payload: DynamicStatePayload) => void) | null = null;
+  private charSendFn: ((characters: WireCharacterState[]) => void) | null = null;
+  private deltaFn: ((delta: WireStateDelta) => void) | null = null;
   private tracker = new DirtyTracker();
+
+  private tileLookup: string[] = [];
+  private encoderMap: Map<string, number> = new Map();
 
   constructor(options?: StateStreamerOptions) {
     this.options = {
@@ -27,18 +63,29 @@ export class StateStreamer {
     };
   }
 
-  /** Register the callback for full state snapshots (initial connect / resync). */
-  onStateReady(fn: (state: IslandState) => void): void {
-    this.snapshotFn = fn;
+  /** Initialize the tile lookup from the registry. Must be called before streaming. */
+  setTileRegistry(registry: TileRegistry): void {
+    this.tileLookup = buildTileLookup(registry);
+    this.encoderMap = buildEncoderMap(this.tileLookup);
+  }
+
+  /** Register the callback for static map init (map + registry + lookup). */
+  onMapReady(fn: (payload: MapInitPayload) => void): void {
+    this.mapFn = fn;
+  }
+
+  /** Register the callback for dynamic state updates (entities + characters + overrides). */
+  onStateReady(fn: (payload: DynamicStatePayload) => void): void {
+    this.stateFn = fn;
   }
 
   /** Register the callback for lightweight character-only updates. */
-  onCharacterReady(fn: (characters: CharacterState[]) => void): void {
+  onCharacterReady(fn: (characters: WireCharacterState[]) => void): void {
     this.charSendFn = fn;
   }
 
   /** Register the callback for delta updates. */
-  onDeltaReady(fn: (delta: StateDelta) => void): void {
+  onDeltaReady(fn: (delta: WireStateDelta) => void): void {
     this.deltaFn = fn;
   }
 
@@ -53,7 +100,7 @@ export class StateStreamer {
     // Fast path: character-only updates at high frequency
     if (this.charSendFn && now - this.lastCharSendTime >= this.options.charIntervalMs) {
       this.lastCharSendTime = now;
-      this.charSendFn(world.getCharacters());
+      this.charSendFn(encodeCharacters(world.getCharacters(), this.encoderMap));
     }
 
     // Delta path at lower frequency
@@ -69,40 +116,48 @@ export class StateStreamer {
 
         const delta = this.tracker.computeDelta(characters, entities, overrides, overrideVersion);
         if (delta) {
-          this.deltaFn(delta);
+          this.deltaFn(encodeDelta(delta, this.encoderMap));
         }
         // If delta is null, nothing changed — skip sending
-      } else if (this.snapshotFn) {
-        // Fallback: no delta listener → send full snapshot (backward compat)
-        this.snapshotFn(this.buildSnapshot(world));
       }
     }
   }
 
   /**
    * Force a full state snapshot (for initial connection or resync).
-   * Also seeds the tracker so subsequent deltas are correct.
+   * Sends map_init + dynamic state. Also seeds the tracker.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sendFullSnapshot(world: any): void {
-    const snapshot = this.buildSnapshot(world);
-    const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
-    this.tracker.seed(snapshot.characters, snapshot.entities, snapshot.overrides, overrideVersion);
-    this.snapshotFn?.(snapshot);
-  }
+    const registry: TileRegistry = world.getTileRegistry();
 
-  /**
-   * Build a IslandState snapshot from a Island instance.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  buildSnapshot(island: any): IslandState {
-    return {
-      map: island.getMap(),
-      tileRegistry: island.getTileRegistry(),
-      entities: island.getEntities(),
-      characters: island.getCharacters(),
-      overrides: island.getOverrides(),
-    };
+    // Ensure lookup is initialized
+    if (this.tileLookup.length === 0) {
+      this.setTileRegistry(registry);
+    }
+
+    // Send map_init (static data)
+    this.mapFn?.({
+      map: encodeMap(world.getMap(), this.encoderMap),
+      tileRegistry: registry,
+      tileLookup: this.tileLookup,
+    });
+
+    // Build dynamic state
+    const characters: CharacterState[] = world.getCharacters();
+    const entities = world.getEntities();
+    const overrides: TileOverride[] = world.getOverrides();
+    const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
+
+    // Seed tracker for subsequent deltas
+    this.tracker.seed(characters, entities, overrides, overrideVersion);
+
+    // Send dynamic state
+    this.stateFn?.({
+      entities: encodeEntities(entities, this.encoderMap),
+      characters: encodeCharacters(characters, this.encoderMap),
+      overrides: encodeOverrides(overrides, this.encoderMap),
+    });
   }
 }
 

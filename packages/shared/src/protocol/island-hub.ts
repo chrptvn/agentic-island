@@ -1,8 +1,15 @@
-import type { IslandConfig, IslandState } from "../types/island.js";
+import type { IslandConfig, IslandState, TileRegistry } from "../types/island.js";
 import type { SpriteAsset } from "../types/hub.js";
 import type { CharacterAppearance } from "../types/character.js";
 import type { CharacterCatalog } from "../types/passport.js";
 import type { StateDelta } from "../delta.js";
+import type {
+  WireMapData,
+  WireEntityInstance,
+  WireCharacterState,
+  WireOverride,
+  WireStateDelta,
+} from "../codec.js";
 
 // Island → Hub messages
 
@@ -19,8 +26,28 @@ export interface IslandHandshakeMessage {
   thumbnail?: SpriteAsset;
 }
 
+/** Static map data — sent once per connection, cached at hub. */
+export interface IslandMapInitMessage {
+  type: "map_init";
+  map: WireMapData;
+  tileRegistry: TileRegistry;
+  tileLookup: string[];
+}
+
+/** Dynamic state — sent on initial connect and resync (no map). */
 export interface IslandStateUpdateMessage {
   type: "state_update";
+  entities: WireEntityInstance[];
+  characters: WireCharacterState[];
+  overrides: WireOverride[];
+}
+
+/**
+ * @deprecated Legacy full-state message. Kept for backward compatibility during
+ * rollout. New code should use map_init + state_update instead.
+ */
+export interface IslandFullStateMessage {
+  type: "full_state";
   state: IslandState;
 }
 
@@ -95,12 +122,12 @@ export interface IslandSpriteUpdateMessage {
 
 export interface IslandCharacterUpdateMessage {
   type: "character_update";
-  characters: import("../types/character.js").CharacterState[];
+  characters: WireCharacterState[];
 }
 
 export interface IslandStateDeltaMessage {
   type: "state_delta";
-  delta: StateDelta;
+  delta: WireStateDelta;
 }
 
 // Passport messages (Hub → Island)
@@ -135,7 +162,9 @@ export interface IslandPassportResponse {
 
 export type IslandToHubMessage =
   | IslandHandshakeMessage
+  | IslandMapInitMessage
   | IslandStateUpdateMessage
+  | IslandFullStateMessage
   | IslandPingMessage
   | IslandSpriteUpdateMessage
   | IslandCharacterUpdateMessage

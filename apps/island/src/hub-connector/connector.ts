@@ -3,10 +3,13 @@ import type {
   IslandToHubMessage,
   HubToIslandMessage,
   SpriteAsset,
-  IslandState,
-  CharacterState,
+  TileRegistry,
   IslandPassportResponse,
-  StateDelta,
+  WireMapData,
+  WireEntityInstance,
+  WireCharacterState,
+  WireOverride,
+  WireStateDelta,
 } from "@agentic-island/shared";
 import {
   WS_RECONNECT_BASE_MS,
@@ -64,15 +67,23 @@ export class HubConnector {
     this.attemptConnect(sprites, islandConfig, thumbnail);
   }
 
-  sendStateUpdate(state: IslandState): void {
+  sendMapInit(map: WireMapData, tileRegistry: TileRegistry, tileLookup: string[]): void {
     if (!this.connected || !this.ws) {
       return;
     }
-    const msg: IslandToHubMessage = { type: "state_update", state };
+    const msg: IslandToHubMessage = { type: "map_init", map, tileRegistry, tileLookup };
     this.ws.send(JSON.stringify(msg));
   }
 
-  sendCharacterUpdate(characters: CharacterState[]): void {
+  sendStateUpdate(entities: WireEntityInstance[], characters: WireCharacterState[], overrides: WireOverride[]): void {
+    if (!this.connected || !this.ws) {
+      return;
+    }
+    const msg: IslandToHubMessage = { type: "state_update", entities, characters, overrides };
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  sendCharacterUpdate(characters: WireCharacterState[]): void {
     if (!this.connected || !this.ws) {
       return;
     }
@@ -80,7 +91,7 @@ export class HubConnector {
     this.ws.send(JSON.stringify(msg));
   }
 
-  sendStateDelta(delta: StateDelta): void {
+  sendStateDelta(delta: WireStateDelta): void {
     if (!this.connected || !this.ws) {
       return;
     }
@@ -146,7 +157,12 @@ export class HubConnector {
 
     console.log(PREFIX, `Connecting to ${this.options.hubUrl}…`);
 
-    const ws = new WebSocket(this.options.hubUrl);
+    const ws = new WebSocket(this.options.hubUrl, {
+      perMessageDeflate: {
+        zlibDeflateOptions: { level: 6 },
+        threshold: 128,
+      },
+    });
     this.ws = ws;
 
     ws.on("open", () => {

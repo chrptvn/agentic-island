@@ -169,7 +169,13 @@ server.listen(PORT, () => {
   console.log(`[api] listening on http://localhost:${PORT}`);
 });
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocketServer({
+  server,
+  perMessageDeflate: {
+    zlibDeflateOptions: { level: 6 },
+    threshold: 128, // only compress messages > 128 bytes
+  },
+});
 
 // Mark islands with a stale heartbeat as offline (missed 2+ heartbeat intervals)
 const staleThresholdMs = 90_000;
