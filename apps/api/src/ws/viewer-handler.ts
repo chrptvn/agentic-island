@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
-import { islandViewers, lastMapInit, lastDynamicState, forwardResyncRequest } from "./island-handler.js";
+import { islandViewers, lastDynamicState, forwardResyncRequest } from "./island-handler.js";
 import { addLobbyViewer, removeLobbyViewer } from "./lobby.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
@@ -27,9 +27,7 @@ export function handleViewerConnection(ws: WebSocket): void {
           }
           islandViewers.get(msg.islandId)!.add(ws);
 
-          // Immediately replay the cached map + dynamic state so viewer isn't blank
-          const cachedMap = lastMapInit.get(msg.islandId);
-          if (cachedMap && ws.readyState === 1) ws.send(cachedMap);
+          // Only send dynamic state — client fetches map via HTTP
           const cachedState = lastDynamicState.get(msg.islandId);
           if (cachedState && ws.readyState === 1) ws.send(cachedState);
           break;

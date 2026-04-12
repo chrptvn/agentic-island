@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import db from "../db/index.js";
 import type { HubToIslandMessage, IslandPassportResponse } from "@agentic-island/shared";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
-import { sendPassportRequest } from "../ws/island-handler.js";
+import { sendPassportRequest, lastMapInit, lastMapInitEtags } from "../ws/island-handler.js";
 import { isValidEmail } from "../lib/validation.js";
 
 const islands = new Hono();
@@ -51,6 +51,25 @@ islands.get("/", (c) => {
   }
 
   return c.json({ islands: rows.map(toCamelCase) });
+});
+
+/** Serve the static map data as a cacheable HTTP response. */
+islands.get("/:id/map", (c) => {
+  const id = c.req.param("id");
+  const cached = lastMapInit.get(id);
+  if (!cached) return c.json({ error: "Island map not available" }, 404);
+
+  const etag = lastMapInitEtags.get(id) ?? "";
+  const ifNoneMatch = c.req.header("if-none-match");
+  if (ifNoneMatch && ifNoneMatch === etag) {
+    return c.body(null, 304);
+  }
+
+  return c.body(cached, 200, {
+    "Content-Type": "application/json",
+    "ETag": etag,
+    "Cache-Control": "no-cache",
+  });
 });
 
 islands.get("/:id", (c) => {

@@ -104,6 +104,13 @@ export interface ViewerStateDeltaMessage {
   delta: WireStateDelta;
 }
 
+/** Lightweight notification that the island's map has changed (e.g. island restart).
+ * Clients should re-fetch the map via HTTP. */
+export interface ViewerMapChangedMessage {
+  type: "map_changed";
+  islandId: string;
+}
+
 export interface ViewerErrorMessage {
   type: "error";
   code: string;
@@ -135,4 +142,5 @@ export type HubToViewerMessage =
   | ViewerIslandRemovedMessage
   | ViewerCharacterUpdateMessage
   | ViewerStateDeltaMessage
+  | ViewerMapChangedMessage
   | ViewerErrorMessage;

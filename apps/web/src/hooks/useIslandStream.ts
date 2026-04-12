@@ -90,7 +90,31 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
       }
     }
 
-    function connect() {
+    /** Fetch static map data via HTTP (cacheable with ETag). */
+    async function fetchMap(): Promise<boolean> {
+      try {
+        const resp = await fetch(`/api/islands/${islandId}/map`);
+        if (!resp.ok) return false;
+        const data = await resp.json();
+        const lookup: string[] = data.tileLookup;
+        tileLookupRef.current = lookup;
+        tileRegistryRef.current = data.tileRegistry;
+        mapRef.current = decodeMap(data.map, lookup);
+        setSpriteBaseUrl(data.spriteBaseUrl);
+        setSpriteVersion(data.spriteVersion ?? null);
+        setIslandName(data.islandName);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
+    async function connect() {
+      if (dead) return;
+
+      // Fetch map via HTTP before opening WS
+      await fetchMap();
+
       if (dead) return;
 
       const protocol =
@@ -112,6 +136,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
           const msg: HubToViewerMessage = JSON.parse(event.data as string);
           switch (msg.type) {
             case 'map_init': {
+              // Fallback: if we somehow get map_init over WS, still handle it
               const lookup = msg.tileLookup;
               tileLookupRef.current = lookup;
               tileRegistryRef.current = msg.tileRegistry;
@@ -121,13 +146,22 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               setIslandName(msg.islandName);
               break;
             }
+            case 'map_changed': {
+              // Island restarted with a new map — re-fetch via HTTP
+              fetchMap().then((ok) => {
+                if (ok) sendResync();
+              });
+              break;
+            }
             case 'dynamic_state': {
               const lookup = tileLookupRef.current;
               const map = mapRef.current;
               const tileRegistry = tileRegistryRef.current;
               if (!lookup || !map || !tileRegistry) {
-                // Map init hasn't arrived yet — request resync
-                sendResync();
+                // Map not available yet — try fetching, then resync
+                fetchMap().then((ok) => {
+                  if (ok) sendResync();
+                });
                 break;
               }
               const entities = decodeEntities(msg.entities, lookup);
@@ -181,7 +215,6 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
                   if (pos.sp !== undefined) {
                     merged.speech = pos.sp;
                   } else if (c.speech) {
-                    // Clear speech if not present in update
                     merged.speech = undefined;
                   }
                   return merged;

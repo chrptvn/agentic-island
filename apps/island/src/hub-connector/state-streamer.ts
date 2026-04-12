@@ -126,7 +126,7 @@ export class StateStreamer {
   }
 
   /**
-   * Force a full state snapshot (for initial connection or resync).
+   * Force a full state snapshot (for initial connection).
    * Sends map_init + dynamic state. Also seeds the tracker.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -145,7 +145,22 @@ export class StateStreamer {
       tileLookup: this.tileLookup,
     });
 
-    // Build dynamic state
+    // Send dynamic state (also seeds tracker)
+    this.sendDynamicSnapshot(world);
+  }
+
+  /**
+   * Send only dynamic state (entities, characters, overrides).
+   * Used for resync — map doesn't need re-sending.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendDynamicSnapshot(world: any): void {
+    // Ensure lookup is initialized
+    if (this.tileLookup.length === 0) {
+      const registry: TileRegistry = world.getTileRegistry();
+      this.setTileRegistry(registry);
+    }
+
     const characters: CharacterState[] = world.getCharacters();
     const entities = world.getEntities();
     const overrides: TileOverride[] = world.getOverrides();
