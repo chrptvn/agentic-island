@@ -59,45 +59,59 @@ export default function CharacterPreview({ appearance, className }: Props) {
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     ctx.imageSmoothingEnabled = false;
 
-    // Sort layers by order
     const sortedLayers = Object.entries(layers).sort(
       ([, a], [, b]) => a.order - b.order,
     );
 
-    let loadedCount = 0;
-    const totalToLoad: HTMLImageElement[] = [];
+    let cancelled = false;
+    let settledCount = 0;
+    const images: { img: HTMLImageElement; loaded: boolean }[] = [];
+
+    const drawAll = () => {
+      if (cancelled) return;
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      for (const entry of images) {
+        if (!entry.loaded) continue;
+        ctx.drawImage(
+          entry.img,
+          0, SOUTH_ROW * TILE, TILE, TILE,
+          0, 0, CANVAS_SIZE, CANVAS_SIZE,
+        );
+      }
+    };
 
     for (const [name, layer] of sortedLayers) {
       const path = getSpritePath(name, layer, appearance);
       if (!path) continue;
 
       const img = new Image();
-      img.src = path;
-      totalToLoad.push(img);
+      const entry = { img, loaded: false };
+      images.push(entry);
 
       img.onload = () => {
-        loadedCount++;
-        if (loadedCount === totalToLoad.length) {
-          // All loaded — draw in order
-          ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-          for (const loadedImg of totalToLoad) {
-            // Extract south-facing first frame (col 0, row SOUTH_ROW)
-            ctx.drawImage(
-              loadedImg,
-              0, SOUTH_ROW * TILE, TILE, TILE, // source
-              0, 0, CANVAS_SIZE, CANVAS_SIZE,   // dest (scaled)
-            );
-          }
-        }
+        entry.loaded = true;
+        settledCount++;
+        if (settledCount === images.length) drawAll();
       };
       img.onerror = () => {
-        loadedCount++;
+        settledCount++;
+        if (settledCount === images.length) drawAll();
       };
+      img.src = path;
     }
 
-    if (totalToLoad.length === 0) {
+    if (images.length === 0) {
       ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     }
+
+    return () => {
+      cancelled = true;
+      for (const entry of images) {
+        entry.img.onload = null;
+        entry.img.onerror = null;
+        entry.img.src = '';
+      }
+    };
   }, [appearance]);
 
   return (
@@ -105,6 +119,8 @@ export default function CharacterPreview({ appearance, className }: Props) {
       ref={canvasRef}
       width={CANVAS_SIZE}
       height={CANVAS_SIZE}
+      role="img"
+      aria-label="Character preview"
       className={className}
       style={{ imageRendering: 'pixelated' }}
     />

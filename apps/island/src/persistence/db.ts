@@ -466,7 +466,8 @@ export function savePassport(
   db.prepare(
     `INSERT INTO passports (id, email, key_hash, name, appearance)
      VALUES (?, ?, ?, ?, ?)
-     ON CONFLICT(id) DO UPDATE SET
+     ON CONFLICT(email) DO UPDATE SET
+       key_hash = excluded.key_hash,
        name = excluded.name,
        appearance = excluded.appearance,
        updated_at = datetime('now')`,
@@ -484,12 +485,20 @@ export function updatePassportAppearance(
   return result.changes > 0;
 }
 
+function parsePassportAppearance(json: string): CharacterAppearance {
+  try {
+    return JSON.parse(json) as CharacterAppearance;
+  } catch {
+    return {} as CharacterAppearance;
+  }
+}
+
 export function getPassportByEmail(email: string): PassportRow | null {
   const r = db.prepare("SELECT * FROM passports WHERE email = ?").get(email) as
     | { id: string; email: string; key_hash: string; name: string; appearance: string; created_at: string; updated_at: string }
     | undefined;
   if (!r) return null;
-  return { ...r, appearance: JSON.parse(r.appearance) as CharacterAppearance };
+  return { ...r, appearance: parsePassportAppearance(r.appearance) };
 }
 
 export function getPassportByKeyHash(keyHash: string): PassportRow | null {
@@ -497,7 +506,7 @@ export function getPassportByKeyHash(keyHash: string): PassportRow | null {
     | { id: string; email: string; key_hash: string; name: string; appearance: string; created_at: string; updated_at: string }
     | undefined;
   if (!r) return null;
-  return { ...r, appearance: JSON.parse(r.appearance) as CharacterAppearance };
+  return { ...r, appearance: parsePassportAppearance(r.appearance) };
 }
 
 /** Get or create the island-specific passport salt (stored in world_state). */

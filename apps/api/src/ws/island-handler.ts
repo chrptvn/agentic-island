@@ -36,6 +36,7 @@ const lastPlayerCounts = new Map<string, number>();
 interface PendingPassportRequest {
   resolve: (response: unknown) => void;
   timer: ReturnType<typeof setTimeout>;
+  islandId: string;
 }
 const pendingPassportRequests = new Map<string, PendingPassportRequest>();
 
@@ -55,7 +56,7 @@ export function sendPassportRequest(
       reject(new Error("Passport request timed out"));
     }, timeoutMs);
 
-    pendingPassportRequests.set(requestId, { resolve, timer });
+    pendingPassportRequests.set(requestId, { resolve, timer, islandId });
 
     try {
       island.ws.send(JSON.stringify(request));
@@ -253,7 +254,7 @@ export function handleIslandConnection(ws: WebSocket): void {
 
         case "passport_response": {
           const pending = pendingPassportRequests.get(msg.requestId);
-          if (pending) {
+          if (pending && core && pending.islandId === core.islandId) {
             clearTimeout(pending.timer);
             pendingPassportRequests.delete(msg.requestId);
             pending.resolve(msg);
@@ -306,6 +307,15 @@ export function handleIslandConnection(ws: WebSocket): void {
       spriteHashes.delete(core.islandId);
       lastPlayerCounts.delete(core.islandId);
       closeAllSessionsForIsland(core.islandId);
+
+      // Clean up any pending passport requests for this island
+      for (const [reqId, pending] of pendingPassportRequests) {
+        if (pending.islandId === core.islandId) {
+          clearTimeout(pending.timer);
+          pendingPassportRequests.delete(reqId);
+          pending.resolve({ type: "passport_response", requestId: reqId, success: false, error: "Island disconnected" });
+        }
+      }
 
       // Notify lobby viewers that the island is gone
       broadcastIslandRemoved(core.islandId);

@@ -14,7 +14,7 @@ import {
 } from "@agentic-island/shared";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { handleTunnelMessage, closeTunnelSession, closeAllTunnelSessions, setSessionClosedNotifier } from "../mcp/tunnel-sessions.js";
-import { createPassport, getCharacterCatalog } from "../passport/index.js";
+import { createPassport, updatePassport, getCharacterCatalog } from "../passport/index.js";
 
 export interface HubConnectorOptions {
   hubUrl: string;
@@ -290,7 +290,7 @@ export class HubConnector {
   /** Handle a passport request tunneled from the hub. */
   private handlePassportRequest(
     requestId: string,
-    action: string,
+    action: "create" | "update" | "get_catalog",
     email?: string,
     name?: string,
     appearance?: import("@agentic-island/shared").CharacterAppearance,
@@ -306,6 +306,19 @@ export class HubConnector {
         const result = createPassport(email, name, appearance);
         if (result.success) {
           response = { type: "passport_response", requestId, success: true, rawKey: result.rawKey, maskedEmail: result.maskedEmail };
+        } else {
+          response = { type: "passport_response", requestId, success: false, error: result.error };
+        }
+        break;
+      }
+      case "update": {
+        if (!email || !appearance) {
+          response = { type: "passport_response", requestId, success: false, error: "Missing email or appearance" };
+          break;
+        }
+        const result = updatePassport(email, name, appearance);
+        if (result.success) {
+          response = { type: "passport_response", requestId, success: true };
         } else {
           response = { type: "passport_response", requestId, success: false, error: result.error };
         }

@@ -46,7 +46,7 @@ export default function PassportPage({
 
   const submit = useCallback(
     async (addr: string, charName: string, charAppearance: CharacterAppearance) => {
-      if (!addr.includes('@')) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
         setState({ step: 'error', message: 'Please enter a valid email address.' });
         return;
       }
@@ -56,7 +56,6 @@ export default function PassportPage({
       }
 
       setLoading(true);
-      setState({ step: 'designer' });
 
       try {
         const result = await claimPassport(id, addr, charName.trim(), charAppearance);
@@ -79,11 +78,10 @@ export default function PassportPage({
     [submit, email, name, appearance],
   );
 
-  const handleResend = useCallback(() => {
-    submit(email, name, appearance).then(() => {
-      setResent(true);
-      setTimeout(() => setResent(false), 2000);
-    });
+  const handleResend = useCallback(async () => {
+    await submit(email, name, appearance);
+    setResent(true);
+    setTimeout(() => setResent(false), 2000);
   }, [submit, email, name, appearance]);
 
   return (
@@ -160,6 +158,9 @@ export default function PassportPage({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Your character's name"
+                autoComplete="name"
+                required
+                maxLength={50}
                 className="w-full rounded-lg border border-border-default bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-cyan focus:outline-none"
               />
             </div>
@@ -180,12 +181,15 @@ export default function PassportPage({
                   if (e.key === 'Enter') handleSubmit();
                 }}
                 placeholder={smtpConfigured ? 'you@example.com' : 'you@minutemail.cc'}
+                autoComplete="email"
+                required
+                maxLength={254}
                 className="w-full rounded-lg border border-border-default bg-elevated px-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:border-accent-cyan focus:outline-none"
               />
             </div>
 
             {state.step === 'error' && (
-              <p className="text-sm text-accent-red">{state.message}</p>
+              <p className="text-sm text-accent-red" role="alert">{state.message}</p>
             )}
 
             <Button

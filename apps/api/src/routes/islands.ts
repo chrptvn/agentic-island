@@ -4,6 +4,7 @@ import db from "../db/index.js";
 import type { HubToIslandMessage, IslandPassportResponse } from "@agentic-island/shared";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
 import { sendPassportRequest } from "../ws/island-handler.js";
+import { isValidEmail } from "../lib/validation.js";
 
 const islands = new Hono();
 
@@ -100,14 +101,23 @@ islands.post("/:id/passports", async (c) => {
   }
 
   const { email, name, appearance } = body as { email?: string; name?: string; appearance?: Record<string, unknown> };
-  if (!email || typeof email !== "string") {
-    return c.json({ error: "Email is required" }, 400);
+  if (!email || typeof email !== "string" || !isValidEmail(email)) {
+    return c.json({ error: "A valid email address is required" }, 400);
   }
-  if (!name || typeof name !== "string") {
-    return c.json({ error: "Name is required" }, 400);
+  if (!name || typeof name !== "string" || name.trim().length < 1 || name.trim().length > 50) {
+    return c.json({ error: "Name is required (1–50 characters)" }, 400);
   }
-  if (!appearance || typeof appearance !== "object") {
+  if (!appearance || typeof appearance !== "object" || Array.isArray(appearance)) {
     return c.json({ error: "Appearance is required" }, 400);
+  }
+  // Validate appearance shape: must be Record<string, string> with bounded values
+  for (const [k, v] of Object.entries(appearance)) {
+    if (typeof k !== "string" || k.length > 64 || typeof v !== "string" || v.length > 128) {
+      return c.json({ error: "Invalid appearance data" }, 400);
+    }
+  }
+  if (Object.keys(appearance).length > 20) {
+    return c.json({ error: "Too many appearance fields" }, 400);
   }
 
   const requestId = randomUUID();
@@ -150,11 +160,19 @@ islands.put("/:id/passports", async (c) => {
   }
 
   const { email, appearance } = body as { email?: string; appearance?: Record<string, unknown> };
-  if (!email || typeof email !== "string") {
-    return c.json({ error: "Email is required" }, 400);
+  if (!email || typeof email !== "string" || !isValidEmail(email)) {
+    return c.json({ error: "A valid email address is required" }, 400);
   }
-  if (!appearance || typeof appearance !== "object") {
+  if (!appearance || typeof appearance !== "object" || Array.isArray(appearance)) {
     return c.json({ error: "Appearance is required" }, 400);
+  }
+  for (const [k, v] of Object.entries(appearance)) {
+    if (typeof k !== "string" || k.length > 64 || typeof v !== "string" || v.length > 128) {
+      return c.json({ error: "Invalid appearance data" }, 400);
+    }
+  }
+  if (Object.keys(appearance).length > 20) {
+    return c.json({ error: "Too many appearance fields" }, 400);
   }
 
   const requestId = randomUUID();

@@ -70,8 +70,7 @@ function checkIdleSessions(): void {
   }
 }
 
-// TODO: re-enable idle disconnect once dev/testing is done
-// setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
+setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
 
 /** Returns true if another active session already owns this character ID. */
 export function isCharacterClaimed(characterId: string, excludeSession?: McpSession): boolean {

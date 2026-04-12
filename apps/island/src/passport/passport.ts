@@ -97,6 +97,29 @@ export function createPassport(
 }
 
 /**
+ * Update appearance (and optionally name) for an existing passport.
+ * Returns true if updated, or an error if the passport doesn't exist.
+ */
+export function updatePassport(
+  email: string,
+  name: string | undefined,
+  appearance: CharacterAppearance,
+): { success: true } | PassportError {
+  const normalizedEmail = email.toLowerCase().trim();
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    return { success: false, error: "Invalid email address" };
+  }
+
+  const existing = getPassportByEmail(normalizedEmail);
+  if (!existing) {
+    return { success: false, error: "Passport not found" };
+  }
+
+  updatePassportAppearance(normalizedEmail, name?.trim() || existing.name, appearance);
+  return { success: true };
+}
+
+/**
  * Validate a passport key and return the passport data.
  * Returns null if the key is invalid.
  */

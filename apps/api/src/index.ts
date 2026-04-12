@@ -42,6 +42,7 @@ app.use(
 
 // Rate-limit key generation: 5 requests per minute per IP
 app.post("/api/keys", rateLimit({ windowMs: 60_000, maxRequests: 5 }));
+app.post("/api/islands/:id/passports", rateLimit({ windowMs: 60_000, maxRequests: 5 }));
 
 app.route("/api/health", health);
 app.route("/api/keys", keys);
