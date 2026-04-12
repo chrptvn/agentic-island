@@ -317,6 +317,10 @@ export class Island extends EventEmitter {
     return result;
   }
 
+  getOverridesVersion(): number {
+    return this.overridesVersion;
+  }
+
   /**
    * Returns a snapshot of the character's surroundings within `radius` tiles.
    * Includes terrain type, path tiles, and entity IDs for nearby cells.

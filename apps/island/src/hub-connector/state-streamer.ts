@@ -1,7 +1,8 @@
-import type { IslandState, CharacterState } from "@agentic-island/shared";
+import type { IslandState, CharacterState, StateDelta, TileOverride } from "@agentic-island/shared";
+import { DirtyTracker } from "../island/dirty-tracker.js";
 
 export interface StateStreamerOptions {
-  /** Minimum interval between full state sends (ms). Default: 200 */
+  /** Minimum interval between delta sends (ms). Default: 200 */
   minIntervalMs?: number;
   /** Minimum interval between character-only sends (ms). Default: 100 */
   charIntervalMs?: number;
@@ -14,8 +15,10 @@ export class StateStreamer {
   private lastSendTime = 0;
   private lastCharSendTime = 0;
   private options: Required<StateStreamerOptions>;
-  private sendFn: ((state: IslandState) => void) | null = null;
+  private snapshotFn: ((state: IslandState) => void) | null = null;
   private charSendFn: ((characters: CharacterState[]) => void) | null = null;
+  private deltaFn: ((delta: StateDelta) => void) | null = null;
+  private tracker = new DirtyTracker();
 
   constructor(options?: StateStreamerOptions) {
     this.options = {
@@ -24,9 +27,9 @@ export class StateStreamer {
     };
   }
 
-  /** Register the callback invoked when a full state snapshot is ready to send. */
+  /** Register the callback for full state snapshots (initial connect / resync). */
   onStateReady(fn: (state: IslandState) => void): void {
-    this.sendFn = fn;
+    this.snapshotFn = fn;
   }
 
   /** Register the callback for lightweight character-only updates. */
@@ -34,9 +37,14 @@ export class StateStreamer {
     this.charSendFn = fn;
   }
 
+  /** Register the callback for delta updates. */
+  onDeltaReady(fn: (delta: StateDelta) => void): void {
+    this.deltaFn = fn;
+  }
+
   /**
    * Called by the island update listener.
-   * Sends a fast character-only update AND throttled full state.
+   * Sends fast character-only updates AND throttled deltas.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleIslandUpdate(world: any): void {
@@ -48,26 +56,43 @@ export class StateStreamer {
       this.charSendFn(world.getCharacters());
     }
 
-    // Full state path at lower frequency
-    if (this.sendFn && now - this.lastSendTime >= this.options.minIntervalMs) {
-      const snapshot = this.buildSnapshot(world);
+    // Delta path at lower frequency
+    if (now - this.lastSendTime >= this.options.minIntervalMs) {
       this.lastSendTime = now;
-      // Align char send time to avoid redundant immediate character_update
       this.lastCharSendTime = now;
-      this.sendFn(snapshot);
+
+      if (this.deltaFn) {
+        const characters: CharacterState[] = world.getCharacters();
+        const entities = world.getEntities();
+        const overrides: TileOverride[] = world.getOverrides();
+        const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
+
+        const delta = this.tracker.computeDelta(characters, entities, overrides, overrideVersion);
+        if (delta) {
+          this.deltaFn(delta);
+        }
+        // If delta is null, nothing changed — skip sending
+      } else if (this.snapshotFn) {
+        // Fallback: no delta listener → send full snapshot (backward compat)
+        this.snapshotFn(this.buildSnapshot(world));
+      }
     }
   }
 
   /**
+   * Force a full state snapshot (for initial connection or resync).
+   * Also seeds the tracker so subsequent deltas are correct.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendFullSnapshot(world: any): void {
+    const snapshot = this.buildSnapshot(world);
+    const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
+    this.tracker.seed(snapshot.characters, snapshot.entities, snapshot.overrides, overrideVersion);
+    this.snapshotFn?.(snapshot);
+  }
+
+  /**
    * Build a IslandState snapshot from a Island instance.
-   *
-   * The `island` parameter is typed as `any` to avoid tight coupling.
-   * Expected methods on the island object:
-   *   - getMap()          → MapData
-   *   - getTileRegistry() → TileRegistry
-   *   - getEntities()     → EntityInstance[]
-   *   - getCharacters()   → CharacterState[]
-   *   - getOverrides()    → TileOverride[]
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   buildSnapshot(island: any): IslandState {
@@ -80,3 +105,4 @@ export class StateStreamer {
     };
   }
 }
+

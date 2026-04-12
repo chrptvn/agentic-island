@@ -2,6 +2,7 @@ import type { IslandConfig, IslandState } from "../types/island.js";
 import type { SpriteAsset } from "../types/hub.js";
 import type { CharacterAppearance } from "../types/character.js";
 import type { CharacterCatalog } from "../types/passport.js";
+import type { StateDelta } from "../delta.js";
 
 // Island → Hub messages
 
@@ -65,6 +66,13 @@ export interface HubMcpTunnelClose {
   sessionId: string;
 }
 
+/** Viewer requested a full state resync (hash mismatch). Hub forwards to island. */
+export interface HubResyncRequest {
+  type: "resync_request";
+  /** Viewer that requested the resync (opaque, for routing the response). */
+  viewerTag?: string;
+}
+
 // MCP tunnel messages (Island → Hub)
 
 /** Forward a JSON-RPC response or notification from the island back to the hub. */
@@ -88,6 +96,11 @@ export interface IslandSpriteUpdateMessage {
 export interface IslandCharacterUpdateMessage {
   type: "character_update";
   characters: import("../types/character.js").CharacterState[];
+}
+
+export interface IslandStateDeltaMessage {
+  type: "state_delta";
+  delta: StateDelta;
 }
 
 // Passport messages (Hub → Island)
@@ -126,6 +139,7 @@ export type IslandToHubMessage =
   | IslandPingMessage
   | IslandSpriteUpdateMessage
   | IslandCharacterUpdateMessage
+  | IslandStateDeltaMessage
   | IslandMcpTunnelResponse
   | IslandMcpTunnelSessionClosed
   | IslandPassportResponse;
@@ -136,4 +150,5 @@ export type HubToIslandMessage =
   | HubErrorMessage
   | HubMcpTunnelMessage
   | HubMcpTunnelClose
+  | HubResyncRequest
   | HubPassportRequest;

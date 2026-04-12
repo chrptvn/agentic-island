@@ -5,4 +5,5 @@ export * from "./types/hub.js";
 export * from "./types/passport.js";
 export * from "./protocol/island-hub.js";
 export * from "./protocol/hub-viewer.js";
+export * from "./delta.js";
 export * from "./constants.js";

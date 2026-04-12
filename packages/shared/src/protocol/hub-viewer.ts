@@ -1,5 +1,6 @@
 import type { IslandState } from "../types/island.js";
 import type { IslandMeta } from "../types/hub.js";
+import type { StateDelta } from "../delta.js";
 
 // Viewer → Hub messages
 
@@ -64,6 +65,12 @@ export interface ViewerCharacterUpdateMessage {
   characters: import("../types/character.js").CharacterState[];
 }
 
+export interface ViewerStateDeltaMessage {
+  type: "state_delta";
+  islandId: string;
+  delta: StateDelta;
+}
+
 export interface ViewerErrorMessage {
   type: "error";
   code: string;
@@ -76,7 +83,13 @@ export type ViewerToHubMessage =
   | ViewerSubscribeMessage
   | ViewerUnsubscribeMessage
   | ViewerSubscribeLobbyMessage
-  | ViewerUnsubscribeLobbyMessage;
+  | ViewerUnsubscribeLobbyMessage
+  | ViewerResyncRequestMessage;
+
+export interface ViewerResyncRequestMessage {
+  type: "resync_request";
+  islandId: string;
+}
 
 export type HubToViewerMessage =
   | ViewerIslandStateMessage
@@ -86,4 +99,5 @@ export type HubToViewerMessage =
   | ViewerIslandMetaUpdateMessage
   | ViewerIslandRemovedMessage
   | ViewerCharacterUpdateMessage
+  | ViewerStateDeltaMessage
   | ViewerErrorMessage;

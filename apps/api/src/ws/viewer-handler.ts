@@ -1,6 +1,6 @@
 import type { WebSocket } from "ws";
 import type { ViewerToHubMessage } from "@agentic-island/shared";
-import { islandViewers, lastIslandState } from "./island-handler.js";
+import { islandViewers, lastIslandState, forwardResyncRequest } from "./island-handler.js";
 import { addLobbyViewer, removeLobbyViewer } from "./lobby.js";
 
 export function handleViewerConnection(ws: WebSocket): void {
@@ -57,6 +57,13 @@ export function handleViewerConnection(ws: WebSocket): void {
           if (inLobby) {
             inLobby = false;
             removeLobbyViewer(ws);
+          }
+          break;
+        }
+
+        case "resync_request": {
+          if (msg.islandId) {
+            forwardResyncRequest(msg.islandId);
           }
           break;
         }

@@ -6,6 +6,7 @@ import type {
   IslandState,
   CharacterState,
   IslandPassportResponse,
+  StateDelta,
 } from "@agentic-island/shared";
 import {
   WS_RECONNECT_BASE_MS,
@@ -41,6 +42,7 @@ export class HubConnector {
   onConnected?: (islandId: string) => void | Promise<void>;
   onDisconnected?: () => void;
   onError?: (error: Error) => void;
+  onResyncRequest?: () => void;
 
   constructor(options: HubConnectorOptions) {
     this.options = options;
@@ -75,6 +77,14 @@ export class HubConnector {
       return;
     }
     const msg: IslandToHubMessage = { type: "character_update", characters };
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  sendStateDelta(delta: StateDelta): void {
+    if (!this.connected || !this.ws) {
+      return;
+    }
+    const msg: IslandToHubMessage = { type: "state_delta", delta };
     this.ws.send(JSON.stringify(msg));
   }
 
@@ -210,6 +220,10 @@ export class HubConnector {
 
         case "passport_request":
           this.handlePassportRequest(msg.requestId, msg.action, msg.email, msg.name, msg.appearance);
+          break;
+
+        case "resync_request":
+          this.onResyncRequest?.();
           break;
       }
     });

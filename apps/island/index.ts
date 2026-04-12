@@ -64,8 +64,8 @@ if (!isPrimary) {
     console.log("  ════════════════════════════════════════════════════════");
     console.log();
 
-    // Push initial state immediately so viewers see the island on first connect
-    streamer.handleIslandUpdate(island);
+    // Push initial full snapshot so viewers see the island on first connect
+    streamer.sendFullSnapshot(island);
   };
   connector.onDisconnected = () => {
     console.log("[island] Disconnected from Hub, will reconnect...");
@@ -117,7 +117,7 @@ if (!isPrimary) {
     data: thumbnailData,
   };
 
-  // Wire state streaming
+  // Wire state streaming (delta-based)
   const streamer = new StateStreamer({ minIntervalMs: 200, charIntervalMs: 100 });
   streamer.onStateReady((state) => {
     connector.sendStateUpdate(state);
@@ -125,6 +125,14 @@ if (!isPrimary) {
   streamer.onCharacterReady((characters) => {
     connector.sendCharacterUpdate(characters);
   });
+  streamer.onDeltaReady((delta) => {
+    connector.sendStateDelta(delta);
+  });
+
+  // Handle resync requests from viewers (hash mismatch → send full snapshot)
+  connector.onResyncRequest = () => {
+    streamer.sendFullSnapshot(island);
+  };
 
   // Listen for island updates
   island.on("map:updated", () => {
@@ -135,12 +143,6 @@ if (!isPrimary) {
   island.on("sprites:update", (sprites: SpritePayload[]) => {
     connector.sendSpriteUpdate(sprites);
   });
-
-  // Periodic state push so idle islands still reach viewers
-  const stateInterval = setInterval(() => {
-    if (connector.isConnected) streamer.handleIslandUpdate(island);
-  }, 2_000);
-  if (stateInterval.unref) stateInterval.unref();
 
   // Connect with sprites, config, and thumbnail
   connector.connect(sprites, getIslandConfig() as unknown as Record<string, unknown>, thumbnail);

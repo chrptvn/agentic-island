@@ -228,6 +228,37 @@ export function handleIslandConnection(ws: WebSocket): void {
           break;
         }
 
+        case "state_delta": {
+          if (!core) return;
+          // Relay delta to viewers — lightweight, no DB write
+          const deltaRelay = JSON.stringify({
+            type: "state_delta",
+            islandId: core.islandId,
+            delta: msg.delta,
+          });
+
+          // Update player count from delta characters if present
+          if (msg.delta.characters) {
+            const agentCount = msg.delta.characters.length;
+            const prevCount = lastPlayerCounts.get(core.islandId);
+            if (prevCount !== agentCount) {
+              db.prepare(
+                "UPDATE islands SET player_count = ? WHERE id = ?",
+              ).run(agentCount, core.islandId);
+              lastPlayerCounts.set(core.islandId, agentCount);
+              broadcastIslandUpdate(core.islandId);
+            }
+          }
+
+          const deltaViewers = islandViewers.get(core.islandId);
+          if (deltaViewers) {
+            for (const viewer of deltaViewers) {
+              if (viewer.readyState === 1) viewer.send(deltaRelay);
+            }
+          }
+          break;
+        }
+
         case "ping": {
           if (!core) return;
           core.lastPing = Date.now();
@@ -336,4 +367,12 @@ export function handleIslandConnection(ws: WebSocket): void {
 
 export function getConnectedIslands(): Map<string, ConnectedIsland> {
   return connectedIslands;
+}
+
+/** Forward a viewer's resync request to the connected island. */
+export function forwardResyncRequest(islandId: string): void {
+  const island = connectedIslands.get(islandId);
+  if (!island || island.ws.readyState !== 1) return;
+  const msg: HubToIslandMessage = { type: "resync_request" };
+  island.ws.send(JSON.stringify(msg));
 }
