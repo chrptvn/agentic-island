@@ -23,7 +23,7 @@ const DEFAULT_SCALE_FACTOR = 1;
 const ZOOM_STEP = 1.25;
 
 /** Duration in ms over which a character smoothly moves one tile. */
-const LERP_DURATION_MS = 400;
+const LERP_DURATION_MS = 300;
 
 /** Cubic ease-out: fast start, smooth deceleration into the target tile. */
 function easeOut(t: number): number {

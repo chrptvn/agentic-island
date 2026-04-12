@@ -60,6 +60,15 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               setIslandName(msg.islandName);
               setSecured(msg.secured ?? false);
               break;
+            case 'character_update':
+              setState((prev) => {
+                if (!prev) return prev;
+                return { ...prev, characters: msg.characters };
+              });
+              break;
+            case 'sprite_version':
+              setSpriteVersion(msg.spriteVersion ?? null);
+              break;
             case 'island_offline':
               setError('Island went offline');
               setState(null);

@@ -29,6 +29,9 @@ export const lastIslandState = new Map<string, string>();
 // Cache the sprite content hash per island for URL cache busting
 const spriteHashes = new Map<string, string>();
 
+// Cache last known player count per island to avoid redundant DB writes
+const lastPlayerCounts = new Map<string, number>();
+
 export function handleIslandConnection(ws: WebSocket): void {
   let core: ConnectedIsland | null = null;
 
@@ -157,11 +160,15 @@ export function handleIslandConnection(ws: WebSocket): void {
         case "state_update": {
           if (!core) return;
 
-          // Keep player_count in sync with the number of characters
+          // Only write player_count when it actually changed
           const agentCount = msg.state.characters?.length ?? 0;
-          db.prepare(
-            "UPDATE islands SET player_count = ? WHERE id = ?",
-          ).run(agentCount, core.islandId);
+          const prevCount = lastPlayerCounts.get(core.islandId);
+          if (prevCount !== agentCount) {
+            db.prepare(
+              "UPDATE islands SET player_count = ? WHERE id = ?",
+            ).run(agentCount, core.islandId);
+            lastPlayerCounts.set(core.islandId, agentCount);
+          }
 
           // Notify lobby viewers of metadata changes (throttled)
           broadcastIslandUpdate(core.islandId);
@@ -183,6 +190,23 @@ export function handleIslandConnection(ws: WebSocket): void {
           if (viewers) {
             for (const viewer of viewers) {
               if (viewer.readyState === 1) viewer.send(relay);
+            }
+          }
+          break;
+        }
+
+        case "character_update": {
+          if (!core) return;
+          // Lightweight relay — no DB write, no lobby broadcast
+          const charRelay = JSON.stringify({
+            type: "character_update",
+            islandId: core.islandId,
+            characters: msg.characters,
+          });
+          const charViewers = islandViewers.get(core.islandId);
+          if (charViewers) {
+            for (const viewer of charViewers) {
+              if (viewer.readyState === 1) viewer.send(charRelay);
             }
           }
           break;
@@ -211,6 +235,36 @@ export function handleIslandConnection(ws: WebSocket): void {
           closeProxySession(msg.sessionId);
           break;
         }
+
+        case "sprite_update": {
+          if (!core) return;
+          if (msg.sprites?.length) {
+            const hash = await saveSprites(core.islandId, msg.sprites);
+            spriteHashes.set(core.islandId, hash);
+
+            // Update cached state so late-joining viewers get the correct hash
+            const cached = lastIslandState.get(core.islandId);
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              parsed.spriteVersion = hash;
+              lastIslandState.set(core.islandId, JSON.stringify(parsed));
+            }
+
+            // Notify viewers immediately so they reload the changed sprite
+            const notification = JSON.stringify({
+              type: "sprite_version",
+              islandId: core.islandId,
+              spriteVersion: hash,
+            });
+            const viewers = islandViewers.get(core.islandId);
+            if (viewers) {
+              for (const viewer of viewers) {
+                if (viewer.readyState === 1) viewer.send(notification);
+              }
+            }
+          }
+          break;
+        }
       }
     } catch (err) {
       console.error("[island-handler] message error:", err);
@@ -225,6 +279,7 @@ export function handleIslandConnection(ws: WebSocket): void {
       connectedIslands.delete(core.islandId);
       lastIslandState.delete(core.islandId);
       spriteHashes.delete(core.islandId);
+      lastPlayerCounts.delete(core.islandId);
       closeAllSessionsForIsland(core.islandId);
 
       // Notify lobby viewers that the island is gone

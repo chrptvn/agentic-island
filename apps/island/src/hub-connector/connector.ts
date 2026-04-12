@@ -4,6 +4,7 @@ import type {
   HubToIslandMessage,
   SpriteAsset,
   IslandState,
+  CharacterState,
 } from "@agentic-island/shared";
 import {
   WS_RECONNECT_BASE_MS,
@@ -65,6 +66,22 @@ export class HubConnector {
       return;
     }
     const msg: IslandToHubMessage = { type: "state_update", state };
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  sendCharacterUpdate(characters: CharacterState[]): void {
+    if (!this.connected || !this.ws) {
+      return;
+    }
+    const msg: IslandToHubMessage = { type: "character_update", characters };
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  sendSpriteUpdate(sprites: SpriteAsset[]): void {
+    if (!this.connected || !this.ws || sprites.length === 0) {
+      return;
+    }
+    const msg: IslandToHubMessage = { type: "sprite_update", sprites };
     this.ws.send(JSON.stringify(msg));
   }
 

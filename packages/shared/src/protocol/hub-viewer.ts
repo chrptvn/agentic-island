@@ -33,6 +33,12 @@ export interface ViewerIslandStateMessage {
   secured: boolean;
 }
 
+export interface ViewerSpriteVersionMessage {
+  type: "sprite_version";
+  islandId: string;
+  spriteVersion: string;
+}
+
 export interface ViewerIslandOfflineMessage {
   type: "island_offline";
   islandId: string;
@@ -53,6 +59,12 @@ export interface ViewerIslandRemovedMessage {
   islandId: string;
 }
 
+export interface ViewerCharacterUpdateMessage {
+  type: "character_update";
+  islandId: string;
+  characters: import("../types/character.js").CharacterState[];
+}
+
 export interface ViewerErrorMessage {
   type: "error";
   code: string;
@@ -69,8 +81,10 @@ export type ViewerToHubMessage =
 
 export type HubToViewerMessage =
   | ViewerIslandStateMessage
+  | ViewerSpriteVersionMessage
   | ViewerIslandOfflineMessage
   | ViewerIslandListMessage
   | ViewerIslandMetaUpdateMessage
   | ViewerIslandRemovedMessage
+  | ViewerCharacterUpdateMessage
   | ViewerErrorMessage;

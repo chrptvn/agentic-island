@@ -1,10 +1,12 @@
 import { startHttpServer } from "./src/server/http.js";
+import { initTileRegistry, getAtlasPng } from "./src/island/tile-registry.js";
 import { Island } from "./src/island/island.js";
 import { HubConnector } from "./src/hub-connector/connector.js";
-import { packageSprites } from "./src/hub-connector/sprite-uploader.js";
+import { packageSprites, type SpritePayload } from "./src/hub-connector/sprite-uploader.js";
 import { StateStreamer } from "./src/hub-connector/state-streamer.js";
 import { getIslandConfig } from "./src/island/island-config.js";
 import { sanitizeServerName } from "./src/utils/sanitize.js";
+import { initToolAtlas, getToolAtlasPng, getToolAtlas128Png } from "./src/island/tool-sprites.js";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -24,6 +26,11 @@ function saveToEnv(key: string, value: string): void {
   }
   writeFileSync(ENV_PATH, lines.join("\n"), "utf8");
 }
+
+// Build the tileset atlas in memory (must happen before Island uses tile-registry)
+await initTileRegistry();
+// Build the tool overlay atlas in memory
+await initToolAtlas();
 
 const isPrimary = await startHttpServer(parseInt(process.env.ISLAND_PORT ?? "3002", 10));
 
@@ -124,16 +131,39 @@ if (!isPrimary) {
   };
 
   // Package all sprites from the unified sprites/ directory.
-  // Exclude old LPC directories (superseded by characters/) and source tileset
-  // sheets (superseded by the build-time atlas tileset-atlas.png).
+  // Exclude source directories not needed by the client:
+  // - Old character mega-sheets (replaced by per-agent composites)
+  // - New LPC Characters sources (compositor reads them server-side)
+  // - Source tileset sheets (replaced by the in-memory atlas)
   const SPRITE_EXCLUDE = [
+    "/characters/",
+    "/LPC Characters/",
     "/lpc-character-bases-v3_1/",
     "/lpc-characters/",
     "/Pipoya RPG Tileset 32x32/",
     "/decoration_medieval/",
     "/food.png",
   ];
-  const sprites = await packageSprites(join(__dirname, "sprites"), "", SPRITE_EXCLUDE).catch(() => []);
+  const sprites = await packageSprites(join(__dirname, "sprites"), "", SPRITE_EXCLUDE).catch((): SpritePayload[] => []);
+
+  // Add the in-memory tileset atlas
+  sprites.push({
+    filename: "tileset-atlas.png",
+    mimeType: "image/png",
+    data: getAtlasPng().toString("base64"),
+  });
+
+  // Add shared tool overlay atlases (64px + 128px)
+  sprites.push({
+    filename: "tool-atlas.png",
+    mimeType: "image/png",
+    data: getToolAtlasPng().toString("base64"),
+  });
+  sprites.push({
+    filename: "tool-atlas-128.png",
+    mimeType: "image/png",
+    data: getToolAtlas128Png().toString("base64"),
+  });
 
   // Generate a pixel-art thumbnail from the island's terrain
   const thumbnailData = island.getThumbnailBase64();
@@ -144,14 +174,22 @@ if (!isPrimary) {
   };
 
   // Wire state streaming
-  const streamer = new StateStreamer({ minIntervalMs: 500 });
+  const streamer = new StateStreamer({ minIntervalMs: 200, charIntervalMs: 100 });
   streamer.onStateReady((state) => {
     connector.sendStateUpdate(state);
+  });
+  streamer.onCharacterReady((characters) => {
+    connector.sendCharacterUpdate(characters);
   });
 
   // Listen for island updates
   island.on("map:updated", () => {
     streamer.handleIslandUpdate(island);
+  });
+
+  // Listen for dynamic sprite updates (character composites)
+  island.on("sprites:update", (sprites: SpritePayload[]) => {
+    connector.sendSpriteUpdate(sprites);
   });
 
   // Periodic state push so idle islands still reach viewers

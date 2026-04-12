@@ -79,12 +79,24 @@ export interface IslandMcpTunnelSessionClosed {
   sessionId: string;
 }
 
+export interface IslandSpriteUpdateMessage {
+  type: "sprite_update";
+  sprites: SpriteAsset[];
+}
+
+export interface IslandCharacterUpdateMessage {
+  type: "character_update";
+  characters: import("../types/character.js").CharacterState[];
+}
+
 // Union types
 
 export type IslandToHubMessage =
   | IslandHandshakeMessage
   | IslandStateUpdateMessage
   | IslandPingMessage
+  | IslandSpriteUpdateMessage
+  | IslandCharacterUpdateMessage
   | IslandMcpTunnelResponse
   | IslandMcpTunnelSessionClosed;
 
