@@ -270,6 +270,39 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     }
   );
 
+  // Direction aliases → canonical facing
+  const FACING_MAP: Record<string, string> = {
+    n: "n", north: "n", up: "n", top: "n",
+    s: "s", south: "s", down: "s", bottom: "s",
+    w: "w", west: "w", left: "w",
+    e: "e", east: "e", right: "e",
+  };
+
+  server.tool(
+    "face",
+    "Turn to face a cardinal direction without moving. Useful when idle to look at something nearby or to change which adjacent tile you'll interact with (harvest, swing, build, etc.).",
+    {
+      direction: z.string().describe("Direction to face: n/s/e/w (or north/south/east/west, up/down, left/right)."),
+    },
+    async ({ direction }) => {
+      const check = requireCharacter(session);
+      if (typeof check !== "string") return check;
+      const character_id = check;
+
+      const canonical = FACING_MAP[direction.toLowerCase()];
+      if (!canonical) {
+        return { content: [{ type: "text", text: `Unknown direction "${direction}". Use n/s/e/w, north/south/east/west, up/down, or left/right.` }], isError: true };
+      }
+
+      try {
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "face", direction: canonical } });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
   server.tool(
     "harvest",
     "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. Trees require a tool with 'chop' capability (axe). On death, a log pile container may appear — use harvest again to pick up wood from it.",

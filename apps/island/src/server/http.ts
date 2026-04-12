@@ -201,8 +201,19 @@ async function handleRequest(
         return;
       }
 
+      if (body.command.type === "face") {
+        const { direction } = body.command as unknown as { direction: string };
+        if (!direction || !["n", "s", "e", "w"].includes(direction)) {
+          jsonErr(res, 400, `Invalid direction "${direction}". Use n, s, e, or w.`);
+          return;
+        }
+        island.face(body.id, direction as "n" | "s" | "e" | "w");
+        jsonOk(res, { message: `Now facing ${direction}.`, facing: direction });
+        return;
+      }
+
       if (body.command.type !== "move_to") {
-        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, craft, enter_tent, exit_tent.`);
+        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, face, craft, enter_tent, exit_tent.`);
         return;
       }
 

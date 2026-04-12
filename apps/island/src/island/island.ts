@@ -2271,6 +2271,16 @@ export class Island extends EventEmitter {
     this.emit("map:updated", this.map);
   }
 
+  /** Turn the character to face a cardinal direction without moving. */
+  face(id: string, direction: CharacterFacing): void {
+    const character = this.characters.get(id);
+    if (!character) throw new Error(`No character named "${id}".`);
+    if (character.path.length > 0) throw new Error("Cannot turn while moving.");
+    character.facing = direction;
+    saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
+    this.emit("map:updated", this.map);
+  }
+
   /**
    * Plant a seed at the character's current cell.
    * Consumes 1 unit of seedItem from inventory and places a sprout that grows over time.
