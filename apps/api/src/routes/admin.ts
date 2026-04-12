@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import { adminAuth } from "../middleware/admin-auth.js";
-import { generatePassportKey } from "../lib/passport.js";
+import { generateHubKey } from "../lib/hub-key.js";
 import { isValidEmail } from "../lib/validation.js";
 
 const admin = new Hono();
@@ -29,7 +29,7 @@ admin.post("/keys", async (c) => {
   }
 
   const normalized = email.toLowerCase().trim();
-  const rawKey = generatePassportKey(normalized);
+  const rawKey = generateHubKey(normalized);
   const keyHash = createHash("sha256").update(rawKey).digest("hex");
 
   const existing = db

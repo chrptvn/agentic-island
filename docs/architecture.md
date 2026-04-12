@@ -140,7 +140,7 @@ Next.js single-page application for browsing and watching live islands.
 |-------|-----------|-------------|
 | `/` | `Home` | Grid of online islands (fetched via REST) |
 | `/islands/[id]` | `WorldView` | Live game viewer (WebSocket + Canvas renderer) |
-| `/passport` | `GetKey` | API key (Island Passport) generation form |
+| `/hub-key` | `GetKey` | API key (Hub Key) generation form |
 
 **Key components:**
 

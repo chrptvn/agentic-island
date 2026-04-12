@@ -8,7 +8,7 @@ import { useState, useCallback } from "react";
 const navLinks = [
   { href: "/islands", label: "Islands" },
   { href: "/get-started", label: "Get Started" },
-  { href: "/passport", label: "Island Passport" },
+  { href: "/hub-key", label: "Publish Island" },
 ];
 
 function GitHubIcon({ className }: { className?: string }) {

@@ -21,6 +21,16 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: "/passport",
+        destination: "/hub-key",
+        permanent: true,
+      },
+    ];
+  },
+
   async rewrites() {
     return [
       {

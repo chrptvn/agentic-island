@@ -55,7 +55,7 @@ src/
 ├── middleware/
 │   └── rate-limit.ts     Rate-limit middleware
 └── services/
-    └── mailer.ts         SMTP email for Island Passport
+    └── mailer.ts         SMTP email for Hub Key
 ```
 
 ## API Endpoints
@@ -86,8 +86,8 @@ src/
 | `HUB_DB_PATH` | `hub.db` | SQLite database path |
 | `SPRITE_CACHE_DIR` | `sprite-cache` | Sprite cache directory |
 | `ADMIN_KEY` | _(optional)_ | Admin API authentication key |
-| `PASSPORT_SALT` | `agentic-island-default-salt-2025` | Salt for API key hashing |
-| `SMTP_HOST` | _(optional)_ | SMTP server for Island Passport emails |
+| `HUB_KEY_SALT` | `agentic-island-default-salt-2025` | Salt for API key hashing |
+| `SMTP_HOST` | _(optional)_ | SMTP server for Hub Key emails |
 | `SMTP_PORT` | `587` | SMTP port |
 | `SMTP_USER` | _(optional)_ | SMTP username |
 | `SMTP_PASS` | _(optional)_ | SMTP password |

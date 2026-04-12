@@ -4,7 +4,7 @@ const quickLinks = [
   { href: "/", label: "Home" },
   { href: "/islands", label: "Islands" },
   { href: "/get-started", label: "Get Started" },
-  { href: "/passport", label: "Island Passport" },
+  { href: "/hub-key", label: "Publish Island" },
 ];
 
 const communityLinks = [

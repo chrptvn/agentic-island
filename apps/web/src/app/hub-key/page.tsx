@@ -5,14 +5,14 @@ import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
-import { claimPassport, fetchSmtpStatus } from '@/lib/api';
+import { claimHubKey, fetchSmtpStatus } from '@/lib/api';
 
 type State =
   | { step: 'form' }
   | { step: 'success'; maskedEmail: string; sent: boolean }
   | { step: 'error'; message: string };
 
-export default function PassportPage() {
+export default function HubKeyPage() {
   const [email, setEmail] = useState('');
   const [state, setState] = useState<State>({ step: 'form' });
   const [loading, setLoading] = useState(false);
@@ -34,9 +34,9 @@ export default function PassportPage() {
       setState({ step: 'form' });
 
       try {
-        const result = await claimPassport(addr);
+        const result = await claimHubKey(addr);
         if (!result) {
-          setState({ step: 'error', message: 'Failed to send passport. Please try again.' });
+          setState({ step: 'error', message: 'Failed to send hub key. Please try again.' });
           return;
         }
         setState({ step: 'success', maskedEmail: result.maskedEmail, sent: result.sent });
@@ -63,10 +63,10 @@ export default function PassportPage() {
       <Card className="w-full max-w-lg">
         {state.step !== 'success' ? (
           <>
-            <h1 className="text-2xl font-bold text-text-heading">🏝️ Island Passport</h1>
+            <h1 className="text-2xl font-bold text-text-heading">🏝️ Hub Key</h1>
             <p className="mt-2 text-sm text-text-muted">
-              Your Island Passport is a unique API key that lets you publish your island to the
-              platform. Enter your email — one passport per email, yours forever.
+              Your Hub Key is a unique API key that lets you publish your island to the
+              platform. Enter your email — one key per email, yours forever.
             </p>
 
             {!smtpConfigured && (
@@ -83,7 +83,7 @@ export default function PassportPage() {
                   >
                     MinuteMail
                   </a>{' '}
-                  address (<span className="font-mono text-text-primary">@minutemail.cc</span>) to receive your passport.
+                  address (<span className="font-mono text-text-primary">@minutemail.cc</span>) to receive your hub key.
                 </span>
               </div>
             )}
@@ -91,13 +91,13 @@ export default function PassportPage() {
             <div className="mt-8 space-y-4">
               <div>
                 <label
-                  htmlFor="passport-email"
+                  htmlFor="hub-key-email"
                   className="mb-1 block text-sm font-medium text-text-primary"
                 >
                   Email
                 </label>
                 <input
-                  id="passport-email"
+                  id="hub-key-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -120,7 +120,7 @@ export default function PassportPage() {
                 onClick={handleSubmit}
                 disabled={loading}
               >
-                {loading ? 'Sending…' : '🏝️ Claim My Passport'}
+                {loading ? 'Sending…' : '🏝️ Get My Hub Key'}
               </Button>
             </div>
           </>
@@ -128,19 +128,19 @@ export default function PassportPage() {
           <div className="space-y-4">
             {state.sent ? (
               <>
-                <Badge variant="success">Passport Sent</Badge>
+                <Badge variant="success">Hub Key Sent</Badge>
                 <h2 className="text-lg font-bold text-text-heading">✅ Check your inbox</h2>
                 <p className="text-sm text-text-muted">
-                  Your Island Passport has been sent to:{' '}
+                  Your Hub Key has been sent to:{' '}
                   <span className="font-medium text-accent-cyan">{state.maskedEmail}</span>
                 </p>
               </>
             ) : (
               <>
-                <Badge variant="warning">Passport Created</Badge>
+                <Badge variant="warning">Hub Key Created</Badge>
                 <h2 className="text-lg font-bold text-text-heading">⚠️ Email could not be delivered</h2>
                 <p className="text-sm text-text-muted">
-                  Your passport was created for{' '}
+                  Your hub key was created for{' '}
                   <span className="font-medium text-accent-cyan">{state.maskedEmail}</span>{' '}
                   but the email could not be sent. Try again with a{' '}
                   <a
@@ -163,7 +163,7 @@ export default function PassportPage() {
               <span className="shrink-0">💡</span>
               <span className="text-text-muted">
                 Same email, same key — you can always come back to resend your
-                passport.
+                hub key.
               </span>
             </div>
 

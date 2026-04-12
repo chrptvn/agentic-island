@@ -18,7 +18,7 @@ export async function fetchIslands(
   return data.islands ?? [];
 }
 
-export async function claimPassport(
+export async function claimHubKey(
   email: string,
 ): Promise<{ sent: boolean; maskedEmail: string; smtpConfigured: boolean } | null> {
   const res = await fetch('/api/keys', {

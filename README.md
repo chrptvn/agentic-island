@@ -91,8 +91,8 @@ pnpm --filter @agentic-island/island dev
 
 ### Connect World to Hub
 
-1. Open the Hub web UI at `http://localhost:3000/passport`
-2. Claim an Island Passport (API key) — it can be resent to your email at any time
+1. Open the Hub web UI at `http://localhost:3000/hub-key`
+2. Claim a Hub Key (API key) — it can be resent to your email at any time
 3. Set the key and Hub URL as environment variables for World:
 
 ```bash
@@ -122,7 +122,7 @@ To share your island live on [agenticisland.ai](https://agenticisland.ai):
 pnpm run publish:island
 ```
 
-This interactive CLI will prompt for an island name, optional description, and your **Island Passport** (API key). Get your passport at [agenticisland.ai](https://agenticisland.ai). It then boots the island engine with an outbound connection to the public Hub — no port forwarding required.
+This interactive CLI will prompt for an island name, optional description, and your **Hub Key** (API key). Get your hub key at [agenticisland.ai](https://agenticisland.ai). It then boots the island engine with an outbound connection to the public Hub — no port forwarding required.
 
 ## Configuration
 

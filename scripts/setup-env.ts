@@ -15,7 +15,7 @@ import { join } from "node:path";
 const ROOT = join(import.meta.dirname, "..");
 
 const GENERATORS: Record<string, () => string> = {
-  __GENERATED_PASSPORT_SALT__: () => randomBytes(32).toString("hex"),
+  __GENERATED_HUB_KEY_SALT__: () => randomBytes(32).toString("hex"),
   __GENERATED_ADMIN_KEY__: () => randomBytes(24).toString("hex"),
 };
 

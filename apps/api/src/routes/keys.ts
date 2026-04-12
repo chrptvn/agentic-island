@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { createHash, randomUUID } from "node:crypto";
 import db from "../db/index.js";
-import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
-import { generatePassportKey } from "../lib/passport.js";
+import { sendHubKeyEmail, isSmtpConfigured } from "../services/mailer.js";
+import { generateHubKey } from "../lib/hub-key.js";
 import { isValidEmail } from "../lib/validation.js";
 
 function maskEmail(email: string): string {
@@ -22,7 +22,7 @@ keys.post("/", async (c) => {
   }
 
   const normalized = email.toLowerCase().trim();
-  const rawKey = generatePassportKey(normalized);
+  const rawKey = generateHubKey(normalized);
   const keyHash = createHash("sha256").update(rawKey).digest("hex");
 
   const existing = db
@@ -36,7 +36,7 @@ keys.post("/", async (c) => {
     ).run(id, keyHash, normalized);
   }
 
-  const result = await sendPassportEmail(normalized, rawKey);
+  const result = await sendHubKeyEmail(normalized, rawKey);
 
   return c.json(
     {

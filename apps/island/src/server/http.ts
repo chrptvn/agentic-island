@@ -477,7 +477,7 @@ async function handleRequest(
         }
       }
 
-      jsonErr(res, 403, "Could not regenerate key — passport mismatch or island not found");
+      jsonErr(res, 403, "Could not regenerate key — hub key mismatch or island not found");
     } catch (err) {
       jsonErr(res, 500, (err as Error).message);
     }

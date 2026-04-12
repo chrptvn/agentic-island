@@ -74,7 +74,7 @@ function isMinutemailAddress(email: string): boolean {
   return email.toLowerCase().endsWith(`@${MINUTEMAIL_DOMAIN}`);
 }
 
-export async function sendPassportEmail(
+export async function sendHubKeyEmail(
   email: string,
   key: string,
 ): Promise<SendResult> {
@@ -83,13 +83,13 @@ export async function sendPassportEmail(
 
   if (!usePrimary && !useMinutemail) {
     console.warn(
-      "[mailer] SMTP not configured and not a MinuteMail address. Skipping passport email to",
+      "[mailer] SMTP not configured and not a MinuteMail address. Skipping hub key email to",
       email,
     );
     return { delivered: false, method: "none" };
   }
 
-  const subject = "🏝️ Your Island Passport — Agentic Island";
+  const subject = "🏝️ Your Hub Key — Agentic Island";
 
   const html = `
 <!DOCTYPE html>
@@ -100,12 +100,12 @@ export async function sendPassportEmail(
     <div style="background:linear-gradient(135deg,#1e3a5f 0%,#0f766e 100%);border-radius:16px;padding:32px;color:#fff;border:1px solid rgba(255,255,255,0.1);">
       <div style="text-align:center;margin-bottom:24px;">
         <span style="font-size:48px;">🏝️</span>
-        <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;">Island Passport</h1>
+        <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;">Hub Key</h1>
         <p style="margin:0;opacity:0.7;font-size:13px;">Agentic Island</p>
       </div>
 
       <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:20px;margin:20px 0;text-align:center;">
-        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">Your Island Passport</p>
+        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">Your Hub Key</p>
         <code style="font-size:15px;word-break:break-all;color:#5eead4;font-family:'SF Mono',Monaco,Consolas,monospace;">${key}</code>
       </div>
 
@@ -121,9 +121,9 @@ export async function sendPassportEmail(
 </html>`.trim();
 
   const text = [
-    "🏝️ Your Island Passport — Agentic Island",
+    "🏝️ Your Hub Key — Agentic Island",
     "",
-    `Your Island Passport: ${key}`,
+    `Your Hub Key: ${key}`,
     "",
     "Same email, same key — you can always recover it by requesting again.",
   ].join("\n");
@@ -135,7 +135,7 @@ export async function sendPassportEmail(
       await transport.sendMail({ from: SMTP_FROM, to: email, subject, html, text });
       return { delivered: true, method: "primary" };
     } catch (err) {
-      console.error("[mailer] Failed to send passport email via primary SMTP:", err);
+      console.error("[mailer] Failed to send hub key email via primary SMTP:", err);
       // Fall through to MinuteMail if recipient is a MinuteMail address
       if (!isMinutemailAddress(email)) {
         return { delivered: false, method: "primary" };
@@ -149,7 +149,7 @@ export async function sendPassportEmail(
     const ok = await sendViaMinutemailHttp(email, subject, text, SMTP_FROM);
     return { delivered: ok, method: "minutemail" };
   } catch (err) {
-    console.error("[mailer] Failed to send passport email via MinuteMail HTTP:", err);
+    console.error("[mailer] Failed to send hub key email via MinuteMail HTTP:", err);
     return { delivered: false, method: "minutemail" };
   }
 }

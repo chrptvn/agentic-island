@@ -2,7 +2,7 @@
 /**
  * 🏝  Agentic Island — Publish Your Island
  *
- * Interactive CLI that collects island metadata and a passport (API key),
+ * Interactive CLI that collects island metadata and a hub key (API key),
  * then boots the world engine with a live connection to the chosen hub.
  *
  * If apps/island/.env is present, any variables already set there are used
@@ -23,12 +23,12 @@ const ENV_PATH = resolve(__dirname, "../apps/island/.env");
 
 const HUB_LOCAL = "ws://localhost:3001/ws/island";
 const HUB_OFFICIAL = "wss://hub.agenticisland.ai/ws/island";
-const PASSPORT_URL_LOCAL = "http://localhost:3000";
-const PASSPORT_URL_OFFICIAL = "https://agenticisland.ai";
+const HUB_KEY_URL_LOCAL = "http://localhost:3000";
+const HUB_KEY_URL_OFFICIAL = "https://agenticisland.ai";
 
-function passportHint(hubUrl: string): string | null {
-  if (hubUrl === HUB_LOCAL) return PASSPORT_URL_LOCAL;
-  if (hubUrl === HUB_OFFICIAL) return PASSPORT_URL_OFFICIAL;
+function hubKeyHint(hubUrl: string): string | null {
+  if (hubUrl === HUB_LOCAL) return HUB_KEY_URL_LOCAL;
+  if (hubUrl === HUB_OFFICIAL) return HUB_KEY_URL_OFFICIAL;
   return null; // custom hub — user knows what they're doing
 }
 
@@ -140,23 +140,23 @@ async function main(): Promise<void> {
       enteredInteractively.HUB_URL = hubUrl;
     }
 
-    // ── Island Passport (required) ──────────────────────────────
-    let passport: string;
+    // ── Hub Key (required) ──────────────────────────────────────
+    let hubKey: string;
     if (process.env.API_KEY) {
-      passport = process.env.API_KEY;
-      console.log(`  ✓ Passport: ${mask(passport)}  (from .env)`);
+      hubKey = process.env.API_KEY;
+      console.log(`  ✓ Hub Key:  ${mask(hubKey)}  (from .env)`);
     } else {
       console.log();
-      const hint = passportHint(hubUrl);
-      if (hint) console.log(`  Get your passport at ${hint}`);
-      passport = "";
-      while (!passport) {
-        passport = (await rl.question("  Island Passport: ")).trim();
-        if (!passport) {
-          console.log("  ⚠  Passport is required.\n");
+      const hint = hubKeyHint(hubUrl);
+      if (hint) console.log(`  Get your hub key at ${hint}`);
+      hubKey = "";
+      while (!hubKey) {
+        hubKey = (await rl.question("  Hub Key: ")).trim();
+        if (!hubKey) {
+          console.log("  ⚠  Hub Key is required.\n");
         }
       }
-      enteredInteractively.API_KEY = passport;
+      enteredInteractively.API_KEY = hubKey;
     }
 
     // ── Island Name (required) ─────────────────────────────────
@@ -226,7 +226,7 @@ async function main(): Promise<void> {
     console.log();
 
     // ── Set env vars and boot the world engine ─────────────────
-    process.env.API_KEY = passport;
+    process.env.API_KEY = hubKey;
     process.env.HUB_URL = hubUrl;
     process.env.ISLAND_NAME = islandName;
     process.env.ISLAND_DESCRIPTION = islandDescription;

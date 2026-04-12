@@ -63,8 +63,8 @@ export function handleIslandConnection(ws: WebSocket): void {
             "UPDATE api_keys SET last_seen_at = datetime('now') WHERE id = ?",
           ).run(keyRow.id);
 
-          // One island per passport: if no island.id is provided, look up by
-          // api_key_id so the same passport always resolves to the same island.
+          // One island per hub key: if no island.id is provided, look up by
+          // api_key_id so the same hub key always resolves to the same island.
           let islandId: string;
           let existing: { id: string; secured: number; access_key_hash: string | null } | undefined;
           const isSecured = msg.island.secured ?? false;

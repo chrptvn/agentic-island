@@ -2,22 +2,22 @@ import { createHash, randomBytes } from "node:crypto";
 import { readFile, appendFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-let passportSalt: string | undefined;
+let hubKeySalt: string | undefined;
 
 /**
- * Initialize the passport salt. If PASSPORT_SALT is not set in the environment,
+ * Initialize the hub key salt. If HUB_KEY_SALT is not set in the environment,
  * generate a cryptographically random salt and persist it to the API's .env file
  * so subsequent restarts use the same value.
  */
-export async function initPassportSalt(): Promise<void> {
-  if (process.env.PASSPORT_SALT) {
-    passportSalt = process.env.PASSPORT_SALT;
+export async function initHubKeySalt(): Promise<void> {
+  if (process.env.HUB_KEY_SALT) {
+    hubKeySalt = process.env.HUB_KEY_SALT;
     return;
   }
 
   // Generate a random 32-byte hex salt
   const generated = randomBytes(32).toString("hex");
-  passportSalt = generated;
+  hubKeySalt = generated;
 
   // Persist to .env so it survives restarts
   const envPath = join(import.meta.dirname, "../../.env");
@@ -29,7 +29,7 @@ export async function initPassportSalt(): Promise<void> {
       // .env doesn't exist yet — we'll create it
     }
 
-    const line = `PASSPORT_SALT=${generated}`;
+    const line = `HUB_KEY_SALT=${generated}`;
     if (content && !content.endsWith("\n")) {
       await appendFile(envPath, `\n${line}\n`);
     } else if (content) {
@@ -39,30 +39,30 @@ export async function initPassportSalt(): Promise<void> {
     }
 
     // Also set it in the current process env
-    process.env.PASSPORT_SALT = generated;
+    process.env.HUB_KEY_SALT = generated;
 
     console.log(
-      "[passport] Generated new PASSPORT_SALT and saved to .env",
+      "[hub-key] Generated new HUB_KEY_SALT and saved to .env",
     );
   } catch (err) {
     console.warn(
-      "[passport] Could not persist PASSPORT_SALT to .env — using ephemeral salt for this session:",
+      "[hub-key] Could not persist HUB_KEY_SALT to .env — using ephemeral salt for this session:",
       err,
     );
   }
 }
 
-export function getPassportSalt(): string {
-  if (!passportSalt) {
+export function getHubKeySalt(): string {
+  if (!hubKeySalt) {
     throw new Error(
-      "Passport salt not initialized. Call initPassportSalt() at startup.",
+      "Hub key salt not initialized. Call initHubKeySalt() at startup.",
     );
   }
-  return passportSalt;
+  return hubKeySalt;
 }
 
-export function generatePassportKey(email: string): string {
-  const salt = getPassportSalt();
+export function generateHubKey(email: string): string {
+  const salt = getHubKeySalt();
   const normalized = email.toLowerCase().trim();
   const hash = createHash("sha256")
     .update(normalized + salt)

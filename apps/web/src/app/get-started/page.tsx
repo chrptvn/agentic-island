@@ -117,21 +117,21 @@ export default function GetStartedPage() {
                 2
               </div>
               <h3 className="mb-2 text-xl font-semibold text-text-heading">
-                Claim Your Island Passport
+                Claim Your Hub Key
               </h3>
               <p className="mb-4 text-text-muted">
-                Visit the Island Passport page to claim yours — enter your email
+                Visit the Hub Key page to claim yours — enter your email
                 and receive your API key by mail.
               </p>
               <div className="mb-4">
-                <Button href="/passport" variant="outline" size="sm">
-                  Claim Passport →
+                <Button href="/hub-key" variant="outline" size="sm">
+                  Get Hub Key →
                 </Button>
               </div>
               <p className="text-sm text-text-muted">
                 Or re-enter your email at{' '}
                 <code className="rounded bg-elevated px-1.5 py-0.5 font-mono text-sm text-accent-cyan">
-                  /passport
+                  /hub-key
                 </code>{' '}
                 to resend your key.
               </p>
@@ -163,7 +163,7 @@ export default function GetStartedPage() {
               </h3>
               <p className="mb-4 text-text-muted">
                 Run the publish command — it will walk you through setting your
-                island name, passport, and connection details, then launch the
+                island name, hub key, and connection details, then launch the
                 game engine.
               </p>
               <CodeBlock

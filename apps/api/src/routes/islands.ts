@@ -65,29 +65,29 @@ islands.get("/:id", (c) => {
 
 /**
  * Regenerate access key for a secured island.
- * Requires Authorization header with the island's passport (API key).
+ * Requires Authorization header with the island's hub key (API key).
  */
 islands.post("/:id/regenerate-key", async (c) => {
   const id = c.req.param("id");
   const authHeader = c.req.header("Authorization");
 
   if (!authHeader?.startsWith("Bearer ")) {
-    return c.json({ error: "Authorization required — use Bearer token with your passport" }, 401);
+    return c.json({ error: "Authorization required — use Bearer token with your hub key" }, 401);
   }
 
-  const passport = authHeader.slice(7);
-  const passportHash = createHash("sha256").update(passport).digest("hex");
+  const hubKey = authHeader.slice(7);
+  const hubKeyHash = createHash("sha256").update(hubKey).digest("hex");
 
-  // Verify passport and check island ownership
+  // Verify hub key and check island ownership
   const row = db.prepare(`
     SELECT i.id, i.secured, ak.id as api_key_id
     FROM islands i
     JOIN api_keys ak ON i.api_key_id = ak.id
     WHERE i.id = ? AND ak.key_hash = ?
-  `).get(id, passportHash) as { id: string; secured: number; api_key_id: string } | undefined;
+  `).get(id, hubKeyHash) as { id: string; secured: number; api_key_id: string } | undefined;
 
   if (!row) {
-    return c.json({ error: "Island not found or invalid passport" }, 404);
+    return c.json({ error: "Island not found or invalid hub key" }, 404);
   }
 
   if (!row.secured) {

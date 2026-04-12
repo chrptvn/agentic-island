@@ -5,7 +5,7 @@ const steps = [
     number: 1,
     title: "Clone & Install",
     description:
-      "Clone the repo, install dependencies, and claim your Island Passport — takes under 2 minutes.",
+      "Clone the repo, install dependencies, and claim your Hub Key — takes under 2 minutes.",
   },
   {
     number: 2,

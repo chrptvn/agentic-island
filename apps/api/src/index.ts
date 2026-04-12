@@ -17,11 +17,11 @@ import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
 import { handleMcpProxy } from "./mcp-proxy/handler.js";
 import { safePath } from "./lib/safe-path.js";
-import { initPassportSalt } from "./lib/passport.js";
+import { initHubKeySalt } from "./lib/hub-key.js";
 import db from "./db/index.js";
 
-// Initialize passport salt (auto-generates and persists if not set)
-await initPassportSalt();
+// Initialize hub key salt (auto-generates and persists if not set)
+await initHubKeySalt();
 
 const app = new Hono();
 
