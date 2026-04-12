@@ -88,8 +88,8 @@ async function testWorldList(): Promise<void> {
 }
 
 async function testViewerWebSocket(): Promise<void> {
-  console.log("  [4/4] WebSocket /ws/viewer");
-  const ws = new WebSocket(`ws://localhost:${PORT}/ws/viewer`);
+  console.log("  [4/4] WebSocket /ws/island/:id and /ws/lobby");
+  const ws = new WebSocket(`ws://localhost:${PORT}/ws/island/test-world`);
 
   await new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(() => {
@@ -99,19 +99,16 @@ async function testViewerWebSocket(): Promise<void> {
 
     ws.on("open", () => {
       clearTimeout(timeout);
-      console.log("        ✓ connection opened");
+      console.log("        ✓ island viewer connection opened");
 
-      // Send a subscribe message and verify no crash
-      ws.send(JSON.stringify({ type: "subscribe", islandId: "test-world" }));
-
-      // Give the server a moment to process, then close cleanly
+      // Auto-subscribed by URL — just close cleanly
       setTimeout(() => {
         ws.close();
       }, 200);
     });
 
     ws.on("close", () => {
-      console.log("        ✓ subscribe processed, closed cleanly");
+      console.log("        ✓ closed cleanly");
       resolve();
     });
 

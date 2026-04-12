@@ -135,11 +135,6 @@ if (!isPrimary) {
     connector.sendStateDelta(delta);
   });
 
-  // Handle resync requests from viewers (hash mismatch → send only dynamic state, not map)
-  connector.onResyncRequest = () => {
-    streamer.sendDynamicSnapshot(island);
-  };
-
   // Listen for island updates
   island.on("map:updated", () => {
     streamer.handleIslandUpdate(island);

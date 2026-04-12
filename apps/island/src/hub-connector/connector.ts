@@ -46,7 +46,6 @@ export class HubConnector {
   onConnected?: (islandId: string) => void | Promise<void>;
   onDisconnected?: () => void;
   onError?: (error: Error) => void;
-  onResyncRequest?: () => void;
 
   constructor(options: HubConnectorOptions) {
     this.options = options;
@@ -237,10 +236,6 @@ export class HubConnector {
 
         case "passport_request":
           this.handlePassportRequest(msg.requestId, msg.action, msg.email, msg.name, msg.appearance);
-          break;
-
-        case "resync_request":
-          this.onResyncRequest?.();
           break;
       }
     });

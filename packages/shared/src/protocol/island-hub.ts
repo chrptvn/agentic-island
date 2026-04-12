@@ -1,4 +1,4 @@
-import type { IslandConfig, IslandState, TileRegistry } from "../types/island.js";
+import type { IslandConfig, TileRegistry } from "../types/island.js";
 import type { SpriteAsset } from "../types/hub.js";
 import type { CharacterAppearance } from "../types/character.js";
 import type { CharacterCatalog } from "../types/passport.js";
@@ -43,15 +43,6 @@ export interface IslandStateUpdateMessage {
   overrides: WireOverride[];
 }
 
-/**
- * @deprecated Legacy full-state message. Kept for backward compatibility during
- * rollout. New code should use map_init + state_update instead.
- */
-export interface IslandFullStateMessage {
-  type: "full_state";
-  state: IslandState;
-}
-
 export interface IslandPingMessage {
   type: "ping";
   timestamp: number;
@@ -92,13 +83,6 @@ export interface HubMcpTunnelMessage {
 export interface HubMcpTunnelClose {
   type: "mcp_tunnel_close";
   sessionId: string;
-}
-
-/** Viewer requested a full state resync (hash mismatch). Hub forwards to island. */
-export interface HubResyncRequest {
-  type: "resync_request";
-  /** Viewer that requested the resync (opaque, for routing the response). */
-  viewerTag?: string;
 }
 
 // MCP tunnel messages (Island → Hub)
@@ -165,7 +149,6 @@ export type IslandToHubMessage =
   | IslandHandshakeMessage
   | IslandMapInitMessage
   | IslandStateUpdateMessage
-  | IslandFullStateMessage
   | IslandPingMessage
   | IslandSpriteUpdateMessage
   | IslandCharacterUpdateMessage
@@ -180,5 +163,4 @@ export type HubToIslandMessage =
   | HubErrorMessage
   | HubMcpTunnelMessage
   | HubMcpTunnelClose
-  | HubResyncRequest
   | HubPassportRequest;

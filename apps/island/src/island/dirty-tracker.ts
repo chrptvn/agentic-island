@@ -1,5 +1,4 @@
 import type { EntityInstance, CharacterState, StateDelta, EntityPatch, OverridePatch, TileOverride } from "@agentic-island/shared";
-import { computeStateHash } from "@agentic-island/shared";
 
 /**
  * Computes state deltas by diffing the current snapshot against the previous one.
@@ -94,7 +93,6 @@ export class DirtyTracker {
     // Build delta
     const delta: StateDelta = {
       tick: this.tick++,
-      stateHash: computeStateHash(characters, entities, overrides.length),
     };
 
     if (changedCharIds.size > 0) {

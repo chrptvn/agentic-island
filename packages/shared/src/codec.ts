@@ -105,8 +105,6 @@ export interface WireOverridePatch {
 export interface WireStateDelta {
   /** tick */
   tk: number;
-  /** stateHash */
-  h: string;
   /** characters */
   c?: WireCharacterState[];
   /** entities */
@@ -217,7 +215,6 @@ export function encodeOverridePatch(p: OverridePatch, enc: Map<string, number>):
 export function encodeDelta(delta: StateDelta, enc: Map<string, number>): WireStateDelta {
   const wire: WireStateDelta = {
     tk: delta.tick,
-    h: delta.stateHash,
   };
   if (delta.characters) {
     wire.c = encodeCharacters(delta.characters, enc);
@@ -315,7 +312,6 @@ export function decodeOverrides(overrides: WireOverride[], lookup: string[]): Ti
 export function decodeDelta(delta: WireStateDelta, lookup: string[]): StateDelta {
   const result: StateDelta = {
     tick: delta.tk,
-    stateHash: delta.h,
   };
   if (delta.c) {
     result.characters = decodeCharacters(delta.c, lookup);

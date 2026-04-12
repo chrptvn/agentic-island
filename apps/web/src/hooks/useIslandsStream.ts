@@ -39,14 +39,13 @@ export function useIslandsStream(): IslandsStream {
       const protocol =
         window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       ws = new WebSocket(
-        `${protocol}//${window.location.host}/ws/viewer`,
+        `${protocol}//${window.location.host}/ws/lobby`,
       );
 
       ws.onopen = () => {
         setConnected(true);
         setError(null);
         delay = WS_RECONNECT_BASE;
-        ws!.send(JSON.stringify({ type: 'subscribe_lobby' }));
       };
 
       ws.onmessage = (event) => {
@@ -109,9 +108,6 @@ export function useIslandsStream(): IslandsStream {
       dead = true;
       if (timer) clearTimeout(timer);
       if (ws) {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ type: 'unsubscribe_lobby' }));
-        }
         ws.close();
       }
     };

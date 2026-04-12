@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { IslandState, MapData, TileRegistry, HubToViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
-import { computeStateHash, decodeMap, decodeEntities, decodeCharacters, decodeOverrides, decodeDelta } from '@agentic-island/shared';
+import { decodeMap, decodeEntities, decodeCharacters, decodeOverrides, decodeDelta } from '@agentic-island/shared';
 
 export interface IslandStream {
   state: IslandState | null;
@@ -69,9 +69,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Track the last known hash so we can detect mismatches
-  const lastHashRef = useRef<string | null>(null);
-  // Static map data — set once on map_init, persists across dynamic updates
+  // Static map data — set once on map fetch, persists across dynamic updates
   const mapRef = useRef<MapData | null>(null);
   const tileRegistryRef = useRef<TileRegistry | null>(null);
   const tileLookupRef = useRef<string[] | null>(null);
@@ -83,12 +81,6 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
     let ws: WebSocket | null = null;
     let timer: ReturnType<typeof setTimeout> | null = null;
     let delay = WS_RECONNECT_BASE;
-
-    function sendResync() {
-      if (ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({ type: 'resync_request', islandId }));
-      }
-    }
 
     /** Fetch static map data via HTTP (cacheable with ETag). */
     async function fetchMap(): Promise<boolean> {
@@ -120,37 +112,22 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
       const protocol =
         window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       ws = new WebSocket(
-        `${protocol}//${window.location.host}/ws/viewer`,
+        `${protocol}//${window.location.host}/ws/island/${encodeURIComponent(islandId!)}`,
       );
 
       ws.onopen = () => {
         setConnected(true);
         setError(null);
         delay = WS_RECONNECT_BASE;
-        lastHashRef.current = null;
-        ws!.send(JSON.stringify({ type: 'subscribe', islandId }));
       };
 
       ws.onmessage = (event) => {
         try {
           const msg: HubToViewerMessage = JSON.parse(event.data as string);
           switch (msg.type) {
-            case 'map_init': {
-              // Fallback: if we somehow get map_init over WS, still handle it
-              const lookup = msg.tileLookup;
-              tileLookupRef.current = lookup;
-              tileRegistryRef.current = msg.tileRegistry;
-              mapRef.current = decodeMap(msg.map, lookup);
-              setSpriteBaseUrl(msg.spriteBaseUrl);
-              setSpriteVersion(msg.spriteVersion ?? null);
-              setIslandName(msg.islandName);
-              break;
-            }
             case 'map_changed': {
               // Island restarted with a new map — re-fetch via HTTP
-              fetchMap().then((ok) => {
-                if (ok) sendResync();
-              });
+              fetchMap();
               break;
             }
             case 'dynamic_state': {
@@ -158,10 +135,8 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               const map = mapRef.current;
               const tileRegistry = tileRegistryRef.current;
               if (!lookup || !map || !tileRegistry) {
-                // Map not available yet — try fetching, then resync
-                fetchMap().then((ok) => {
-                  if (ok) sendResync();
-                });
+                // Map not available yet — try fetching
+                fetchMap();
                 break;
               }
               const entities = decodeEntities(msg.entities, lookup);
@@ -169,33 +144,15 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               const overrides = decodeOverrides(msg.overrides, lookup);
               const fullState: IslandState = { map, tileRegistry, entities, characters, overrides };
               setState(fullState);
-              lastHashRef.current = computeStateHash(characters, entities, overrides.length);
               break;
             }
             case 'state_delta': {
               const lookup = tileLookupRef.current;
-              if (!lookup) {
-                sendResync();
-                break;
-              }
+              if (!lookup) break;
               const delta = decodeDelta(msg.delta, lookup);
               setState((prev) => {
-                if (!prev) {
-                  sendResync();
-                  return prev;
-                }
-                const updated = applyDelta(prev, delta);
-                const localHash = computeStateHash(
-                  updated.characters,
-                  updated.entities,
-                  updated.overrides.length,
-                );
-                if (localHash !== delta.stateHash) {
-                  sendResync();
-                  return prev;
-                }
-                lastHashRef.current = localHash;
-                return updated;
+                if (!prev) return prev;
+                return applyDelta(prev, delta);
               });
               break;
             }
@@ -232,7 +189,6 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               mapRef.current = null;
               tileLookupRef.current = null;
               tileRegistryRef.current = null;
-              lastHashRef.current = null;
               break;
             case 'error':
               setError(msg.message);

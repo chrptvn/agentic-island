@@ -28,12 +28,6 @@ export const lastMapInit = new Map<string, string>();
 export const lastMapInitEtags = new Map<string, string>();
 export const lastDynamicState = new Map<string, string>();
 
-/**
- * @deprecated Kept for backward compatibility during rollout.
- * New code uses lastMapInit + lastDynamicState.
- */
-export const lastIslandState = new Map<string, string>();
-
 // Cache the sprite content hash per island for URL cache busting
 const spriteHashes = new Map<string, string>();
 
@@ -189,7 +183,6 @@ export function handleIslandConnection(ws: WebSocket): void {
           const baseUrl = `/sprites/${core.islandId}/`;
           const mapRelay = JSON.stringify({
             type: "map_init",
-            islandId: core.islandId,
             islandName: core.islandName,
             map: msg.map,
             tileRegistry: msg.tileRegistry,
@@ -208,7 +201,6 @@ export function handleIslandConnection(ws: WebSocket): void {
           if (prevEtag && prevEtag !== newEtag) {
             const notify = JSON.stringify({
               type: "map_changed",
-              islandId: core.islandId,
             });
             const changedViewers = islandViewers.get(core.islandId);
             if (changedViewers) {
@@ -238,7 +230,6 @@ export function handleIslandConnection(ws: WebSocket): void {
 
           const dynamicRelay = JSON.stringify({
             type: "dynamic_state",
-            islandId: core.islandId,
             entities: msg.entities,
             characters: msg.characters,
             overrides: msg.overrides,
@@ -258,7 +249,6 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Lightweight relay — no DB write, no lobby broadcast
           const charRelay = JSON.stringify({
             type: "character_update",
-            islandId: core.islandId,
             characters: msg.characters,
           });
           const charViewers = islandViewers.get(core.islandId);
@@ -275,7 +265,6 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Relay delta to viewers — lightweight, no DB write
           const deltaRelay = JSON.stringify({
             type: "state_delta",
-            islandId: core.islandId,
             delta: msg.delta,
           });
 
@@ -357,7 +346,6 @@ export function handleIslandConnection(ws: WebSocket): void {
             // Notify viewers immediately so they reload the changed sprite
             const notification = JSON.stringify({
               type: "sprite_version",
-              islandId: core.islandId,
               spriteVersion: hash,
             });
             const viewers = islandViewers.get(core.islandId);
@@ -384,7 +372,6 @@ export function handleIslandConnection(ws: WebSocket): void {
       lastMapInit.delete(core.islandId);
       lastMapInitEtags.delete(core.islandId);
       lastDynamicState.delete(core.islandId);
-      lastIslandState.delete(core.islandId);
       spriteHashes.delete(core.islandId);
       lastPlayerCounts.delete(core.islandId);
       closeAllSessionsForIsland(core.islandId);
@@ -405,7 +392,6 @@ export function handleIslandConnection(ws: WebSocket): void {
       if (viewers) {
         const offline = JSON.stringify({
           type: "island_offline",
-          islandId: core.islandId,
         });
         for (const viewer of viewers) {
           if (viewer.readyState === 1) viewer.send(offline);
@@ -417,12 +403,4 @@ export function handleIslandConnection(ws: WebSocket): void {
 
 export function getConnectedIslands(): Map<string, ConnectedIsland> {
   return connectedIslands;
-}
-
-/** Forward a viewer's resync request to the connected island. */
-export function forwardResyncRequest(islandId: string): void {
-  const island = connectedIslands.get(islandId);
-  if (!island || island.ws.readyState !== 1) return;
-  const msg: HubToIslandMessage = { type: "resync_request" };
-  island.ws.send(JSON.stringify(msg));
 }

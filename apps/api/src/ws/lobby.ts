@@ -4,7 +4,7 @@
  */
 
 import type { WebSocket } from "ws";
-import type { HubToViewerMessage, IslandMeta } from "@agentic-island/shared";
+import type { HubToLobbyMessage, IslandMeta } from "@agentic-island/shared";
 import db from "../db/index.js";
 import { islandViewers } from "./island-handler.js";
 
@@ -72,11 +72,11 @@ function getIslandById(islandId: string): IslandMeta | null {
 
 // ── Broadcast helpers ───────────────────────────────────────────────────────
 
-function send(ws: WebSocket, msg: HubToViewerMessage): void {
+function send(ws: WebSocket, msg: HubToLobbyMessage): void {
   if (ws.readyState === 1) ws.send(JSON.stringify(msg));
 }
 
-function broadcast(msg: HubToViewerMessage): void {
+function broadcast(msg: HubToLobbyMessage): void {
   if (lobbyViewers.size === 0) return;
   const payload = JSON.stringify(msg);
   for (const ws of lobbyViewers) {

@@ -12,7 +12,8 @@ import keys from "./routes/keys.js";
 import islands from "./routes/islands.js";
 import admin from "./routes/admin.js";
 import { handleIslandConnection } from "./ws/island-handler.js";
-import { handleViewerConnection } from "./ws/viewer-handler.js";
+import { handleIslandViewerConnection } from "./ws/viewer-handler.js";
+import { handleLobbyConnection } from "./ws/lobby-handler.js";
 import { getSpriteCacheDir } from "./cache/sprites.js";
 import { rateLimit } from "./middleware/rate-limit.js";
 import { handleMcpProxy } from "./mcp-proxy/handler.js";
@@ -193,9 +194,16 @@ wss.on("connection", (ws: WebSocket, req) => {
 
   if (url.pathname === "/ws/island") {
     handleIslandConnection(ws);
-  } else if (url.pathname === "/ws/viewer") {
-    handleViewerConnection(ws);
+  } else if (url.pathname.startsWith("/ws/island/")) {
+    const islandId = decodeURIComponent(url.pathname.slice("/ws/island/".length));
+    if (islandId) {
+      handleIslandViewerConnection(ws, islandId);
+    } else {
+      ws.close(4000, "Missing islandId in path");
+    }
+  } else if (url.pathname === "/ws/lobby") {
+    handleLobbyConnection(ws);
   } else {
-    ws.close(4000, "Unknown WebSocket path. Use /ws/island or /ws/viewer");
+    ws.close(4000, "Unknown WebSocket path. Use /ws/island, /ws/island/:id, or /ws/lobby");
   }
 });
