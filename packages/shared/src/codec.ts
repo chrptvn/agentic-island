@@ -11,7 +11,7 @@ import type {
 import type { StateDelta, EntityPatch, OverridePatch } from "./delta.js";
 
 // ---------------------------------------------------------------------------
-// Wire format types — compact numeric tile IDs for transport
+// Wire format types — compact short-key JSON for transport
 // ---------------------------------------------------------------------------
 
 export interface WireMapData {
@@ -24,55 +24,95 @@ export interface WireMapData {
 export interface WireEntityInstance {
   x: number;
   y: number;
-  tileId: number;
-  stats: Record<string, number>;
-  name?: string;
-  inventory?: { item: string; qty: number }[];
-  occupants?: string[];
+  /** tileId (numeric index) */
+  t: number;
+  /** stats */
+  s: Record<string, number>;
+  /** name */
+  n?: string;
+  /** inventory */
+  i?: { item: string; qty: number }[];
+  /** occupants */
+  o?: string[];
 }
 
 export interface WireCharacterState {
-  id: string;
+  /** id */
+  i: string;
   x: number;
   y: number;
-  layerTiles: Record<string, number>;
-  appearance?: CharacterAppearance;
-  facing?: CharacterFacing;
-  stats: CharacterStats;
-  inventory: InventoryItem[];
-  equipment: EquipmentSlots;
-  goal: string;
-  speech?: { text: string; expiresAt: number };
-  shelter?: string;
+  /** layerTiles */
+  lt: Record<string, number>;
+  /** appearance */
+  a?: CharacterAppearance;
+  /** facing */
+  f?: CharacterFacing;
+  /** stats */
+  s: CharacterStats;
+  /** inventory */
+  iv: InventoryItem[];
+  /** equipment */
+  eq: EquipmentSlots;
+  /** goal */
+  g: string;
+  /** speech */
+  sp?: { text: string; expiresAt: number };
+  /** shelter */
+  sh?: string;
+}
+
+/** Slim position-only payload for high-frequency character_update (100ms). */
+export interface WireCharacterPosition {
+  /** id */
+  i: string;
+  x: number;
+  y: number;
+  /** facing */
+  f?: CharacterFacing;
+  /** speech */
+  sp?: { text: string; expiresAt: number };
 }
 
 export interface WireOverride {
   x: number;
   y: number;
-  layer: number;
-  tileId: number;
+  /** layer */
+  l: number;
+  /** tileId (numeric index) */
+  t: number;
 }
 
 export interface WireEntityPatch {
-  action: "upsert" | "remove";
-  key: string;
-  entity?: WireEntityInstance;
+  /** action */
+  a: "upsert" | "remove";
+  /** key */
+  k: string;
+  /** entity */
+  e?: WireEntityInstance;
 }
 
 export interface WireOverridePatch {
-  action: "set" | "remove";
+  /** action */
+  a: "set" | "remove";
   x: number;
   y: number;
-  layer: number;
-  tileId?: number;
+  /** layer */
+  l: number;
+  /** tileId (numeric index) */
+  t?: number;
 }
 
 export interface WireStateDelta {
-  tick: number;
-  stateHash: string;
-  characters?: WireCharacterState[];
-  entities?: WireEntityPatch[];
-  overrides?: WireOverridePatch[];
+  /** tick */
+  tk: number;
+  /** stateHash */
+  h: string;
+  /** characters */
+  c?: WireCharacterState[];
+  /** entities */
+  e?: WireEntityPatch[];
+  /** overrides */
+  o?: WireOverridePatch[];
 }
 
 // ---------------------------------------------------------------------------
@@ -114,12 +154,12 @@ export function encodeEntity(e: EntityInstance, enc: Map<string, number>): WireE
   const wire: WireEntityInstance = {
     x: e.x,
     y: e.y,
-    tileId: encodeTileId(e.tileId, enc),
-    stats: e.stats,
+    t: encodeTileId(e.tileId, enc),
+    s: e.stats,
   };
-  if (e.name !== undefined) wire.name = e.name;
-  if (e.inventory) wire.inventory = e.inventory;
-  if (e.occupants) wire.occupants = e.occupants;
+  if (e.name !== undefined) wire.n = e.name;
+  if (e.inventory) wire.i = e.inventory;
+  if (e.occupants) wire.o = e.occupants;
   return wire;
 }
 
@@ -128,24 +168,24 @@ export function encodeEntities(entities: EntityInstance[], enc: Map<string, numb
 }
 
 export function encodeCharacter(c: CharacterState, enc: Map<string, number>): WireCharacterState {
-  const layerTiles: Record<string, number> = {};
+  const lt: Record<string, number> = {};
   for (const key of Object.keys(c.layerTiles)) {
-    layerTiles[key] = encodeTileId(c.layerTiles[key], enc);
+    lt[key] = encodeTileId(c.layerTiles[key], enc);
   }
   const wire: WireCharacterState = {
-    id: c.id,
+    i: c.id,
     x: c.x,
     y: c.y,
-    layerTiles,
-    stats: c.stats,
-    inventory: c.inventory,
-    equipment: c.equipment,
-    goal: c.goal,
+    lt,
+    s: c.stats,
+    iv: c.inventory,
+    eq: c.equipment,
+    g: c.goal,
   };
-  if (c.appearance) wire.appearance = c.appearance;
-  if (c.facing) wire.facing = c.facing;
-  if (c.speech) wire.speech = c.speech;
-  if (c.shelter) wire.shelter = c.shelter;
+  if (c.appearance) wire.a = c.appearance;
+  if (c.facing) wire.f = c.facing;
+  if (c.speech) wire.sp = c.speech;
+  if (c.shelter) wire.sh = c.shelter;
   return wire;
 }
 
@@ -157,38 +197,50 @@ export function encodeOverrides(overrides: TileOverride[], enc: Map<string, numb
   return overrides.map(o => ({
     x: o.x,
     y: o.y,
-    layer: o.layer,
-    tileId: encodeTileId(o.tileId, enc),
+    l: o.layer,
+    t: encodeTileId(o.tileId, enc),
   }));
 }
 
 export function encodeEntityPatch(p: EntityPatch, enc: Map<string, number>): WireEntityPatch {
-  const wire: WireEntityPatch = { action: p.action, key: p.key };
-  if (p.entity) wire.entity = encodeEntity(p.entity, enc);
+  const wire: WireEntityPatch = { a: p.action, k: p.key };
+  if (p.entity) wire.e = encodeEntity(p.entity, enc);
   return wire;
 }
 
 export function encodeOverridePatch(p: OverridePatch, enc: Map<string, number>): WireOverridePatch {
-  const wire: WireOverridePatch = { action: p.action, x: p.x, y: p.y, layer: p.layer };
-  if (p.tileId !== undefined) wire.tileId = encodeTileId(p.tileId, enc);
+  const wire: WireOverridePatch = { a: p.action, x: p.x, y: p.y, l: p.layer };
+  if (p.tileId !== undefined) wire.t = encodeTileId(p.tileId, enc);
   return wire;
 }
 
 export function encodeDelta(delta: StateDelta, enc: Map<string, number>): WireStateDelta {
   const wire: WireStateDelta = {
-    tick: delta.tick,
-    stateHash: delta.stateHash,
+    tk: delta.tick,
+    h: delta.stateHash,
   };
   if (delta.characters) {
-    wire.characters = encodeCharacters(delta.characters, enc);
+    wire.c = encodeCharacters(delta.characters, enc);
   }
   if (delta.entities) {
-    wire.entities = delta.entities.map(p => encodeEntityPatch(p, enc));
+    wire.e = delta.entities.map(p => encodeEntityPatch(p, enc));
   }
   if (delta.overrides) {
-    wire.overrides = delta.overrides.map(p => encodeOverridePatch(p, enc));
+    wire.o = delta.overrides.map(p => encodeOverridePatch(p, enc));
   }
   return wire;
+}
+
+/** Encode only the position/facing/speech fields for high-frequency updates. */
+export function encodeCharacterPosition(c: CharacterState): WireCharacterPosition {
+  const wire: WireCharacterPosition = { i: c.id, x: c.x, y: c.y };
+  if (c.facing) wire.f = c.facing;
+  if (c.speech) wire.sp = c.speech;
+  return wire;
+}
+
+export function encodeCharacterPositions(chars: CharacterState[]): WireCharacterPosition[] {
+  return chars.map(c => encodeCharacterPosition(c));
 }
 
 // ---------------------------------------------------------------------------
@@ -212,12 +264,12 @@ export function decodeEntity(e: WireEntityInstance, lookup: string[]): EntityIns
   const decoded: EntityInstance = {
     x: e.x,
     y: e.y,
-    tileId: decodeTileId(e.tileId, lookup),
-    stats: e.stats,
+    tileId: decodeTileId(e.t, lookup),
+    stats: e.s,
   };
-  if (e.name !== undefined) decoded.name = e.name;
-  if (e.inventory) decoded.inventory = e.inventory;
-  if (e.occupants) decoded.occupants = e.occupants;
+  if (e.n !== undefined) decoded.name = e.n;
+  if (e.i) decoded.inventory = e.i;
+  if (e.o) decoded.occupants = e.o;
   return decoded;
 }
 
@@ -227,23 +279,23 @@ export function decodeEntities(entities: WireEntityInstance[], lookup: string[])
 
 export function decodeCharacter(c: WireCharacterState, lookup: string[]): CharacterState {
   const layerTiles: Record<string, string> = {};
-  for (const key of Object.keys(c.layerTiles)) {
-    layerTiles[key] = decodeTileId(c.layerTiles[key], lookup);
+  for (const key of Object.keys(c.lt)) {
+    layerTiles[key] = decodeTileId(c.lt[key], lookup);
   }
   const decoded: CharacterState = {
-    id: c.id,
+    id: c.i,
     x: c.x,
     y: c.y,
     layerTiles,
-    stats: c.stats,
-    inventory: c.inventory,
-    equipment: c.equipment,
-    goal: c.goal,
+    stats: c.s,
+    inventory: c.iv,
+    equipment: c.eq,
+    goal: c.g,
   };
-  if (c.appearance) decoded.appearance = c.appearance;
-  if (c.facing) decoded.facing = c.facing;
-  if (c.speech) decoded.speech = c.speech;
-  if (c.shelter) decoded.shelter = c.shelter;
+  if (c.a) decoded.appearance = c.a;
+  if (c.f) decoded.facing = c.f;
+  if (c.sp) decoded.speech = c.sp;
+  if (c.sh) decoded.shelter = c.sh;
   return decoded;
 }
 
@@ -255,30 +307,30 @@ export function decodeOverrides(overrides: WireOverride[], lookup: string[]): Ti
   return overrides.map(o => ({
     x: o.x,
     y: o.y,
-    layer: o.layer,
-    tileId: decodeTileId(o.tileId, lookup),
+    layer: o.l,
+    tileId: decodeTileId(o.t, lookup),
   }));
 }
 
 export function decodeDelta(delta: WireStateDelta, lookup: string[]): StateDelta {
   const result: StateDelta = {
-    tick: delta.tick,
-    stateHash: delta.stateHash,
+    tick: delta.tk,
+    stateHash: delta.h,
   };
-  if (delta.characters) {
-    result.characters = decodeCharacters(delta.characters, lookup);
+  if (delta.c) {
+    result.characters = decodeCharacters(delta.c, lookup);
   }
-  if (delta.entities) {
-    result.entities = delta.entities.map(p => {
-      const decoded: EntityPatch = { action: p.action, key: p.key };
-      if (p.entity) decoded.entity = decodeEntity(p.entity, lookup);
+  if (delta.e) {
+    result.entities = delta.e.map(p => {
+      const decoded: EntityPatch = { action: p.a, key: p.k };
+      if (p.e) decoded.entity = decodeEntity(p.e, lookup);
       return decoded;
     });
   }
-  if (delta.overrides) {
-    result.overrides = delta.overrides.map(p => {
-      const decoded: OverridePatch = { action: p.action, x: p.x, y: p.y, layer: p.layer };
-      if (p.tileId !== undefined) decoded.tileId = decodeTileId(p.tileId, lookup);
+  if (delta.o) {
+    result.overrides = delta.o.map(p => {
+      const decoded: OverridePatch = { action: p.a, x: p.x, y: p.y, layer: p.l };
+      if (p.t !== undefined) decoded.tileId = decodeTileId(p.t, lookup);
       return decoded;
     });
   }

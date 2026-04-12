@@ -166,12 +166,27 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               break;
             }
             case 'character_update': {
-              const lookup = tileLookupRef.current;
-              if (!lookup) break;
-              const characters = decodeCharacters(msg.characters, lookup);
+              // Slim position-only update — merge onto existing character state
               setState((prev) => {
                 if (!prev) return prev;
-                return { ...prev, characters };
+                const posMap = new Map<string, typeof msg.characters[number]>();
+                for (const p of msg.characters) {
+                  posMap.set(p.i, p);
+                }
+                const updated = prev.characters.map(c => {
+                  const pos = posMap.get(c.id);
+                  if (!pos) return c;
+                  const merged = { ...c, x: pos.x, y: pos.y };
+                  if (pos.f !== undefined) merged.facing = pos.f;
+                  if (pos.sp !== undefined) {
+                    merged.speech = pos.sp;
+                  } else if (c.speech) {
+                    // Clear speech if not present in update
+                    merged.speech = undefined;
+                  }
+                  return merged;
+                });
+                return { ...prev, characters: updated };
               });
               break;
             }

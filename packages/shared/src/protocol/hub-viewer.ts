@@ -5,6 +5,7 @@ import type {
   WireMapData,
   WireEntityInstance,
   WireCharacterState,
+  WireCharacterPosition,
   WireOverride,
   WireStateDelta,
 } from "../codec.js";
@@ -94,7 +95,7 @@ export interface ViewerIslandRemovedMessage {
 export interface ViewerCharacterUpdateMessage {
   type: "character_update";
   islandId: string;
-  characters: WireCharacterState[];
+  characters: WireCharacterPosition[];
 }
 
 export interface ViewerStateDeltaMessage {

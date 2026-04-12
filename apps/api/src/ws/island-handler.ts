@@ -266,8 +266,8 @@ export function handleIslandConnection(ws: WebSocket): void {
           });
 
           // Update player count from delta characters if present
-          if (msg.delta.characters) {
-            const agentCount = msg.delta.characters.length;
+          if (msg.delta.c) {
+            const agentCount = msg.delta.c.length;
             const prevCount = lastPlayerCounts.get(core.islandId);
             if (prevCount !== agentCount) {
               db.prepare(

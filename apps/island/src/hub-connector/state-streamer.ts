@@ -5,6 +5,7 @@ import type {
   WireMapData,
   WireEntityInstance,
   WireCharacterState,
+  WireCharacterPosition,
   WireOverride,
   WireStateDelta,
 } from "@agentic-island/shared";
@@ -14,6 +15,7 @@ import {
   encodeMap,
   encodeEntities,
   encodeCharacters,
+  encodeCharacterPositions,
   encodeOverrides,
   encodeDelta,
 } from "@agentic-island/shared";
@@ -49,7 +51,7 @@ export class StateStreamer {
   private options: Required<StateStreamerOptions>;
   private mapFn: ((payload: MapInitPayload) => void) | null = null;
   private stateFn: ((payload: DynamicStatePayload) => void) | null = null;
-  private charSendFn: ((characters: WireCharacterState[]) => void) | null = null;
+  private charSendFn: ((characters: WireCharacterPosition[]) => void) | null = null;
   private deltaFn: ((delta: WireStateDelta) => void) | null = null;
   private tracker = new DirtyTracker();
 
@@ -79,8 +81,8 @@ export class StateStreamer {
     this.stateFn = fn;
   }
 
-  /** Register the callback for lightweight character-only updates. */
-  onCharacterReady(fn: (characters: WireCharacterState[]) => void): void {
+  /** Register the callback for lightweight character position-only updates. */
+  onCharacterReady(fn: (characters: WireCharacterPosition[]) => void): void {
     this.charSendFn = fn;
   }
 
@@ -100,7 +102,7 @@ export class StateStreamer {
     // Fast path: character-only updates at high frequency
     if (this.charSendFn && now - this.lastCharSendTime >= this.options.charIntervalMs) {
       this.lastCharSendTime = now;
-      this.charSendFn(encodeCharacters(world.getCharacters(), this.encoderMap));
+      this.charSendFn(encodeCharacterPositions(world.getCharacters()));
     }
 
     // Delta path at lower frequency

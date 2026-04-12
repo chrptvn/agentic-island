@@ -7,6 +7,7 @@ import type {
   WireMapData,
   WireEntityInstance,
   WireCharacterState,
+  WireCharacterPosition,
   WireOverride,
   WireStateDelta,
 } from "../codec.js";
@@ -122,7 +123,7 @@ export interface IslandSpriteUpdateMessage {
 
 export interface IslandCharacterUpdateMessage {
   type: "character_update";
-  characters: WireCharacterState[];
+  characters: WireCharacterPosition[];
 }
 
 export interface IslandStateDeltaMessage {
