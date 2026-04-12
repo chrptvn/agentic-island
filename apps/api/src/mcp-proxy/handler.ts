@@ -1,8 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { createHash } from "node:crypto";
 import { getConnectedIslands } from "../ws/island-handler.js";
 import { createProxySession, getProxySession } from "./sessions.js";
-import db from "../db/index.js";
 
 const PREFIX = "[mcp-proxy]";
 
@@ -29,43 +27,12 @@ function extractIslandId(pathname: string): string | null {
   return match ? match[1] : null;
 }
 
-/** Hash an access key using SHA256 */
-function hashAccessKey(key: string): string {
-  return createHash("sha256").update(key).digest("hex");
-}
-
-interface IslandSecurityRow {
-  secured: number;
-  access_key_hash: string | null;
-}
-
-/**
- * Validate Bearer token for secured islands.
- * Returns null if valid (or island not secured), error message if invalid.
- */
-function validateAuth(req: IncomingMessage, islandId: string): string | null {
-  const row = db
-    .prepare("SELECT secured, access_key_hash FROM islands WHERE id = ?")
-    .get(islandId) as IslandSecurityRow | undefined;
-
-  if (!row) return "Island not found";
-  if (!row.secured) return null; // Not secured, allow access
-
-  // Island is secured — require valid Bearer token
+/** Extract Bearer token from Authorization header. Returns null if missing. */
+function extractBearerToken(req: IncomingMessage): string | null {
   const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith("Bearer ")) {
-    return "Authorization required — use Bearer token";
-  }
-
-  const token = authHeader.slice(7); // Remove "Bearer " prefix
-  if (!token) return "Missing access key";
-
-  const tokenHash = hashAccessKey(token);
-  if (tokenHash !== row.access_key_hash) {
-    return "Invalid access key";
-  }
-
-  return null; // Valid
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7).trim();
+  return token || null;
 }
 
 /**
@@ -106,11 +73,11 @@ export async function handleMcpProxy(
     return;
   }
 
-  // Validate authorization for secured islands
-  const authError = validateAuth(req, islandId);
-  if (authError) {
+  // Extract passport key from Bearer token (required for all connections)
+  const passportKey = extractBearerToken(req);
+  if (!passportKey) {
     res.writeHead(401, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: authError }));
+    res.end(JSON.stringify({ error: "Authorization required — use Bearer token with your Island Passport key" }));
     return;
   }
 
@@ -162,6 +129,6 @@ export async function handleMcpProxy(
     console.log(PREFIX, `Replacing stale session ${sessionId} for island ${islandId}`);
   }
   console.log(PREFIX, `New MCP proxy session for island ${islandId}`);
-  const transport = createProxySession(islandId, island.ws);
+  const transport = createProxySession(islandId, island.ws, passportKey);
   await transport.handleRequest(req, res, body);
 }

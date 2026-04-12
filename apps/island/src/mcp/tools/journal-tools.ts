@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
-import { requireSession } from "./character-tools.js";
+import { requireCharacter } from "./character-tools.js";
 import { writeJournalEntry, readJournalEntries } from "../../persistence/db.js";
 
 export function registerJournalTools(server: McpServer, session: McpSession): void {
@@ -9,11 +9,10 @@ export function registerJournalTools(server: McpServer, session: McpSession): vo
     "write_journal",
     "Write an entry to the character's knowledge base. Use this ONLY to record reusable game knowledge: crafting recipes you've discovered, resource locations, survival tips, tool capabilities, or any trick worth remembering. Do NOT use it as a narrative diary — do not record events like 'I built a campfire' or 'I moved north'.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       content: z.string().min(1).describe("The text content to record in the journal"),
     },
-    async ({ session_token, content }) => {
-      const check = requireSession(session, session_token);
+    async ({ content }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -35,11 +34,9 @@ export function registerJournalTools(server: McpServer, session: McpSession): vo
   server.tool(
     "read_journal",
     "Read all knowledge base entries for the character, ordered oldest to newest. Use this to recall crafting recipes, survival tips, or resource discoveries you previously recorded.",
-    {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
-    },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    {},
+    async () => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {

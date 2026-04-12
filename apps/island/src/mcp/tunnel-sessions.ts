@@ -18,18 +18,20 @@ const tunnelSessions = new Map<string, { session: McpSession; transport: WebSock
 /**
  * Handle an incoming JSON-RPC message from the hub for a tunnel session.
  * If the session doesn't exist yet, it is created on the fly.
+ * `passportKey` is provided on the first message (initialize) to authenticate.
  */
 export function handleTunnelMessage(
   sessionId: string,
   message: unknown,
   sendToHub: (sessionId: string, msg: JSONRPCMessage) => void,
+  passportKey?: string,
 ): void {
   let entry = tunnelSessions.get(sessionId);
 
   if (!entry) {
     console.log(PREFIX, `Creating tunnel session ${sessionId}`);
     const transport = new WebSocketTunnelTransport(sessionId, sendToHub);
-    const session = makeTunnelSession(transport);
+    const session = makeTunnelSession(transport, passportKey);
     entry = { session, transport };
     tunnelSessions.set(sessionId, entry);
 

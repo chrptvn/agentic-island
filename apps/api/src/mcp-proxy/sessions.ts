@@ -26,7 +26,10 @@ const islandSessionIndex = new Map<string, Set<string>>();
 export function createProxySession(
   islandId: string,
   islandWs: WebSocket,
+  passportKey?: string,
 ): StreamableHTTPServerTransport {
+  let isFirstMessage = true;
+
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: () => randomUUID(),
     onsessioninitialized: (sessionId: string) => {
@@ -51,7 +54,10 @@ export function createProxySession(
       type: "mcp_tunnel_message",
       sessionId,
       message,
+      // Include passport key only on the first message (initialize)
+      ...(isFirstMessage && passportKey ? { passportKey } : {}),
     };
+    isFirstMessage = false;
     try {
       islandWs.send(JSON.stringify(tunnelMsg));
     } catch (err) {

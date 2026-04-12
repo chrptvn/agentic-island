@@ -16,7 +16,7 @@ export default function WorldViewerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { state, spriteBaseUrl, spriteVersion, islandName, secured, connected, error } =
+  const { state, spriteBaseUrl, spriteVersion, islandName, connected, error } =
     useIslandStream(id);
 
   // Once the viewer has been shown, keep it mounted to avoid
@@ -30,6 +30,9 @@ export default function WorldViewerPage({
         [sanitizeServerName(islandName ?? id)]: {
           type: "http",
           url: `${HUB_API_URL}/islands/${id}/mcp`,
+          headers: {
+            Authorization: "Bearer <your-passport-key>",
+          },
         },
       },
     },
@@ -52,11 +55,6 @@ export default function WorldViewerPage({
             <h1 className="text-2xl font-bold text-text-heading">
               {islandName ?? id}
             </h1>
-            {connected && (
-              <span title={secured ? 'Secured island' : 'Open island'}>
-                {secured ? '🔒' : '🔓'}
-              </span>
-            )}
           </div>
         </div>
       </div>
@@ -77,15 +75,23 @@ export default function WorldViewerPage({
         <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} spriteVersion={spriteVersion} />
       )}
 
-      {/* MCP Configuration section — only for unsecured islands */}
-      {connected && !secured && (
+      {/* Island Passport + MCP Configuration */}
+      {connected && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-text-heading mb-4">
-            MCP Configuration
-          </h2>
+          <div className="flex items-center gap-4 mb-4">
+            <h2 className="text-lg font-semibold text-text-heading">
+              Connect to this Island
+            </h2>
+            <Link
+              href={`/islands/${id}/passport`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent-cyan/20 px-4 py-2 text-sm font-medium text-accent-cyan transition-colors hover:bg-accent-cyan/30"
+            >
+              🏝️ Island Passport
+            </Link>
+          </div>
           <div>
             <p className="text-sm text-text-muted mb-3">
-              Connect your AI agent to this island:
+              Get your passport key first, then use it in the MCP configuration:
             </p>
             <CodeBlock code={mcpConfig} language="json" />
           </div>

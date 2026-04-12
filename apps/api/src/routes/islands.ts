@@ -1,6 +1,9 @@
 import { Hono } from "hono";
-import { createHash, randomBytes } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import db from "../db/index.js";
+import type { HubToIslandMessage, IslandPassportResponse } from "@agentic-island/shared";
+import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
+import { sendPassportRequest } from "../ws/island-handler.js";
 
 const islands = new Hono();
 
@@ -10,7 +13,6 @@ interface IslandRow {
   description: string | null;
   thumbnail_path: string | null;
   player_count: number;
-  secured: number;
   status: string;
   last_heartbeat_at: string | null;
   created_at: string;
@@ -23,7 +25,6 @@ function toCamelCase(row: IslandRow) {
     description: row.description,
     thumbnailUrl: row.thumbnail_path ?? undefined,
     playerCount: row.player_count,
-    secured: Boolean(row.secured),
     status: row.status,
     lastHeartbeatAt: row.last_heartbeat_at,
     createdAt: row.created_at,
@@ -33,7 +34,7 @@ function toCamelCase(row: IslandRow) {
 islands.get("/", (c) => {
   const filter = c.req.query("filter");
   const cols =
-    "id, name, description, thumbnail_path, player_count, secured, status, last_heartbeat_at, created_at";
+    "id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at";
 
   let rows: IslandRow[];
   if (filter === "with-agents") {
@@ -54,7 +55,7 @@ islands.get("/", (c) => {
 islands.get("/:id", (c) => {
   const id = c.req.param("id");
   const row = db.prepare(
-    "SELECT id, name, description, thumbnail_path, player_count, secured, status, last_heartbeat_at, created_at FROM islands WHERE id = ?"
+    "SELECT id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at FROM islands WHERE id = ?"
   ).get(id) as IslandRow | undefined;
   if (!row) return c.json({ error: "Island not found" }, 404);
 
@@ -63,44 +64,118 @@ islands.get("/:id", (c) => {
   return c.json(toCamelCase(row));
 });
 
-/**
- * Regenerate access key for a secured island.
- * Requires Authorization header with the island's hub key (API key).
- */
-islands.post("/:id/regenerate-key", async (c) => {
+/** Get the character catalog from an island (tunneled request). */
+islands.get("/:id/passport-catalog", async (c) => {
   const id = c.req.param("id");
-  const authHeader = c.req.header("Authorization");
+  const requestId = randomUUID();
+  const request: HubToIslandMessage = {
+    type: "passport_request",
+    requestId,
+    action: "get_catalog",
+  };
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return c.json({ error: "Authorization required — use Bearer token with your hub key" }, 401);
+  try {
+    const response = await sendPassportRequest(id, request, requestId) as IslandPassportResponse;
+    if (!response.success) {
+      return c.json({ error: response.error ?? "Failed to get catalog" }, 500);
+    }
+    return c.json({ catalog: response.catalog });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return c.json({ error: msg }, 503);
+  }
+});
+
+/** Check if SMTP is configured (so frontend knows whether to offer minutemail). */
+islands.get("/:id/smtp-status", (c) => {
+  return c.json({ smtpConfigured: isSmtpConfigured() });
+});
+
+/** Create or recover a passport for an island. */
+islands.post("/:id/passports", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  const hubKey = authHeader.slice(7);
-  const hubKeyHash = createHash("sha256").update(hubKey).digest("hex");
-
-  // Verify hub key and check island ownership
-  const row = db.prepare(`
-    SELECT i.id, i.secured, ak.id as api_key_id
-    FROM islands i
-    JOIN api_keys ak ON i.api_key_id = ak.id
-    WHERE i.id = ? AND ak.key_hash = ?
-  `).get(id, hubKeyHash) as { id: string; secured: number; api_key_id: string } | undefined;
-
-  if (!row) {
-    return c.json({ error: "Island not found or invalid hub key" }, 404);
+  const { email, name, appearance } = body as { email?: string; name?: string; appearance?: Record<string, unknown> };
+  if (!email || typeof email !== "string") {
+    return c.json({ error: "Email is required" }, 400);
+  }
+  if (!name || typeof name !== "string") {
+    return c.json({ error: "Name is required" }, 400);
+  }
+  if (!appearance || typeof appearance !== "object") {
+    return c.json({ error: "Appearance is required" }, 400);
   }
 
-  if (!row.secured) {
-    return c.json({ error: "Island is not secured — no access key needed" }, 400);
+  const requestId = randomUUID();
+  const request: HubToIslandMessage = {
+    type: "passport_request",
+    requestId,
+    action: "create",
+    email: email.trim().toLowerCase(),
+    name: name.trim(),
+    appearance: appearance as import("@agentic-island/shared").CharacterAppearance,
+  };
+
+  try {
+    const response = await sendPassportRequest(id, request, requestId) as IslandPassportResponse;
+    if (!response.success) {
+      return c.json({ error: response.error ?? "Failed to create passport" }, 400);
+    }
+
+    // Send the passport key by email
+    const mcpUrl = `${process.env.HUB_PUBLIC_URL?.replace(/\/$/, "") ?? ""}/islands/${id}/mcp`;
+    const result = await sendPassportEmail(email.trim().toLowerCase(), response.rawKey!, mcpUrl, name.trim());
+
+    return c.json({
+      sent: result.delivered,
+      method: result.method,
+      maskedEmail: response.maskedEmail,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return c.json({ error: msg }, 503);
+  }
+});
+
+/** Update passport appearance. */
+islands.put("/:id/passports", async (c) => {
+  const id = c.req.param("id");
+  const body = await c.req.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return c.json({ error: "Invalid JSON body" }, 400);
   }
 
-  // Generate new access key
-  const accessKey = `ik_${randomBytes(16).toString("hex")}`;
-  const accessKeyHash = createHash("sha256").update(accessKey).digest("hex");
+  const { email, appearance } = body as { email?: string; appearance?: Record<string, unknown> };
+  if (!email || typeof email !== "string") {
+    return c.json({ error: "Email is required" }, 400);
+  }
+  if (!appearance || typeof appearance !== "object") {
+    return c.json({ error: "Appearance is required" }, 400);
+  }
 
-  db.prepare("UPDATE islands SET access_key_hash = ? WHERE id = ?").run(accessKeyHash, id);
+  const requestId = randomUUID();
+  const request: HubToIslandMessage = {
+    type: "passport_request",
+    requestId,
+    action: "update",
+    email: email.trim().toLowerCase(),
+    appearance: appearance as import("@agentic-island/shared").CharacterAppearance,
+  };
 
-  return c.json({ accessKey, message: "Access key regenerated successfully" });
+  try {
+    const response = await sendPassportRequest(id, request, requestId) as IslandPassportResponse;
+    if (!response.success) {
+      return c.json({ error: response.error ?? "Failed to update passport" }, 400);
+    }
+    return c.json({ success: true });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return c.json({ error: msg }, 503);
+  }
 });
 
 export default islands;

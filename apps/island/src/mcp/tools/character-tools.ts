@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { randomUUID } from "crypto";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
 import { Island } from "../../island/island.js";
@@ -64,12 +63,12 @@ function resolveTarget(
   return null;
 }
 
-/** Check that the session has a connected character and the token is valid. */
-export function requireSession(session: McpSession, sessionToken: string): string | { content: { type: "text"; text: string }[]; isError: true } {
-  if (!session.sessionToken || session.sessionToken !== sessionToken) {
-    return { content: [{ type: "text", text: "Invalid or missing session token. Call the 'connect' tool first." }], isError: true };
+/** Get the character ID from the session. Returns an error object if no character is connected. */
+export function requireCharacter(session: McpSession): string | { content: { type: "text"; text: string }[]; isError: true } {
+  if (!session.characterId) {
+    return { content: [{ type: "text", text: "No character connected. A valid Island Passport is required to connect." }], isError: true };
   }
-  return session.username!;
+  return session.characterId;
 }
 
 /** Build the game rules payload (used by the connect tool). */
@@ -166,12 +165,11 @@ export function registerFeedEntityTools(server: McpServer, session: McpSession):
     "feed_entity",
     "Feed fuel items from your inventory into an adjacent entity (e.g. wood into a lit campfire) to keep it going. You must be next to it.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       direction: z.string().describe("Direction to the entity: n/s/e/w/ne/nw/se/sw."),
       qty:       z.number().int().min(1).optional().describe("Number of fuel units to feed (default: 1)"),
     },
-    async ({ session_token, direction, qty }) => {
-      const check = requireSession(session, session_token);
+    async ({ direction, qty }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const id = check;
       try {
@@ -187,98 +185,15 @@ export function registerFeedEntityTools(server: McpServer, session: McpSession):
 }
 
 export function registerGenericPersonaTools(server: McpServer, session: McpSession): void {
-  // ── connect tool ────────────────────────────────────────────────────────
-  server.tool(
-    "connect",
-    "Connect to the world. Call this once at the start of a session. Returns a session_token (use it on every subsequent tool call), game rules, and your initial surroundings. If reconnecting, your character's state (position, inventory, stats) is restored.",
-    {
-      username: z.string().min(1).describe("Your username (e.g. 'Carl')"),
-    },
-    async ({ username }) => {
-      if (session.username) {
-        return { content: [{ type: "text", text: `Already connected as "${session.username}". Disconnect first.` }], isError: true };
-      }
-      try {
-        const { attachWorldListener, isUsernameClaimed } = await import("../mcp-server.js");
-
-        if (isUsernameClaimed(username, session)) {
-          return { content: [{ type: "text", text: `Username "${username}" is already connected in another session.` }], isError: true };
-        }
-
-        // Claim the username immediately (synchronous within same tick as the
-        // check above) so no other session can grab it before world.connect().
-        session.username = username;
-
-        const world = Island.getInstance();
-        let reconnected: boolean;
-        try {
-          ({ reconnected } = world.connect(username));
-        } catch (err) {
-          // Roll back the claim if connect fails
-          session.username = null;
-          throw err;
-        }
-        session.sessionToken = randomUUID();
-
-        attachWorldListener(session);
-
-        const snapshot = world.getSurroundings(username);
-        const surroundings = snapshot
-          ? humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0])
-          : null;
-
-        return {
-          content: [{
-            type: "text",
-            text: JSON.stringify({
-              session_token: session.sessionToken,
-              reconnected,
-              ...(surroundings ? { surroundings } : {}),
-            }, null, 2),
-          }],
-        };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  // ── disconnect tool ──────────────────────────────────────────────────────
-
-  server.tool(
-    "disconnect",
-    "Disconnect your character from the world. The character is removed from the map but saved in the database so you can reconnect later with the same state. Call connect again to resume.",
-    {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
-    },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
-      if (typeof check !== "string") return check;
-      const username = check;
-
-      try {
-        const { detachWorldListener } = await import("../mcp-server.js");
-        Island.getInstance().disconnect(username);
-        detachWorldListener(session);
-        session.username = null;
-        session.sessionToken = null;
-        return { content: [{ type: "text", text: `Disconnected "${username}". Call connect to resume.` }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
 
   // ── get_status tool ──────────────────────────────────────────────────────
 
   server.tool(
     "get_status",
     "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and a description of the tiles immediately surrounding them.",
-    {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
-    },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    {},
+    async () => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       const snapshot = Island.getInstance().getSurroundings(character_id);
@@ -300,11 +215,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "walk",
     "Move a character by a sequence of directional steps relative to its current position. Each step is a cardinal direction (n/s/e/w, north/south/east/west, top/bottom/left/right). The steps are summed into a target offset and pathfinding routes there — so the character navigates around obstacles naturally. Example: [\"n\",\"n\",\"e\"] moves 2 north and 1 east from current position.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       steps: z.array(z.string()).min(1).describe("Ordered list of direction steps, e.g. [\"n\",\"n\",\"e\",\"n\",\"e\"]. Accepts: n/s/e/w, north/south/east/west, top/bottom/left/right, up/down."),
     },
-    async ({ session_token, steps }) => {
-      const check = requireSession(session, session_token);
+    async ({ steps }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       // Validate directions
@@ -342,10 +256,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "swing",
     "Swing or use the item currently equipped in your hands toward the facing cell. If an entity is there, it gets hit — returns hit:true with harvested items and entity condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed'). If the cell is empty, you swing in the air — energy is consumed but no error is thrown.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    async ({}) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -361,11 +274,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "harvest",
     "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. Trees require a tool with 'chop' capability (axe). On death, a log pile container may appear — use harvest again to pick up wood from it.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       item:          z.string().optional().describe("Specific item to harvest (e.g. 'branches', 'berries'). Omit to harvest everything available."),
     },
-    async ({ session_token, item }) => {
-      const check = requireSession(session, session_token);
+    async ({ item }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -381,11 +293,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "eat",
     "Consume one food item from your inventory to satisfy hunger. Edible items include: berries, acorns.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       item: z.string().min(1).describe("Name of the food item to eat (e.g. 'berries', 'acorns')"),
     },
-    async ({ session_token, item }) => {
-      const check = requireSession(session, session_token);
+    async ({ item }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -484,12 +395,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "use_item",
     "Perform a special interaction with an item in your inventory (e.g. squish a rubber duck, sniff a suspicious mushroom). Use examine_item to discover available verbs.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       item: z.string().min(1).describe("Item name from your inventory (e.g. 'rubber_duck')"),
       verb: z.string().min(1).describe("The action verb to perform (e.g. 'squish', 'sniff', 'ponder')"),
     },
-    async ({ session_token, item, verb }) => {
-      const check = requireSession(session, session_token);
+    async ({ item, verb }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -505,10 +415,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "list_craftable",
     "Returns all recipes split into craftable and not-craftable for a character, based on their current inventory. Craftable entries show available ingredients. Not-craftable entries show how many of each ingredient is still missing.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    async ({}) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -524,11 +433,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "craft_item",
     "Craft an item using a recipe. Consumes the required ingredients from the character's inventory and adds the output items. Use list_craftable first to confirm the character has the required ingredients.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       recipe: z.string().min(1).describe("Recipe name to craft (e.g. 'stone_axe')"),
     },
-    async ({ session_token, recipe }) => {
-      const check = requireSession(session, session_token);
+    async ({ recipe }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -544,11 +452,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "container_inspect",
     "View the contents of a container (chest, etc.) adjacent to you. You must be next to it.",
     {
-      session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
       direction:        z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
     },
-    async ({ session_token, direction }) => {
-      const check = requireSession(session, session_token);
+    async ({ direction }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -566,13 +473,12 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "container_put",
     "Move items from your inventory into an adjacent container (chest, etc.).",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
       item:         z.string().min(1).describe("Item name to store (e.g. 'wood')"),
       qty:          z.number().int().positive().describe("How many to store"),
     },
-    async ({ session_token, direction, item, qty }) => {
-      const check = requireSession(session, session_token);
+    async ({ direction, item, qty }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -590,13 +496,12 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "container_take",
     "Take items from an adjacent container (chest, etc.) into your inventory.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
       item:         z.string().min(1).describe("Item name to take (e.g. 'wood')"),
       qty:          z.number().int().positive().describe("How many to take"),
     },
-    async ({ session_token, direction, item, qty }) => {
-      const check = requireSession(session, session_token);
+    async ({ direction, item, qty }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -614,12 +519,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "equip",
     "Equip an item from a character's inventory into a slot. The 'hands' slot requires the item to have equippable:true in item-defs.json. Body slots (head/body/legs/feet) require the item to have a matching wearable attribute. If the slot is occupied the current item is automatically returned to inventory.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       item: z.string().min(1).describe("Item name from inventory to equip (e.g. 'stone_axe')"),
       slot: z.enum(["hands", "head", "body", "legs", "feet"]).describe("Equipment slot to fill"),
     },
-    async ({ session_token, item, slot }) => {
-      const check = requireSession(session, session_token);
+    async ({ item, slot }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -635,11 +539,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "unequip",
     "Unequip a slot — removes the item from the equipment slot and returns it to the character's inventory.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       slot: z.enum(["hands", "head", "body", "legs", "feet"]).describe("Equipment slot to unequip"),
     },
-    async ({ session_token, slot }) => {
-      const check = requireSession(session, session_token);
+    async ({ slot }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -654,12 +557,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "build_structure",
     "Build a structure on an adjacent empty tile by consuming items from your inventory. You must be next to the target tile (N/S/E/W).",
     {
-      session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
       target_direction: z.string().describe("Direction to the build target: n/s/e/w."),
       entity_id:        z.string().min(1).describe("Entity ID to build (e.g. 'campfire_extinct')"),
     },
-    async ({ session_token, target_direction, entity_id }) => {
-      const check = requireSession(session, session_token);
+    async ({ target_direction, entity_id }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -677,11 +579,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "interact_with",
     "Interact with an entity on an adjacent tile (e.g. light a campfire, extinguish it). You must be next to the target (N/S/E/W).",
     {
-      session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
       target_direction: z.string().describe("Direction to the target entity: n/s/e/w/ne/nw/se/sw."),
     },
-    async ({ session_token, target_direction }) => {
-      const check = requireSession(session, session_token);
+    async ({ target_direction }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -699,10 +600,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "plow_tile",
     "Plow the character's CURRENT cell to create a dirt path. The cell must be grass with no entity on it. Requires multiple calls to complete bare-handed; equipping a plow or digging tool reduces the number of hits and energy cost needed. Returns progress, total required, whether the path was completed, and hits remaining.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    async ({}) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -720,11 +620,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "enter_tent",
     "Enter an adjacent tent to rest. While inside, the character disappears from the map and regenerates energy rapidly. You must be next to the tent's door (bottom-left tile) in a cardinal direction.",
     {
-      session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
       target_direction: z.string().describe("Direction to the tent door: n/s/e/w."),
     },
-    async ({ session_token, target_direction }) => {
-      const check = requireSession(session, session_token);
+    async ({ target_direction }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -742,10 +641,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "exit_tent",
     "Exit the tent the character is currently resting in. The character will reappear on an adjacent walkable tile.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    async ({}) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -763,11 +661,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "set_marker",
     "Place a marker at your current position with a description. Use markers to remember locations you want to return to — resource spots, your base camp, points of interest. If a marker already exists at this location, its description is updated.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       description: z.string().min(1).max(200).describe("A note describing this location (e.g. 'Berry bush near water', 'Base camp with campfire and chest')"),
     },
-    async ({ session_token, description }) => {
-      const check = requireSession(session, session_token);
+    async ({ description }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -785,10 +682,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "get_markers",
     "Retrieve all your placed markers with their coordinates and descriptions. Use this to navigate back to places you've marked.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token }) => {
-      const check = requireSession(session, session_token);
+    async ({}) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
@@ -810,12 +706,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "delete_marker",
     "Remove a marker at a specific location. Use this to clean up markers you no longer need.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       x: z.number().int().describe("X coordinate of the marker to delete"),
       y: z.number().int().describe("Y coordinate of the marker to delete"),
     },
-    async ({ session_token, x, y }) => {
-      const check = requireSession(session, session_token);
+    async ({ x, y }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {

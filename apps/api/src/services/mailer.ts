@@ -153,3 +153,99 @@ export async function sendHubKeyEmail(
     return { delivered: false, method: "minutemail" };
   }
 }
+
+export async function sendPassportEmail(
+  email: string,
+  key: string,
+  mcpUrl: string,
+  characterName: string,
+): Promise<SendResult> {
+  const usePrimary = isSmtpConfigured();
+  const useMinutemail = !usePrimary && isMinutemailAddress(email);
+
+  if (!usePrimary && !useMinutemail) {
+    console.warn(
+      "[mailer] SMTP not configured and not a MinuteMail address. Skipping passport email to",
+      email,
+    );
+    return { delivered: false, method: "none" };
+  }
+
+  const subject = "🏝️ Your Island Passport — Agentic Island";
+
+  const sanitizedName = characterName.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:520px;margin:40px auto;padding:0 16px;">
+    <div style="background:linear-gradient(135deg,#1e3a5f 0%,#0f766e 100%);border-radius:16px;padding:32px;color:#fff;border:1px solid rgba(255,255,255,0.1);">
+      <div style="text-align:center;margin-bottom:24px;">
+        <span style="font-size:48px;">🏝️</span>
+        <h1 style="margin:8px 0 4px;font-size:22px;font-weight:700;">Island Passport</h1>
+        <p style="margin:0;opacity:0.7;font-size:13px;">Welcome, ${sanitizedName}!</p>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:20px;margin:20px 0;text-align:center;">
+        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">Your Passport Key</p>
+        <code style="font-size:15px;word-break:break-all;color:#5eead4;font-family:'SF Mono',Monaco,Consolas,monospace;">${key}</code>
+      </div>
+
+      <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:16px;margin:16px 0;">
+        <p style="margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.6;">MCP Configuration</p>
+        <pre style="margin:0;font-size:12px;color:#94a3b8;font-family:'SF Mono',Monaco,Consolas,monospace;white-space:pre-wrap;word-break:break-all;">{
+  "type": "http",
+  "url": "${mcpUrl}",
+  "headers": {
+    "Authorization": "Bearer ${key}"
+  }
+}</pre>
+      </div>
+
+    </div>
+
+    <p style="text-align:center;color:#94a3b8;font-size:11px;margin-top:20px;line-height:1.5;">
+      Same email, same key &mdash; you can always recover it by requesting again.<br>
+      &copy; ${new Date().getFullYear()} Agentic Island
+    </p>
+  </div>
+</body>
+</html>`.trim();
+
+  const text = [
+    `🏝️ Your Island Passport — Agentic Island`,
+    "",
+    `Welcome, ${characterName}!`,
+    "",
+    `Your Passport Key: ${key}`,
+    "",
+    `MCP Endpoint: ${mcpUrl}`,
+    `Authorization: Bearer ${key}`,
+    "",
+    "Same email, same key — you can always recover it by requesting again.",
+  ].join("\n");
+
+  if (usePrimary) {
+    try {
+      const transport = createTransport();
+      await transport.sendMail({ from: SMTP_FROM, to: email, subject, html, text });
+      return { delivered: true, method: "primary" };
+    } catch (err) {
+      console.error("[mailer] Failed to send passport email via primary SMTP:", err);
+      if (!isMinutemailAddress(email)) {
+        return { delivered: false, method: "primary" };
+      }
+      console.log("[mailer] Falling back to MinuteMail HTTP ingest");
+    }
+  }
+
+  try {
+    const ok = await sendViaMinutemailHttp(email, subject, text, SMTP_FROM);
+    return { delivered: ok, method: "minutemail" };
+  } catch (err) {
+    console.error("[mailer] Failed to send passport email via MinuteMail HTTP:", err);
+    return { delivered: false, method: "minutemail" };
+  }
+}

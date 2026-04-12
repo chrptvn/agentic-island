@@ -8,7 +8,6 @@ export interface IslandStream {
   spriteBaseUrl: string | null;
   spriteVersion: string | null;
   islandName: string | null;
-  secured: boolean;
   connected: boolean;
   error: string | null;
 }
@@ -21,7 +20,6 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
   const [spriteBaseUrl, setSpriteBaseUrl] = useState<string | null>(null);
   const [spriteVersion, setSpriteVersion] = useState<string | null>(null);
   const [islandName, setIslandName] = useState<string | null>(null);
-  const [secured, setSecured] = useState(false);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,7 +56,6 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               setSpriteBaseUrl(msg.spriteBaseUrl);
               setSpriteVersion(msg.spriteVersion ?? null);
               setIslandName(msg.islandName);
-              setSecured(msg.secured ?? false);
               break;
             case 'character_update':
               setState((prev) => {
@@ -107,5 +104,5 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
     };
   }, [islandId]);
 
-  return { state, spriteBaseUrl, spriteVersion, islandName, secured, connected, error };
+  return { state, spriteBaseUrl, spriteVersion, islandName, connected, error };
 }

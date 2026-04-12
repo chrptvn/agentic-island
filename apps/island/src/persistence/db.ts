@@ -1,6 +1,8 @@
 import Database from "better-sqlite3";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
+import { randomBytes } from "node:crypto";
+import type { CharacterAppearance } from "@agentic-island/shared";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, "../..", "agentic-island.db");
@@ -249,7 +251,7 @@ export function clearEntityStats(): void {
 
 // ── Characters ────────────────────────────────────────────────────────────────
 
-import type { CharacterAppearance, CharacterFacing } from "@agentic-island/shared";
+import type { CharacterFacing } from "@agentic-island/shared";
 
 import { randomAppearance as catalogRandomAppearance } from "../island/character-sprites.js";
 
@@ -428,4 +430,81 @@ export function readJournalEntries(characterId: string): JournalEntry[] {
   return db
     .prepare("SELECT id, character_id, content, created_at FROM journal WHERE character_id = ? ORDER BY created_at ASC")
     .all(characterId) as JournalEntry[];
+}
+
+// ── Passports ─────────────────────────────────────────────────────────────────
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS passports (
+    id         TEXT PRIMARY KEY,
+    email      TEXT NOT NULL UNIQUE,
+    key_hash   TEXT NOT NULL UNIQUE,
+    name       TEXT NOT NULL,
+    appearance TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  );
+`);
+
+export interface PassportRow {
+  id: string;
+  email: string;
+  key_hash: string;
+  name: string;
+  appearance: CharacterAppearance;
+  created_at: string;
+  updated_at: string;
+}
+
+export function savePassport(
+  id: string,
+  email: string,
+  keyHash: string,
+  name: string,
+  appearance: CharacterAppearance,
+): void {
+  db.prepare(
+    `INSERT INTO passports (id, email, key_hash, name, appearance)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       name = excluded.name,
+       appearance = excluded.appearance,
+       updated_at = datetime('now')`,
+  ).run(id, email, keyHash, name, JSON.stringify(appearance));
+}
+
+export function updatePassportAppearance(
+  email: string,
+  name: string,
+  appearance: CharacterAppearance,
+): boolean {
+  const result = db.prepare(
+    `UPDATE passports SET name = ?, appearance = ?, updated_at = datetime('now') WHERE email = ?`,
+  ).run(name, JSON.stringify(appearance), email);
+  return result.changes > 0;
+}
+
+export function getPassportByEmail(email: string): PassportRow | null {
+  const r = db.prepare("SELECT * FROM passports WHERE email = ?").get(email) as
+    | { id: string; email: string; key_hash: string; name: string; appearance: string; created_at: string; updated_at: string }
+    | undefined;
+  if (!r) return null;
+  return { ...r, appearance: JSON.parse(r.appearance) as CharacterAppearance };
+}
+
+export function getPassportByKeyHash(keyHash: string): PassportRow | null {
+  const r = db.prepare("SELECT * FROM passports WHERE key_hash = ?").get(keyHash) as
+    | { id: string; email: string; key_hash: string; name: string; appearance: string; created_at: string; updated_at: string }
+    | undefined;
+  if (!r) return null;
+  return { ...r, appearance: JSON.parse(r.appearance) as CharacterAppearance };
+}
+
+/** Get or create the island-specific passport salt (stored in world_state). */
+export function getOrCreatePassportSalt(): string {
+  const existing = loadState<string>("passport_salt");
+  if (existing) return existing;
+  const salt = randomBytes(32).toString("hex");
+  saveState("passport_salt", salt);
+  return salt;
 }

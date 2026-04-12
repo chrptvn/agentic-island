@@ -5,6 +5,7 @@ import type {
   SpriteAsset,
   IslandState,
   CharacterState,
+  IslandPassportResponse,
 } from "@agentic-island/shared";
 import {
   WS_RECONNECT_BASE_MS,
@@ -13,6 +14,7 @@ import {
 } from "@agentic-island/shared";
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 import { handleTunnelMessage, closeTunnelSession, closeAllTunnelSessions, setSessionClosedNotifier } from "../mcp/tunnel-sessions.js";
+import { createPassport, getCharacterCatalog } from "../passport/index.js";
 
 export interface HubConnectorOptions {
   hubUrl: string;
@@ -20,7 +22,6 @@ export interface HubConnectorOptions {
   islandName: string;
   islandId?: string;
   islandDescription?: string;
-  secured?: boolean;
 }
 
 export type SpritePayload = SpriteAsset;
@@ -37,7 +38,7 @@ export class HubConnector {
   private connected = false;
   private destroyed = false;
 
-  onConnected?: (islandId: string, accessKey?: string) => void | Promise<void>;
+  onConnected?: (islandId: string) => void | Promise<void>;
   onDisconnected?: () => void;
   onError?: (error: Error) => void;
 
@@ -148,7 +149,6 @@ export class HubConnector {
           id: this.options.islandId,
           description: this.options.islandDescription,
           config: islandConfig,
-          secured: this.options.secured,
         },
         sprites,
         ...(thumbnail ? { thumbnail } : {}),
@@ -176,7 +176,7 @@ export class HubConnector {
             this.startHeartbeat();
             console.log(PREFIX, `Connected — islandId=${msg.islandId}`);
             setSessionClosedNotifier((sid) => this.sendTunnelSessionClosed(sid));
-            void this.onConnected?.(msg.islandId, msg.accessKey);
+            void this.onConnected?.(msg.islandId);
           } else {
             console.error(
               PREFIX,
@@ -200,11 +200,16 @@ export class HubConnector {
             msg.sessionId,
             msg.message,
             (sid, rpcMsg) => this.sendTunnelResponse(sid, rpcMsg),
+            msg.passportKey,
           );
           break;
 
         case "mcp_tunnel_close":
           closeTunnelSession(msg.sessionId);
+          break;
+
+        case "passport_request":
+          this.handlePassportRequest(msg.requestId, msg.action, msg.email, msg.name, msg.appearance);
           break;
       }
     });
@@ -279,6 +284,44 @@ export class HubConnector {
     if (this.pingInterval) {
       clearInterval(this.pingInterval);
       this.pingInterval = null;
+    }
+  }
+
+  /** Handle a passport request tunneled from the hub. */
+  private handlePassportRequest(
+    requestId: string,
+    action: string,
+    email?: string,
+    name?: string,
+    appearance?: import("@agentic-island/shared").CharacterAppearance,
+  ): void {
+    let response: IslandPassportResponse;
+
+    switch (action) {
+      case "create": {
+        if (!email || !name || !appearance) {
+          response = { type: "passport_response", requestId, success: false, error: "Missing email, name, or appearance" };
+          break;
+        }
+        const result = createPassport(email, name, appearance);
+        if (result.success) {
+          response = { type: "passport_response", requestId, success: true, rawKey: result.rawKey, maskedEmail: result.maskedEmail };
+        } else {
+          response = { type: "passport_response", requestId, success: false, error: result.error };
+        }
+        break;
+      }
+      case "get_catalog": {
+        const catalog = getCharacterCatalog();
+        response = { type: "passport_response", requestId, success: true, catalog };
+        break;
+      }
+      default:
+        response = { type: "passport_response", requestId, success: false, error: `Unknown action: ${action}` };
+    }
+
+    if (this.ws?.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(response));
     }
   }
 

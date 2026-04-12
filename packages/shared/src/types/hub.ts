@@ -8,7 +8,6 @@ export interface IslandMeta {
   thumbnailUrl?: string;
   playerCount: number;
   viewerCount: number;
-  secured: boolean;
   status: "online" | "offline";
   lastHeartbeatAt?: string;
   createdAt: string;

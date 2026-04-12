@@ -9,7 +9,6 @@ type IslandCardProps = {
 export default function WorldCard({ island }: IslandCardProps) {
   const agentCount = island.playerCount ?? 0;
   const viewerCount = island.viewerCount ?? 0;
-  const isSecured = island.secured ?? false;
 
   return (
     <Link href={`/islands/${island.id}`} className="block">
@@ -30,12 +29,6 @@ export default function WorldCard({ island }: IslandCardProps) {
         <div className="p-4">
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-lg font-bold text-text-heading">{island.name}</h3>
-            <span
-              title={isSecured ? 'Secured island — access key required' : 'Open island'}
-              className="text-base shrink-0"
-            >
-              {isSecured ? '🔒' : '🔓'}
-            </span>
           </div>
 
           {island.description && (

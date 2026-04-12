@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
-import { requireSession } from "./character-tools.js";
+import { requireCharacter } from "./character-tools.js";
 
 const BASE_URL = `http://localhost:${process.env.ISLAND_PORT ?? 3002}`;
 
@@ -10,11 +10,10 @@ export function registerSayTools(server: McpServer, session: McpSession): void {
     "say",
     "Make the character say something out loud. The text (max 280 characters) will appear as a speech bubble above the character in the UI for 8 seconds.",
     {
-      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
       text: z.string().min(1).max(280).describe("What the character says (max 280 characters)"),
     },
-    async ({ session_token, text }) => {
-      const check = requireSession(session, session_token);
+    async ({ text }) => {
+      const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {

@@ -1,5 +1,7 @@
 import type { IslandConfig, IslandState } from "../types/island.js";
 import type { SpriteAsset } from "../types/hub.js";
+import type { CharacterAppearance } from "../types/character.js";
+import type { CharacterCatalog } from "../types/passport.js";
 
 // Island → Hub messages
 
@@ -11,7 +13,6 @@ export interface IslandHandshakeMessage {
     id?: string;
     description?: string;
     config: Partial<IslandConfig>;
-    secured?: boolean;
   };
   sprites: SpriteAsset[];
   thumbnail?: SpriteAsset;
@@ -34,8 +35,6 @@ export interface HubHandshakeAckMessage {
   islandId: string;
   status: "ok" | "error";
   error?: string;
-  /** Access key returned when a secured island is first published (plaintext, one-time) */
-  accessKey?: string;
 }
 
 export interface HubPongMessage {
@@ -56,6 +55,8 @@ export interface HubMcpTunnelMessage {
   type: "mcp_tunnel_message";
   sessionId: string;
   message: unknown; // JSONRPCMessage
+  /** Passport key from the Bearer token — included on the first (initialize) message only. */
+  passportKey?: string;
 }
 
 /** Tell the island to close a tunnel session (MCP client disconnected). */
@@ -89,6 +90,34 @@ export interface IslandCharacterUpdateMessage {
   characters: import("../types/character.js").CharacterState[];
 }
 
+// Passport messages (Hub → Island)
+
+/** Request the island to create, update, or return catalog info for a passport. */
+export interface HubPassportRequest {
+  type: "passport_request";
+  requestId: string;
+  action: "create" | "update" | "get_catalog";
+  email?: string;
+  name?: string;
+  appearance?: CharacterAppearance;
+}
+
+// Passport messages (Island → Hub)
+
+/** Island's response to a passport request. */
+export interface IslandPassportResponse {
+  type: "passport_response";
+  requestId: string;
+  success: boolean;
+  /** Raw passport key (plaintext) — only returned on create. */
+  rawKey?: string;
+  /** Masked email for display (e.g. "u***@example.com"). */
+  maskedEmail?: string;
+  error?: string;
+  /** Character catalog — only returned for get_catalog action. */
+  catalog?: CharacterCatalog;
+}
+
 // Union types
 
 export type IslandToHubMessage =
@@ -98,11 +127,13 @@ export type IslandToHubMessage =
   | IslandSpriteUpdateMessage
   | IslandCharacterUpdateMessage
   | IslandMcpTunnelResponse
-  | IslandMcpTunnelSessionClosed;
+  | IslandMcpTunnelSessionClosed
+  | IslandPassportResponse;
 
 export type HubToIslandMessage =
   | HubHandshakeAckMessage
   | HubPongMessage
   | HubErrorMessage
   | HubMcpTunnelMessage
-  | HubMcpTunnelClose;
+  | HubMcpTunnelClose
+  | HubPassportRequest;

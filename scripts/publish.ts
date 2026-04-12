@@ -190,25 +190,6 @@ async function main(): Promise<void> {
       enteredInteractively.ISLAND_DESCRIPTION = islandDescription;
     }
 
-    // ── Island Security (secured/unsecured) ─────────────────────
-    let isSecured: boolean;
-    if (process.env.ISLAND_SECURED !== undefined) {
-      isSecured = process.env.ISLAND_SECURED === "true" || process.env.ISLAND_SECURED === "1";
-      console.log(`  ✓ Secured:  ${isSecured ? "Yes 🔒" : "No 🔓"}  (from .env)`);
-    } else {
-      console.log();
-      console.log("  Secure your island?");
-      console.log("    Secured islands require an access key for MCP connections.");
-      console.log("    Unsecured islands allow anyone to connect their AI agent.");
-      console.log();
-      let securedChoice: string;
-      do {
-        securedChoice = (await rl.question("  Secure this island? [y/N] ")).trim().toLowerCase();
-      } while (!["y", "n", "yes", "no", ""].includes(securedChoice));
-      isSecured = securedChoice === "y" || securedChoice === "yes";
-      enteredInteractively.ISLAND_SECURED = isSecured ? "true" : "false";
-    }
-
     // ── Save to .env? (only if something was entered interactively) ─
     if (Object.keys(enteredInteractively).length > 0) {
       console.log();
@@ -230,7 +211,6 @@ async function main(): Promise<void> {
     process.env.HUB_URL = hubUrl;
     process.env.ISLAND_NAME = islandName;
     process.env.ISLAND_DESCRIPTION = islandDescription;
-    process.env.ISLAND_SECURED = isSecured ? "true" : "false";
 
     // Import the world entry point — it reads env vars on load
     await import("../apps/island/index.js");

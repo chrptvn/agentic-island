@@ -34,14 +34,13 @@ interface IslandRow {
   description: string | null;
   thumbnail_path: string | null;
   player_count: number;
-  secured: number;
   status: string;
   last_heartbeat_at: string | null;
   created_at: string;
 }
 
 const ISLAND_COLS =
-  "id, name, description, thumbnail_path, player_count, secured, status, last_heartbeat_at, created_at";
+  "id, name, description, thumbnail_path, player_count, status, last_heartbeat_at, created_at";
 
 function rowToMeta(row: IslandRow, viewerCount = 0): IslandMeta {
   return {
@@ -51,7 +50,6 @@ function rowToMeta(row: IslandRow, viewerCount = 0): IslandMeta {
     thumbnailUrl: row.thumbnail_path ?? undefined,
     playerCount: row.player_count,
     viewerCount,
-    secured: Boolean(row.secured),
     status: row.status as "online" | "offline",
     lastHeartbeatAt: row.last_heartbeat_at ?? undefined,
     createdAt: row.created_at,

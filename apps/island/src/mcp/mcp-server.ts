@@ -9,6 +9,7 @@ import { registerSayTools } from "./tools/say-tools.js";
 import { registerPlantTools } from "./tools/plant-tools.js";
 import { humanizeSurroundings } from "./humanize.js";
 import { Island } from "../island/island.js";
+import { validatePassportKey } from "../passport/index.js";
 
 // ─── Surroundings snapshot ───────────────────────────────────────────────────
 
@@ -27,8 +28,8 @@ interface AlertCooldowns {
 export interface McpSession {
   server:         McpServer;
   transport:      Transport;
-  username:       string | null;
-  sessionToken:   string | null;
+  /** Character ID (passport name) — set after passport validation and auto-spawn. */
+  characterId:    string | null;
   lastSnapshot:   string;
   alertCooldowns: AlertCooldowns;
   worldListener:          (() => void) | null;
@@ -50,22 +51,21 @@ const IDLE_CHECK_INTERVAL_MS = 10_000; // check every 10 seconds
 function checkIdleSessions(): void {
   const now = Date.now();
   for (const session of allMcpSessions) {
-    if (!session.username) continue; // not yet authenticated — skip
+    if (!session.characterId) continue; // not yet authenticated — skip
     if (now - session.lastActivityAt < IDLE_TIMEOUT_MS) continue;
 
-    const username = session.username;
-    console.log(`[mcp] Disconnecting idle character "${username}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
+    const characterId = session.characterId;
+    console.log(`[mcp] Disconnecting idle character "${characterId}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
 
     // Disconnect the character from the world but keep the MCP session alive
-    // so the agent can call connect again to resume.
-    try { Island.getInstance().disconnect(username); } catch { /* already disconnected */ }
+    // so the agent can reconnect by sending a new initialize with the same passport.
+    try { Island.getInstance().disconnect(characterId); } catch { /* already disconnected */ }
     detachWorldListener(session);
-    session.username = null;
-    session.sessionToken = null;
+    session.characterId = null;
 
     session.server.sendLoggingMessage({
       level: "warning",
-      data: `🔌 Character "${username}" disconnected due to ${Math.round(IDLE_TIMEOUT_MS / 60_000)} minute(s) of inactivity. Call connect again to resume.`,
+      data: `🔌 Character "${characterId}" disconnected due to ${Math.round(IDLE_TIMEOUT_MS / 60_000)} minute(s) of inactivity. Reconnect to resume.`,
     }).catch(() => {});
   }
 }
@@ -73,11 +73,11 @@ function checkIdleSessions(): void {
 // TODO: re-enable idle disconnect once dev/testing is done
 // setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
 
-/** Returns true if another active session already owns this username. */
-export function isUsernameClaimed(username: string, excludeSession?: McpSession): boolean {
+/** Returns true if another active session already owns this character ID. */
+export function isCharacterClaimed(characterId: string, excludeSession?: McpSession): boolean {
   for (const s of allMcpSessions) {
     if (s === excludeSession) continue;
-    if (s.username === username) return true;
+    if (s.characterId === characterId) return true;
   }
   return false;
 }
@@ -86,7 +86,7 @@ export function isUsernameClaimed(username: string, excludeSession?: McpSession)
 
 export function attachWorldListener(session: McpSession): void {
   if (session.worldListener) return; // already attached
-  const id = session.username;
+  const id = session.characterId;
   if (!id) return;
 
   const listener = () => {
@@ -208,17 +208,16 @@ function makeHttpSession(): McpSession {
     if (transport.sessionId) mcpSessions.delete(transport.sessionId);
     allMcpSessions.delete(session);
     detachWorldListener(session);
-    if (session.username) {
-      Island.getInstance().disconnect(session.username);
-      session.username = null;
+    if (session.characterId) {
+      Island.getInstance().disconnect(session.characterId);
+      session.characterId = null;
     }
   };
 
   const session: McpSession = {
     server,
     transport,
-    username: null,
-    sessionToken: null,
+    characterId: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
@@ -234,16 +233,16 @@ function makeHttpSession(): McpSession {
 
 /**
  * Create a tunnel-backed MCP session for proxying via the hub.
- * The caller supplies a pre-built Transport (WebSocketTunnelTransport).
+ * The caller supplies a pre-built Transport (WebSocketTunnelTransport)
+ * and the passport key from the Bearer token.
  */
-export function makeTunnelSession(transport: Transport): McpSession {
+export function makeTunnelSession(transport: Transport, passportKey?: string): McpSession {
   const server = new McpServer({ name: "agentic-island", version: "1.0.0" });
 
   const session: McpSession = {
     server,
     transport,
-    username: null,
-    sessionToken: null,
+    characterId: null,
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
@@ -251,20 +250,63 @@ export function makeTunnelSession(transport: Transport): McpSession {
     lastSurroundingsPushAt: 0,
   };
 
+  // Validate passport and auto-spawn character
+  if (passportKey) {
+    spawnFromPassport(session, passportKey);
+  }
+
   allMcpSessions.add(session);
 
   transport.onclose = () => {
     allMcpSessions.delete(session);
     detachWorldListener(session);
-    if (session.username) {
-      Island.getInstance().disconnect(session.username);
-      session.username = null;
+    if (session.characterId) {
+      Island.getInstance().disconnect(session.characterId);
+      session.characterId = null;
     }
   };
 
   initServer(server, session);
   server.connect(transport);
   return session;
+}
+
+/**
+ * Validate a passport key and spawn the character into the world.
+ * Returns the character ID on success, null on failure.
+ */
+export function spawnFromPassport(session: McpSession, passportKey: string): string | null {
+  const passport = validatePassportKey(passportKey);
+  if (!passport) {
+    console.log("[mcp] Invalid passport key provided");
+    return null;
+  }
+
+  const characterId = passport.name;
+
+  // If another session already owns this character, disconnect it first
+  if (isCharacterClaimed(characterId, session)) {
+    // Kick the previous session's character
+    for (const s of allMcpSessions) {
+      if (s === session) continue;
+      if (s.characterId === characterId) {
+        try { Island.getInstance().disconnect(characterId); } catch { /* ok */ }
+        detachWorldListener(s);
+        s.characterId = null;
+        break;
+      }
+    }
+  }
+
+  // Connect/spawn the character in the island world
+  const island = Island.getInstance();
+  island.connect(characterId, passport.appearance);
+
+  session.characterId = characterId;
+  attachWorldListener(session);
+
+  console.log(`[mcp] Character "${characterId}" spawned via passport`);
+  return characterId;
 }
 
 /**
