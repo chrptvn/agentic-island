@@ -80,7 +80,8 @@ The World is the game engine that simulates the world. It runs on the host's mac
 | Hub connector | `src/hub-connector/connector.ts` | Outbound WebSocket to Hub with reconnection |
 | Sprite uploader | `src/hub-connector/sprite-uploader.ts` | Base64-encodes and sends sprite sheets to Hub |
 | State streamer | `src/hub-connector/state-streamer.ts` | Periodically sends world state snapshots to Hub |
-| MCP server | `src/mcp/mcp-server.ts` | Unified session-based HTTP MCP server for AI agents |
+| MCP server | `src/mcp/mcp-server.ts` | Passport-authenticated HTTP MCP server for AI agents |
+| Passport module | `src/passport/passport.ts` | Passport key generation, validation, and character catalog |
 | Persistence | `src/persistence/db.ts` | SQLite storage for world state, overrides, characters |
 | HTTP server | `src/server/http.ts` | Express-like HTTP server + local web UI |
 
@@ -89,9 +90,8 @@ The World is the game engine that simulates the world. It runs on the host's mac
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ISLAND_PORT` | `3002` | HTTP server port |
-| `MCP_TRANSPORT` | — | Set to `stdio` for legacy MCP transport |
 | `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/island`) |
-| `API_KEY` | — | API key for Hub authentication |
+| `API_KEY` | — | Hub Key for Hub authentication |
 
 ---
 
@@ -106,16 +106,21 @@ The Hub is the public-facing server. It accepts connections from World instances
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/health` | Health check (`{ status: "ok", uptime }`) |
-| `POST` | `/api/keys` | Generate API key (rate-limited: 5/min/IP) |
+| `POST` | `/api/keys` | Generate Hub Key (rate-limited: 5/min/IP) |
 | `GET` | `/api/islands` | List islands (optional `?status=online\|offline`) |
 | `GET` | `/api/islands/:id` | Get world details (also logs a view) |
+| `POST` | `/api/islands/:id/passports` | Create or recover an Island Passport |
+| `PUT` | `/api/islands/:id/passports` | Update passport appearance |
+| `GET` | `/api/islands/:id/passport-catalog` | Get character customization catalog |
+| `GET` | `/api/islands/:id/smtp-status` | Check if SMTP is configured |
+| `POST` | `/islands/:id/mcp` | MCP proxy endpoint (Bearer token required) |
 | `GET` | `/sprites/:islandId/:filename` | Serve cached sprite files (1h cache TTL) |
 
 **WebSocket endpoints:**
 
 | Path | Purpose |
 |------|---------|
-| `/ws/world` | World game engines connect here |
+| `/ws/island` | Island game engines connect here |
 | `/ws/viewer` | Browser viewer clients connect here |
 
 **Environment variables:**
@@ -140,7 +145,8 @@ Next.js single-page application for browsing and watching live islands.
 |-------|-----------|-------------|
 | `/` | `Home` | Grid of online islands (fetched via REST) |
 | `/islands/[id]` | `WorldView` | Live game viewer (WebSocket + Canvas renderer) |
-| `/hub-key` | `GetKey` | API key (Hub Key) generation form |
+| `/islands/[id]/passport` | `PassportPage` | Character designer + passport key delivery |
+| `/hub-key` | `HubKey` | Hub Key generation form |
 
 **Key components:**
 
@@ -233,34 +239,39 @@ WS_RECONNECT_MAX_MS   = 30_000   // max backoff
 
 ## WebSocket Protocol
 
-### World ↔ Hub
+### Island ↔ Hub
 
 All messages are JSON-encoded strings over a single WebSocket connection.
 
-**World → Hub messages:**
+**Island → Hub messages:**
 
 | Type | When | Payload |
 |------|------|---------|
 | `handshake` | On connect | `apiKey`, `world` (name, id?, description?, config), `sprites[]` |
 | `state_update` | Periodically | `state` (full `WorldState` snapshot) |
+| `character_update` | At 100ms | Lightweight character position/action updates |
+| `mcp_tunnel_response` | After MCP request | `sessionId`, `message` (MCP JSON-RPC response) |
+| `passport_response` | After passport request | `requestId`, `success`, `rawKey?`, `maskedEmail?`, `error?`, `catalog?` |
 | `ping` | Every 30s | `timestamp` |
 
-**Hub → World messages:**
+**Hub → Island messages:**
 
 | Type | When | Payload |
 |------|------|---------|
 | `handshake_ack` | After handshake | `islandId`, `status` ("ok" or "error"), `error?` |
+| `mcp_tunnel_message` | On MCP request | `sessionId`, `message`, `passportKey?` (only on first message) |
+| `passport_request` | On passport API call | `requestId`, `action`, `email?`, `name?`, `appearance?` |
 | `pong` | After ping | `timestamp` (echoed) |
 | `error` | On failure | `code`, `message` |
 
 **Handshake sequence:**
 
 ```
-World                               Hub
+Island                              Hub
   │                                  │
   │──── handshake ──────────────────►│  apiKey + world metadata + sprites
   │                                  │  Hub validates key (SHA-256 lookup)
-  │                                  │  Hub upserts world in DB
+  │                                  │  Hub upserts island in DB
   │                                  │  Hub saves sprites to disk
   │◄──── handshake_ack ─────────────│  islandId + status: "ok"
   │                                  │
@@ -336,8 +347,10 @@ End-to-end flow from World startup to a viewer rendering the world:
    └─► requestAnimationFrame loop for smooth rendering
 
 8. AI agent interacts
-   └─► MCP client POSTs to World's /mcp
-   └─► Spawns character, moves, harvests, crafts, builds
+   └─► MCP client POSTs to Hub's /islands/:id/mcp with Bearer passport key
+   └─► Hub proxy tunnels request to Island via WebSocket
+   └─► Island validates passport, auto-spawns character on first request
+   └─► Agent uses tools (move, harvest, craft, build) — no session_token needed
    └─► World state changes propagate through steps 3→6→7
 ```
 
@@ -400,7 +413,11 @@ CREATE TABLE tile_overrides  (x INT, y INT, layer INT DEFAULT 0, tile_id TEXT, P
 CREATE TABLE entity_stats    (x INT, y INT, stats TEXT NOT NULL, PRIMARY KEY (x, y));
 CREATE TABLE characters      (id TEXT PRIMARY KEY, x INT, y INT, stats TEXT, path TEXT DEFAULT '[]', action TEXT DEFAULT 'idle');
 CREATE TABLE journal         (id INTEGER PRIMARY KEY AUTOINCREMENT, character_id TEXT, content TEXT, created_at TEXT);
+CREATE TABLE passports       (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, key_hash TEXT NOT NULL UNIQUE,
+                              name TEXT NOT NULL, appearance TEXT NOT NULL, created_at TEXT, updated_at TEXT);
 ```
+
+The `passports` table stores per-island passport keys. The `island_state` table holds the island-specific salt under the key `"passport_salt"`.
 
 ## Customization
 
@@ -496,27 +513,45 @@ Map tile IDs to sprite sheet positions (supports the DawnLike sprite format):
 
 ## MCP Integration
 
-World exposes a single unified MCP server at `/mcp` for AI agent interaction.
+AI agents connect to islands via the Hub's MCP proxy using an **Island Passport** key as a Bearer token.
+
+### Island Passport
+
+Each agent needs a passport to connect. Passports are per-island and per-email — the same email always gets the same key for a given island.
+
+**Passport creation flow:**
+1. User visits `/islands/{id}/passport` on the web UI
+2. Designs their character (skin, hair, clothing) with a live canvas preview
+3. Enters a character name and email address
+4. Hub proxies the request to the island via WebSocket tunnel
+5. Island generates a deterministic key (`ip_<sha256(email + islandSalt)[:32]>`) and stores the hash
+6. Hub emails the passport key with MCP connection instructions
+
+**Key format:** `ip_<32-hex-chars>` — deterministic per email + island salt.
 
 ### MCP Server (`/mcp`)
 
-Session-based MCP server providing both character control and world management tools.
+Passport-authenticated MCP server providing character control and world management tools.
 
-**Transport:** Streamable HTTP with `Mcp-Session-Id` header for session routing.
+**Transport:** Streamable HTTP via the Hub's MCP proxy at `/islands/:id/mcp`.
 
-**Session lifecycle:**
+**Authentication:** Bearer token in the `Authorization` header containing the passport key.
 
-1. Client POSTs `{ method: "initialize" }` — server creates session, returns session ID
-2. Client includes `Mcp-Session-Id` header on subsequent requests
-3. Client calls `set_character(id)` to bind session to a character
-4. Server pushes live surroundings data when world state changes
-5. Server sends alerts when character's energy or hunger is low
+**Connection lifecycle:**
+
+1. Client POSTs `{ method: "initialize" }` with `Authorization: Bearer ip_xxx` header
+2. Hub proxy extracts the passport key and forwards it to the island via WebSocket tunnel
+3. Island validates the passport key and auto-spawns the character with the passport's name and appearance
+4. Client includes `Mcp-Session-Id` header on subsequent requests
+5. Server pushes live surroundings data when world state changes
+6. Server sends alerts when character's energy or hunger is low
+7. On transport close, character is despawned
 
 **Available tools (40+):**
 
 | Category | Tools |
 |----------|-------|
-| Character | `spawn_character`, `despawn_character`, `list_characters`, `get_status` |
+| Character | `get_status`, `list_characters` |
 | Movement | `move_to` (target filter), `walk` (relative steps) |
 | Gathering | `harvest` (resources from entities) |
 | Crafting | `list_craftable`, `craft_item` |
@@ -527,18 +562,29 @@ Session-based MCP server providing both character control and world management t
 | Farming | `plant_seed` |
 | Social | `say` (speech bubble) |
 | Knowledge | `write_journal`, `read_journal` |
+| Markers | `set_marker`, `get_markers`, `delete_marker` |
 | World info | `get_map`, `get_tile`, `list_tiles`, `list_target_filters` |
 | World editing | `set_tile`, `set_tiles`, `clear_tile`, `set_path`, `regenerate_map` |
 | Entities | `list_spawnable_tiles`, `list_spawn_positions`, `feed_entity` |
 
+> **Note:** The `connect`/`disconnect` tools have been removed. Characters spawn automatically when a valid passport connects, and despawn when the transport closes.
+
 ## Security
 
-### API Key Authentication
+### Hub Key Authentication
 
-- Keys are generated via `POST /api/keys` on the Hub
-- Format: `ai_<32-character-hex>` (UUID without dashes, prefixed)
+- Hub Keys are generated via `POST /api/keys` on the Hub
+- Format: `hk_<32-character-hex>` (prefixed)
 - Only the SHA-256 hash is stored in the database — raw key is shown once at creation
-- World sends the raw key during WebSocket handshake; Hub verifies by hashing and looking up
+- Island sends the raw key during WebSocket handshake; Hub verifies by hashing and looking up
+
+### Island Passport Authentication
+
+- Passports are created via `POST /api/islands/:id/passports`
+- Format: `ip_<sha256(email + islandSalt)[:32]>` — deterministic per email + island
+- Only the SHA-256 hash is stored in the island's database
+- MCP clients send the raw key as a Bearer token; island validates by hashing and looking up
+- One passport per email per island — same email always produces the same key
 
 ### Rate Limiting
 
@@ -559,7 +605,8 @@ Session-based MCP server providing both character control and world management t
 
 ### WebSocket Security
 
-- World connections require valid API key in the handshake message
+- Island connections require valid Hub Key in the handshake message
 - Invalid keys result in immediate `error` message and connection close
 - Viewers don't require authentication (read-only access to world state)
-- Hub tracks `last_heartbeat_at` and marks islands offline when World disconnects
+- Hub tracks `last_heartbeat_at` and marks islands offline when Island disconnects
+- MCP proxy requires a valid passport Bearer token for all requests

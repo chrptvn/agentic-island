@@ -1,0 +1,78 @@
+{
+  "tileSize": 64,
+  "spriteDir": "LPC Characters",
+  "animations": {
+    "idle":   { "frames": 2, "fps": 4 },
+    "walk":   { "frames": 9, "fps": 12 },
+    "slash":  { "frames": 6, "fps": 12 },
+    "thrust": { "frames": 8, "fps": 12 }
+  },
+  "directionOrder": ["n", "w", "s", "e"],
+  "compositeLayout": {
+    "idle":   { "startRow": 0 },
+    "walk":   { "startRow": 4 },
+    "slash":  { "startRow": 8 },
+    "thrust": { "startRow": 12 }
+  },
+  "genders": ["male", "female"],
+  "skinColors": ["amber", "black", "bronze", "brown", "light", "olive"],
+  "layers": {
+    "body": {
+      "order": 0,
+      "required": true,
+      "pathTemplate": "bodies/{item}/{gender}/{anim}.png"
+    },
+    "feet": {
+      "order": 1,
+      "required": false,
+      "items": ["boots", "shoes"],
+      "pathTemplate": "clothing/feet/{item}/{gender}/{anim}.png"
+    },
+    "legs": {
+      "order": 2,
+      "required": false,
+      "items": ["pants", "shorts", "skirt"],
+      "pathTemplate": "clothing/legs/{item}/{gender}/{anim}.png"
+    },
+    "torso": {
+      "order": 3,
+      "required": false,
+      "items": ["apron", "jacket", "longsleeve", "tshirt"],
+      "pathTemplate": "clothing/torso/{item}/{gender}/{anim}.png"
+    },
+    "headwear": {
+      "order": 4,
+      "required": false,
+      "items": ["headband", "helmet", "hood", "leather_cap"],
+      "pathTemplate": "clothing/headwear/{item}/{anim}.png"
+    },
+    "hair": {
+      "order": 5,
+      "required": true,
+      "items": ["bob", "buzzcut", "long", "pixie", "spiked"],
+      "pathTemplate": "hair/{item}/{anim}.png"
+    }
+  },
+  "tools": {
+    "axe":      { "action": "slash",  "pathPrefix": "tools/axe",       "overlaySize": 128 },
+    "hammer":   { "action": "slash",  "pathPrefix": "tools/hammer",    "overlaySize": 128 },
+    "pickaxe":  { "action": "slash",  "pathPrefix": "tools/pickaxe",   "overlaySize": 128 },
+    "hoe":      { "action": "thrust", "pathPrefix": "tools/hoe",       "overlaySize": 64 },
+    "shovel":   { "action": "thrust", "pathPrefix": "tools/shovel",    "overlaySize": 64 },
+    "watering": { "action": "thrust", "pathPrefix": "tools/watering",  "overlaySize": 64 },
+    "dagger":   { "action": "slash",  "pathPrefix": "weapons/dagger",  "overlaySize": 64 },
+    "spear":    { "action": "thrust", "pathPrefix": "weapons/spear",   "overlaySize": 64 },
+    "sword":    { "action": "slash",  "pathPrefix": "weapons/sword",   "overlaySize": 64 }
+  },
+  "toolItemMapping": {
+    "stone_axe":     "axe",
+    "stone_pickaxe": "pickaxe",
+    "stone_knife":   "dagger",
+    "plow":          "hoe",
+    "hammer":        "hammer",
+    "shovel":        "shovel",
+    "watering_can":  "watering",
+    "spear":         "spear",
+    "sword":         "sword"
+  }
+}
