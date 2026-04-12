@@ -260,6 +260,17 @@ function buildDerivedExports(defs: EntityDef[]) {
     }
   }
 
+  // Maps every layer-3 tile ID (anchor and non-anchor) → { entityId, dx, dy }.
+  // Used to redirect harvest/interact from a non-anchor tile to the entity's anchor position.
+  const TILE_OFFSET_BY_TILE_ID: Map<string, { entityId: string; dx: number; dy: number }> = new Map();
+  for (const e of defs) {
+    for (const t of (e.tiles ?? [])) {
+      if (t.layer === 3) {
+        TILE_OFFSET_BY_TILE_ID.set(t.tileId, { entityId: e.id, dx: t.dx, dy: t.dy });
+      }
+    }
+  }
+
   const DECAY_DEFS: Record<string, DecayDef> = Object.fromEntries(
     defs.filter((e) => e.decay !== undefined).map((e) => [e.id, e.decay!])
   );
@@ -285,7 +296,7 @@ function buildDerivedExports(defs: EntityDef[]) {
     if (e.interactionEffect) INTERACTION_EFFECTS.set(anchor.tileId, e.interactionEffect);
   }
 
-  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, GROWTH_DEFS, RANDOM_STATS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS };
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, GROWTH_DEFS, RANDOM_STATS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS };
 }
 
 /** Full entity definitions as loaded from config/entities.json. */
@@ -358,6 +369,10 @@ export let ENTITY_DEF_BY_ID: Map<string, EntityDef> = _derived.ENTITY_DEF_BY_ID;
 /** Maps anchor tileId → full EntityDef. Use this when looking up from tile override strings. */
 export let ENTITY_DEF_BY_TILE_ID: Map<string, EntityDef> = _derived.ENTITY_DEF_BY_TILE_ID;
 
+/** Maps every layer-3 tile ID (anchor and non-anchor) → { entityId, dx, dy }.
+ *  Use this in harvest to redirect from a non-anchor tile hit to the entity's anchor position. */
+export let TILE_OFFSET_BY_TILE_ID: Map<string, { entityId: string; dx: number; dy: number }> = _derived.TILE_OFFSET_BY_TILE_ID;
+
 /**
  * Maps each searchTarget group name to the set of tile IDs belonging to that group.
  * e.g. "trees" → Set { "young_tree", "old_tree_base" }
@@ -380,6 +395,7 @@ export function reloadEntities(): void {
   BLOCKING_IDS      = _derived.BLOCKING_IDS;
   ENTITY_DEF_BY_ID  = _derived.ENTITY_DEF_BY_ID;
   ENTITY_DEF_BY_TILE_ID = _derived.ENTITY_DEF_BY_TILE_ID;
+  TILE_OFFSET_BY_TILE_ID = _derived.TILE_OFFSET_BY_TILE_ID;
   SEARCH_TARGET_MAP = _derived.SEARCH_TARGET_MAP;
   GROWTH_DEFS       = _derived.GROWTH_DEFS;
   RANDOM_STATS      = _derived.RANDOM_STATS;

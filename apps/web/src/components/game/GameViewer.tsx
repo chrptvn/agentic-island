@@ -7,6 +7,7 @@ import Tooltip, { type TooltipData } from './Tooltip';
 import RecordingOverlay from './RecordingOverlay';
 import RecordingControls from './RecordingControls';
 import SaveDialog from './SaveDialog';
+import CharacterList from './CharacterList';
 import { useRecording } from '@/hooks/useRecording';
 import { useFullscreen } from '@/hooks/useFullscreen';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -470,6 +471,32 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
     if (effectiveState) renderer.setState(effectiveState);
   }, [state, recActions, recState.playheadOffset, recState.mode, recState.isLive]);
 
+  // Keyboard shortcut: Tab / Shift+Tab to cycle through characters
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const s = stateRef.current;
+      if (!s || s.characters.length === 0) return;
+      e.preventDefault();
+
+      const chars = s.characters;
+      const currentId = followedCharIdRef.current ?? selectedCharIdRef.current;
+      let idx = currentId ? chars.findIndex((c) => c.id === currentId) : -1;
+      if (e.shiftKey) {
+        idx = idx <= 0 ? chars.length - 1 : idx - 1;
+      } else {
+        idx = idx >= chars.length - 1 ? 0 : idx + 1;
+      }
+      const target = chars[idx];
+      if (target) {
+        followedCharIdRef.current = target.id;
+        selectedCharIdRef.current = null;
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, []);
+
   const isRecordingActive =
     recState.mode === 'preview' || recState.mode === 'recording';
 
@@ -585,6 +612,16 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
       )}
 
       {/* Recording overlay (crop window) */}
+
+      {/* Character finder (shown when idle) */}
+      {recState.mode === 'idle' && (
+        <CharacterList
+          characters={state?.characters ?? []}
+          onSelect={handleFollowClick}
+          isMobile={isMobile}
+        />
+      )}
+
       {isRecordingActive && recState.cropRect && (
         <RecordingOverlay
           cropRect={recState.cropRect}

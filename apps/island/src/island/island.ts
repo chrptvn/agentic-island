@@ -10,7 +10,7 @@ import {
 import { TILE_BY_ID, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
-import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import type { SensoryEvent } from "./character-registry.js";
 import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
@@ -19,8 +19,19 @@ import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, getItemDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
-import { layerTileId, shadowLayerTileId, buildCharacterTileDefs, RENDER_LAYERS, randomAppearance } from "./character-sprites.js";
+import { charTileId, buildCharacterTileDefs, randomAppearance, buildCharacterSprite, buildCharacterSlash128Sprite, invalidateCharacterComposite, type AnimAction } from "./character-sprites.js";
+import { getToolForItem, getToolTileDefs, getToolTileIds, computeToolLayers } from "./tool-sprites.js";
 import type { CharacterAppearance, CharacterFacing, CharacterLayerTiles } from "@agentic-island/shared";
+
+/** Cardinal direction → (dx, dy) offset. */
+const DIR_OFFSETS: Record<string, [number, number]> = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] };
+
+// Lazy-initialized after initToolAtlas() — use via _getToolTileIds()
+let _toolTileIds: Set<string> | null = null;
+function _getToolTileIds(): Set<string> {
+  if (!_toolTileIds) _toolTileIds = getToolTileIds();
+  return _toolTileIds;
+}
 
 /**
  * Resolves an anchor tile override ID to its entity definition ID.
@@ -31,22 +42,35 @@ function resolveEntityId(tileId: string): string {
   return ENTITY_DEF_BY_TILE_ID.get(tileId)?.id ?? tileId;
 }
 
-/** Compute per-layer tile IDs from appearance + facing + action. */
+/** Compute per-layer tile IDs from appearance + facing + action + equipment. */
 function computeLayerTiles(
-  appearance: CharacterAppearance,
+  charId: string,
   facing: CharacterFacing,
-  action: "idle" | "walk",
+  action: AnimAction,
+  handsItem?: string,
+  gender?: string,
 ): CharacterLayerTiles {
-  const tiles: CharacterLayerTiles = {
-    shadow: shadowLayerTileId(facing, action),
-  };
-  for (const layer of RENDER_LAYERS) {
-    if (layer === "shadow") continue;
-    const catalogId = appearance[layer];
-    if (catalogId) {
-      tiles[layer] = layerTileId(catalogId, facing, action);
-    }
+  // When slashing with a 128px tool, use slash128 body tile
+  let bodyAction: AnimAction = action;
+  if (action === "slash" && handsItem) {
+    const tool = getToolForItem(handsItem);
+    if (tool && tool.overlaySize > 64) bodyAction = "slash128";
   }
+
+  const tiles: CharacterLayerTiles = {
+    body: charTileId(charId, bodyAction, facing),
+  };
+
+  // Add tool overlay tile IDs if the character has a tool equipped
+  if (handsItem) {
+    const toolLayers = computeToolLayers(
+      handsItem, action, facing, gender ?? "male",
+      (id) => _getToolTileIds().has(id),
+    );
+    if (toolLayers.toolBg) tiles.toolBg = toolLayers.toolBg;
+    if (toolLayers.toolFg) tiles.toolFg = toolLayers.toolFg;
+  }
+
   return tiles;
 }
 
@@ -170,6 +194,13 @@ export class Island extends EventEmitter {
       }
     }
 
+    // Inject shared tool overlay tile defs
+    for (const def of getToolTileDefs()) {
+      if (!registry[def.id]) {
+        registry[def.id] = def;
+      }
+    }
+
     return registry;
   }
 
@@ -215,9 +246,23 @@ export class Island extends EventEmitter {
     for (const [, c] of this.characters) {
       const speech = (c.speech && c.speech.expiresAt > now) ? { text: c.speech.text, expiresAt: c.speech.expiresAt } : undefined;
 
-      // Compute per-layer tile IDs from appearance + facing + action
-      const animAction = c.path.length > 0 ? "walk" : "idle";
-      const layerTiles = computeLayerTiles(c.appearance, c.facing, animAction as "idle" | "walk");
+      // Compute per-layer tile IDs from character ID + facing + action
+      let animAction: AnimAction;
+      if ((c.action === "slash" || c.action === "thrust") && c.actionUntil && Date.now() < c.actionUntil) {
+        animAction = c.action;
+      } else {
+        animAction = c.path.length > 0 ? "walk" : "idle";
+        // Clear expired action
+        if (c.actionUntil && Date.now() >= c.actionUntil) {
+          c.action = "idle";
+          c.actionUntil = undefined;
+        }
+      }
+      const layerTiles = computeLayerTiles(
+        c.id, c.facing, animAction,
+        c.stats.equipment?.hands?.item,
+        c.appearance?.gender,
+      );
 
       result.push({
         id: c.id,
@@ -314,12 +359,28 @@ export class Island extends EventEmitter {
       }
     }
 
+    // Tile the character is currently facing
+    const [fdx, fdy] = DIR_OFFSETS[character.facing] ?? [0, 1];
+    const fx = x + fdx, fy = y + fdy;
+    const facingTerrain = this.map.getTile(fx, fy) ? terrainFromLayer1(this.getLayer(fx, fy, 1), this.getLayer(fx, fy, 2)) : null;
+    const facingEntity = facingTerrain ? (this.getLayer(fx, fy, 3) || undefined) : undefined;
+    const facingChar = facingTerrain ? [...this.characters.values()].find(c => c !== character && c.x === fx && c.y === fy) : undefined;
+    const facingPath = facingTerrain ? isPathTileId(this.getLayer(fx, fy, 2)) : false;
+
     // Terrain for current cell
     const standingL1 = this.getLayer(x, y, 1);
     const standingTerrain = terrainFromLayer1(standingL1, this.getLayer(x, y, 2));
     return {
       character: characterId,
       position: { x, y },
+      facing: character.facing,
+      facing_tile: facingTerrain ? {
+        x: fx, y: fy,
+        terrain: facingTerrain,
+        ...(facingEntity ? { entity: facingEntity } : {}),
+        ...(facingPath ? { path: true as const } : {}),
+        ...(facingChar ? { character: facingChar.id } : {}),
+      } : null,
       standing: {
         terrain: standingTerrain,
         ...(this.getLayer(x, y, 3) ? { entity: this.getLayer(x, y, 3) } : {}),
@@ -694,6 +755,8 @@ export class Island extends EventEmitter {
 
     this.characters.set(id, character);
     saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
+    // Build composite sprite for this character (async, non-blocking)
+    void this._emitCharacterSprite(character);
     this.emit("map:updated", this.map);
     return character;
   }
@@ -717,9 +780,10 @@ export class Island extends EventEmitter {
    */
   connect(username: string, requestedAppearance?: CharacterAppearance): { character: CharacterInstance; reconnected: boolean } {
     const id = username;
-    // Already active — just return
+    // Already active — just return (re-emit sprite in case hub restarted)
     const existing = this.characters.get(id);
     if (existing) {
+      void this._emitCharacterSprite(existing);
       this.emit("map:updated", this.map);
       return { character: existing, reconnected: true };
     }
@@ -757,6 +821,8 @@ export class Island extends EventEmitter {
 
       this.characters.set(id, character);
       saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
+      // Build composite sprite for this character (async, non-blocking)
+      void this._emitCharacterSprite(character);
       this.emit("map:updated", this.map);
       return { character, reconnected: true };
     }
@@ -780,6 +846,17 @@ export class Island extends EventEmitter {
       if (c.x === x && c.y === y) return false;
     }
     return true;
+  }
+
+  /** Build a character's composite sprite and emit it for upload to the hub. */
+  private async _emitCharacterSprite(character: CharacterInstance): Promise<void> {
+    try {
+      const sprite = await buildCharacterSprite(character);
+      const slash128Sprite = await buildCharacterSlash128Sprite(character);
+      this.emit("sprites:update", [sprite, slash128Sprite]);
+    } catch (err) {
+      console.error(`[island] Failed to build sprite for character ${character.id}:`, err);
+    }
   }
 
   /** BFS from (startX, startY) to find the nearest spawnable tile. */
@@ -831,6 +908,32 @@ export class Island extends EventEmitter {
     character.stats.energy = Math.max(0, character.stats.energy - cost);
   }
 
+  /** Determine facing direction from source toward target */
+  private _facingToward(sx: number, sy: number, tx: number, ty: number): CharacterFacing {
+    const dx = tx - sx;
+    const dy = ty - sy;
+    if (Math.abs(dx) >= Math.abs(dy)) return dx > 0 ? "e" : "w";
+    return dy > 0 ? "s" : "n";
+  }
+
+  /** Set a timed action animation (slash/thrust) based on equipped tool.
+   *  Bare-hand actions default to thrust (pickup gesture).
+   *  Always faces the target if coordinates are provided. */
+  private _triggerActionAnimation(character: CharacterInstance, targetX?: number, targetY?: number): void {
+    // Always face the target
+    if (targetX !== undefined && targetY !== undefined) {
+      character.facing = this._facingToward(character.x, character.y, targetX, targetY);
+    }
+
+    const equippedItem = character.stats.equipment?.hands?.item;
+    const tool = equippedItem ? getToolForItem(equippedItem) : null;
+    const action: "slash" | "thrust" = (tool?.action as "slash" | "thrust") ?? "thrust";
+    character.action = action;
+    // Animation duration: frames / fps (in ms)
+    const anim = { slash: { frames: 6, fps: 12 }, thrust: { frames: 8, fps: 12 } }[action];
+    character.actionUntil = Date.now() + (anim.frames / anim.fps) * 1000;
+  }
+
   harvest(id: string, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; health?: number; maxHealth?: number; destroyed: boolean } } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
@@ -843,28 +946,31 @@ export class Island extends EventEmitter {
       this._assertAdjacent(character.x, character.y, targetX, targetY);
       key = `${targetX},${targetY}`;
     } else {
-      // Default — harvest the entity at the character's own cell
-      key = `${character.x},${character.y}`;
+      // Default — harvest the tile the character is currently facing
+      const [fdx, fdy] = DIR_OFFSETS[character.facing] ?? [0, 1];
+      key = `${character.x + fdx},${character.y + fdy}`;
     }
 
-    const tileId = this.overrides.get(key)?.[3] ?? "";
+    let tileId = this.overrides.get(key)?.[3] ?? "";
+
+    // If the tile is a non-anchor tile of a multi-tile entity, redirect to the anchor position
+    // where the entity's stats and harvest definition are stored.
+    const tileOffset = TILE_OFFSET_BY_TILE_ID.get(tileId);
+    if (tileOffset && (tileOffset.dx !== 0 || tileOffset.dy !== 0)) {
+      const [kx, ky] = key.split(",").map(Number);
+      key = `${kx - tileOffset.dx},${ky - tileOffset.dy}`;
+      tileId = this.overrides.get(key)?.[3] ?? "";
+    }
+
     const entityId = resolveEntityId(tileId);
     const def = HARVEST_DEFS[entityId];
     if (!def) {
       // Fallback: if the entity is a container, treat harvest as "take items from it"
       if (ENTITY_DEF_BY_TILE_ID.get(tileId)?.container) {
-        if (BLOCKING_IDS.has(tileId) && (targetX === undefined || targetY === undefined)) {
-          throw new Error(`"${tileId}" is a solid entity — provide target_x/target_y to harvest from an adjacent tile.`);
-        }
         return this._harvestFromContainer(character, key, tileId, item);
       }
-      const pos = targetX !== undefined ? `(${targetX},${targetY})` : `(${character.x},${character.y})`;
-      throw new Error(`No harvestable entity at ${pos}.`);
-    }
-
-    // Blocking entities must always be targeted explicitly (character can't stand on them)
-    if (BLOCKING_IDS.has(tileId) && (targetX === undefined || targetY === undefined)) {
-      throw new Error(`"${tileId}" is a solid entity — provide target_x/target_y to harvest from an adjacent tile.`);
+      const [kx, ky] = key.split(",").map(Number);
+      throw new Error(`No harvestable entity at (${kx},${ky}).`);
     }
 
     // ── Tool capability check (damage mode only — chopping trees etc.) ──────────
@@ -880,6 +986,9 @@ export class Island extends EventEmitter {
         }
       }
     }
+
+    // ── Trigger action animation (slash/thrust) based on equipped tool ──────
+    this._triggerActionAnimation(character, targetX, targetY);
 
     // ── Health-damage mode (trees, destructible entities) ────────────────────
     if (def.damage !== undefined) {
@@ -1221,11 +1330,11 @@ export class Island extends EventEmitter {
         if (ex < 0 || ex >= this.map.width || ey < 0 || ey >= this.map.height) {
           throw new Error(`Entity extends outside map bounds at (${ex}, ${ey}).`);
         }
-        if (t.layer === 3) {
+        if (t.layer === 3 || t.layer === 4) {
           const eKey = `${ex},${ey}`;
-          const eTile = this.overrides.get(eKey)?.[3] ?? "";
+          const eTile = this.overrides.get(eKey)?.[t.layer] ?? "";
           if (eTile) {
-            throw new Error(`Cannot build entity: cell (${ex}, ${ey}) is occupied by "${eTile}".`);
+            throw new Error(`Cannot build entity: cell (${ex}, ${ey}) layer ${t.layer} is occupied by "${eTile}".`);
           }
         }
         extraPositions.push({ x: ex, y: ey, tileId: t.tileId, layer: t.layer });
@@ -1275,6 +1384,9 @@ export class Island extends EventEmitter {
       this.entityStats.set(targetKey, initStats as EntityStats);
     }
 
+    // Trigger build animation (thrust) if tool is equipped
+    this._triggerActionAnimation(character, targetX, targetY);
+
     // Flush tile override + entity stats + character in one atomic transaction
     runTransaction(() => {
       saveOverride(targetX, targetY, 3, entityId);
@@ -1310,6 +1422,7 @@ export class Island extends EventEmitter {
     if (character.shelter) throw new Error(`${id} is already inside a tent.`);
 
     this._assertAdjacent(character.x, character.y, targetX, targetY);
+    character.facing = this._facingToward(character.x, character.y, targetX, targetY);
 
     const targetKey = `${targetX},${targetY}`;
     const tileId = this.overrides.get(targetKey)?.[3] ?? "";
@@ -1389,6 +1502,7 @@ export class Island extends EventEmitter {
     this._checkEnergy(character, "interact");
 
     this._assertAdjacent(character.x, character.y, targetX, targetY);
+    character.facing = this._facingToward(character.x, character.y, targetX, targetY);
 
     const targetKey = `${targetX},${targetY}`;
     const tileId = this.overrides.get(targetKey)?.[3] ?? "";
@@ -1576,6 +1690,7 @@ export class Island extends EventEmitter {
     if (!character) throw new Error(`No character named "${charId}".`);
 
     this._assertAdjacent(character.x, character.y, x, y);
+    character.facing = this._facingToward(character.x, character.y, x, y);
 
     const key = `${x},${y}`;
     const tileId = this.overrides.get(key)?.[3];
@@ -1705,6 +1820,7 @@ export class Island extends EventEmitter {
     const character = this.characters.get(charId);
     if (!character) throw new Error(`No character named "${charId}".`);
     this._assertAdjacent(character.x, character.y, x, y);
+    character.facing = this._facingToward(character.x, character.y, x, y);
     const stats = this._assertContainer(x, y);
     return { contents: stats.inventory };
   }
@@ -1714,6 +1830,7 @@ export class Island extends EventEmitter {
     const character = this.characters.get(charId);
     if (!character) throw new Error(`No character named "${charId}".`);
     this._assertAdjacent(character.x, character.y, x, y);
+    character.facing = this._facingToward(character.x, character.y, x, y);
     const stats = this._assertContainer(x, y);
 
     // Retrieve entity def for filter + capacity checks
@@ -1760,6 +1877,7 @@ export class Island extends EventEmitter {
     const character = this.characters.get(charId);
     if (!character) throw new Error(`No character named "${charId}".`);
     this._assertAdjacent(character.x, character.y, x, y);
+    character.facing = this._facingToward(character.x, character.y, x, y);
     const stats = this._assertContainer(x, y);
 
     const contSlot = stats.inventory.find(s => s.item === item);
@@ -1889,6 +2007,12 @@ export class Island extends EventEmitter {
     eq[slot] = { item, qty: 1 };
 
     saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
+    // Hands (tools) are rendered as shared overlays — no sprite rebuild needed.
+    // Wearable slots (head/body/legs/feet) affect the character composite.
+    if (slot !== "hands") {
+      invalidateCharacterComposite(character);
+      void this._emitCharacterSprite(character);
+    }
     this.emit("map:updated", this.map);
     return { equipped: { item, qty: 1 }, swapped };
   }
@@ -1913,6 +2037,11 @@ export class Island extends EventEmitter {
     eq[slot] = null;
 
     saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
+    // Hands (tools) are rendered as shared overlays — no sprite rebuild needed.
+    if (slot !== "hands") {
+      invalidateCharacterComposite(character);
+      void this._emitCharacterSprite(character);
+    }
     this.emit("map:updated", this.map);
     return slotItem;
   }
@@ -2157,6 +2286,15 @@ export class Island extends EventEmitter {
     // Place extra tiles for multi-tile entities (e.g. canopy for trees)
     const entityDef = ENTITY_DEF_BY_ID.get(nextId);
     const extraTiles = entityDef?.tiles.filter(t => t.dx !== 0 || t.dy !== 0) ?? [];
+
+    // Collision check: verify extra tile positions are unoccupied on their layer
+    for (const t of extraTiles) {
+      const ex = x + t.dx, ey = y + t.dy;
+      if (ex < 0 || ex >= this.map.width || ey < 0 || ey >= this.map.height) return;
+      const eKey = `${ex},${ey}`;
+      const eTile = this.overrides.get(eKey)?.[t.layer] ?? "";
+      if (eTile) return; // Abort growth: a tile already occupies this position on the same layer
+    }
 
     // Set stats for the new entity
     this.entityStats.delete(key);

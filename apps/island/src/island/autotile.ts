@@ -731,6 +731,23 @@ export function buildVegetationLayer(
     }
   }
 
+  // ── Post-generation collision validation ────────────────────────────────
+  // Scan tileOverrides for duplicate (x,y,layer) entries. If any exist, the
+  // occupied-set logic above has a bug and two entities were placed on the
+  // same cell + layer.
+  if (process.env.NODE_ENV !== "production") {
+    const seen = new Set<string>();
+    for (const { x, y, layer } of tileOverrides) {
+      const vk = `${x},${y},${layer}`;
+      if (seen.has(vk)) {
+        console.error(
+          `[buildVegetationLayer] COLLISION detected: duplicate tile at (${x}, ${y}) layer ${layer}`,
+        );
+      }
+      seen.add(vk);
+    }
+  }
+
   return { tileOverrides, entityStats };
 }
 

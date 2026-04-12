@@ -6,7 +6,6 @@
   "scripts": {
     "start": "tsx index.ts",
     "dev": "node --env-file-if-exists=.env --import tsx/esm --watch index.ts",
-    "prebuild": "python3 ../../scripts/build-tileset.py",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
@@ -16,6 +15,7 @@
     "@modelcontextprotocol/sdk": "^1.27.1",
     "better-sqlite3": "^12.6.2",
     "rot-js": "^2.2.1",
+    "sharp": "^0.34.5",
     "ws": "^8.19.0",
     "zod": "^4.3.6"
   },

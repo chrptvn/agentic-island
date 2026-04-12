@@ -1,222 +1,164 @@
 /**
- * Character sprite helpers — catalog-driven, tag-based system.
+ * Character sprite helpers — LPC Characters system with server-side compositing.
  *
- * Sheets are 832×3456 (13 cols × 54 rows of 64×64 tiles).
- * Walk rows: 8=N, 9=W, 10=S, 11=E — 9 frames each.
- * Idle rows: 22=N, 23=W, 24=S, 25=E — 2 frames each.
+ * Each agent gets a single composite sprite sheet (576×1024) containing all
+ * animations (idle, walk, slash, thrust). The compositor merges appearance
+ * layers (body, feet, legs, torso, headwear, hair) into one PNG per agent.
  *
- * Layers rendered bottom-to-top: shadow → base → legs → body → hair.
- * Catalog loaded from characters/catalog.json at startup.
+ * Composite layout (rows, 4 dirs each):
+ *   0-3:   idle   (2 frames)
+ *   4-7:   walk   (9 frames)
+ *   8-11:  slash  (6 frames)
+ *   12-15: thrust (8 frames)
  */
 
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
 import type { CharacterAppearance, CharacterFacing, TileDef } from "@agentic-island/shared";
 import type { CharacterInstance } from "./character-registry.js";
+import {
+  TILE_SIZE,
+  TILE_SIZE_128,
+  ANIMATIONS,
+  COMPOSITE_LAYOUT,
+  DIRECTION_ORDER,
+  compositeCharacter,
+  compositeCharacterSlash128,
+  invalidateComposite,
+  randomAppearance as compositorRandomAppearance,
+} from "./character-compositor.js";
 
-const __dirname2 = dirname(fileURLToPath(import.meta.url));
+export { randomAppearance } from "./character-compositor.js";
 
-export const TILE_SIZE_LPC = 64;
+// Re-export tile size
+export const TILE_SIZE_LPC = TILE_SIZE;
 
-// ── Catalog types ────────────────────────────────────────────────────────────
+// ── Animation types ──────────────────────────────────────────────────────────
 
-export interface CatalogEntry {
-  id: string;
-  path: string;
-  layer: string;
-  tags: string[];
-}
+export type AnimAction = "idle" | "walk" | "slash" | "slash128" | "thrust";
 
-interface CatalogFile {
-  shadow: string;
-  layers: string[];
-  entries: CatalogEntry[];
-}
-
-// ── Load catalog ─────────────────────────────────────────────────────────────
-
-const SPRITES_DIR = join(__dirname2, "..", "..", "sprites", "characters");
-const catalogRaw = JSON.parse(readFileSync(join(SPRITES_DIR, "catalog.json"), "utf-8")) as CatalogFile;
-
-export const CATALOG_ENTRIES: readonly CatalogEntry[] = catalogRaw.entries;
-export const RENDER_LAYERS: readonly string[] = catalogRaw.layers;
-const SHADOW_PATH = catalogRaw.shadow;
-
-/** Sheet path prefix for sprite uploads (relative to sprites/ dir). */
-const SHEET_PREFIX = "characters/";
-
-function sheetPath(entryPath: string): string {
-  return `${SHEET_PREFIX}${entryPath}`;
-}
-
-// ── Row mapping ──────────────────────────────────────────────────────────────
-
-const WALK_ROW: Record<CharacterFacing, number> = { n: 8, w: 9, s: 10, e: 11 };
-const IDLE_ROW: Record<CharacterFacing, number> = { n: 22, w: 23, s: 24, e: 25 };
-const WALK_FRAME_COUNT = 9;
-const IDLE_FRAME_COUNT = 2;
-
-const FACINGS: CharacterFacing[] = ["n", "s", "e", "w"];
-
-// ── Catalog query helpers ────────────────────────────────────────────────────
-
-/** Get all entries for a given layer. */
-export function entriesForLayer(layer: string): CatalogEntry[] {
-  return CATALOG_ENTRIES.filter((e) => e.layer === layer);
-}
-
-/** Check if an entry has a specific tag. */
-function hasTag(entry: CatalogEntry, tag: string): boolean {
-  return entry.tags.includes(tag);
-}
-
-/** Filter entries compatible with a set of required tags (e.g. "gender:male"). */
-export function filterByTags(entries: CatalogEntry[], requiredTags: string[]): CatalogEntry[] {
-  return entries.filter((e) => {
-    for (const req of requiredTags) {
-      const [key] = req.split(":");
-      // If entry has a tag for this key, it must match
-      const entryTag = e.tags.find((t) => t.startsWith(`${key}:`));
-      if (entryTag && entryTag !== req) return false;
-    }
-    return true;
-  });
-}
-
-/** Get available genders from base layer entries. */
-export function availableGenders(): string[] {
-  const genders = new Set<string>();
-  for (const e of entriesForLayer("base")) {
-    const gTag = e.tags.find((t) => t.startsWith("gender:"));
-    if (gTag) genders.add(gTag.split(":")[1]);
-  }
-  return [...genders];
-}
+const FACINGS: CharacterFacing[] = ["n", "w", "s", "e"];
+const DIR_TO_ROW_OFFSET: Record<CharacterFacing, number> = { n: 0, w: 1, s: 2, e: 3 };
 
 // ── Tile ID helpers ──────────────────────────────────────────────────────────
 
-export function layerTileId(catalogId: string, facing: CharacterFacing, action: "idle" | "walk"): string {
-  return `char_${catalogId}_${action}_${facing}`;
+/** Tile ID for a character's animation frame */
+export function charTileId(charId: string, action: AnimAction, facing: CharacterFacing): string {
+  return `char_${charId}_${action}_${facing}`;
 }
 
-export function shadowLayerTileId(facing: CharacterFacing, action: "idle" | "walk"): string {
-  return `char_shadow_${action}_${facing}`;
-}
-
-// ── Random appearance ────────────────────────────────────────────────────────
-
-function pickRandom<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-/**
- * Generate a random appearance, filtering by gender tag for spawn defaults.
- * Each layer gets a random compatible entry. Layers with no matching entries are skipped.
- */
-export function randomAppearance(): CharacterAppearance {
-  const gender = pickRandom(availableGenders());
-  const genderTag = `gender:${gender}`;
-  const appearance: CharacterAppearance = {};
-
-  for (const layer of RENDER_LAYERS) {
-    if (layer === "shadow") continue; // shadow is universal
-    const candidates = filterByTags(entriesForLayer(layer), [genderTag]);
-    if (candidates.length > 0) {
-      appearance[layer] = pickRandom(candidates).id;
-    }
-  }
-
-  return appearance;
+/** For backwards compatibility */
+export function layerTileId(charId: string, facing: CharacterFacing, action: "idle" | "walk"): string {
+  return charTileId(charId, action, facing);
 }
 
 // ── Dynamic tile defs for active characters ──────────────────────────────────
 
-/** Build a lookup from catalog entry id → sheet path. */
-const entrySheetMap = new Map<string, string>();
-for (const e of CATALOG_ENTRIES) {
-  entrySheetMap.set(e.id, sheetPath(e.path));
-}
-
-function addTileDefsForEntry(
-  defs: TileDef[],
-  catalogId: string,
-  entrySheet: string,
-): void {
-  for (const dir of FACINGS) {
-    const walkRow = WALK_ROW[dir];
-    const idleRow = IDLE_ROW[dir];
-
-    // Idle (2 frames)
-    defs.push({
-      id: layerTileId(catalogId, dir, "idle"),
-      col: 0, row: idleRow,
-      sheet: entrySheet,
-      tileSize: TILE_SIZE_LPC, gap: 0,
-      frames: Array.from({ length: IDLE_FRAME_COUNT }, (_, i) => ({ col: i, row: idleRow })),
-      category: "character", layer: 3,
-    });
-
-    // Walk (9 frames)
-    defs.push({
-      id: layerTileId(catalogId, dir, "walk"),
-      col: 0, row: walkRow,
-      sheet: entrySheet,
-      tileSize: TILE_SIZE_LPC, gap: 0,
-      frames: Array.from({ length: WALK_FRAME_COUNT }, (_, i) => ({ col: i, row: walkRow })),
-      category: "character", layer: 3,
-    });
-  }
-}
+const ANIM_ORDER: AnimAction[] = ["idle", "walk", "slash", "thrust"];
 
 /**
  * Build TileDef entries for active characters.
- * Registers tiles for each unique catalog entry used, plus universal shadow.
+ * Each character gets tile defs pointing to their composite sheet,
+ * plus slash128 tile defs for the oversized slash animation.
  */
 export function buildCharacterTileDefs(
   characters: Iterable<CharacterInstance>,
 ): TileDef[] {
-  const seen = new Set<string>();
   const defs: TileDef[] = [];
-  let shadowAdded = false;
 
   for (const c of characters) {
-    // Add shadow tiles once
-    if (!shadowAdded) {
-      shadowAdded = true;
-      const shadowSheet = sheetPath(SHADOW_PATH);
+    const sheetName = `char_${c.id}.png`;
+
+    for (const anim of ANIM_ORDER) {
+      const animDef = ANIMATIONS[anim];
+      const layout = COMPOSITE_LAYOUT[anim];
+      const startRow = layout.startRow;
+
       for (const dir of FACINGS) {
-        const walkRow = WALK_ROW[dir];
-        const idleRow = IDLE_ROW[dir];
+        const row = startRow + DIR_TO_ROW_OFFSET[dir];
+
         defs.push({
-          id: shadowLayerTileId(dir, "idle"),
-          col: 0, row: idleRow,
-          sheet: shadowSheet,
-          tileSize: TILE_SIZE_LPC, gap: 0,
-          frames: Array.from({ length: IDLE_FRAME_COUNT }, (_, i) => ({ col: i, row: idleRow })),
-          category: "character", layer: 3,
-        });
-        defs.push({
-          id: shadowLayerTileId(dir, "walk"),
-          col: 0, row: walkRow,
-          sheet: shadowSheet,
-          tileSize: TILE_SIZE_LPC, gap: 0,
-          frames: Array.from({ length: WALK_FRAME_COUNT }, (_, i) => ({ col: i, row: walkRow })),
-          category: "character", layer: 3,
+          id: charTileId(c.id, anim, dir),
+          col: 0,
+          row,
+          sheet: sheetName,
+          tileSize: TILE_SIZE,
+          gap: 0,
+          frames: Array.from({ length: animDef.frames }, (_, i) => ({
+            col: i,
+            row,
+          })),
+          fps: animDef.fps,
+          category: "character",
+          layer: 3,
         });
       }
     }
 
-    // Add tile defs for each layer's catalog entry
-    for (const catalogId of Object.values(c.appearance)) {
-      if (seen.has(catalogId)) continue;
-      seen.add(catalogId);
-      const sheet = entrySheetMap.get(catalogId);
-      if (!sheet) continue;
-      addTileDefsForEntry(defs, catalogId, sheet);
+    // Slash128 tile defs — separate sheet at 128×128 per cell
+    const slash128Sheet = `char_${c.id}_slash128.png`;
+    const slashAnim = ANIMATIONS.slash;
+    for (const dir of FACINGS) {
+      const row = DIR_TO_ROW_OFFSET[dir];
+      defs.push({
+        id: charTileId(c.id, "slash128", dir),
+        col: 0,
+        row,
+        sheet: slash128Sheet,
+        tileSize: TILE_SIZE_128,
+        gap: 0,
+        frames: Array.from({ length: slashAnim.frames }, (_, i) => ({
+          col: i,
+          row,
+        })),
+        fps: slashAnim.fps,
+        category: "character",
+        layer: 3,
+      });
     }
   }
 
   return defs;
 }
+
+/**
+ * Composite a character's sprite sheet and return it as a SpriteAsset payload.
+ * The sheet filename is `char_{charId}.png`.
+ */
+export async function buildCharacterSprite(
+  character: CharacterInstance,
+): Promise<{ filename: string; data: string; mimeType: string }> {
+  const result = await compositeCharacter(character.appearance, character.stats.equipment);
+  return {
+    filename: `char_${character.id}.png`,
+    mimeType: "image/png",
+    data: result.png.toString("base64"),
+  };
+}
+
+/**
+ * Composite a character's slash_128 sheet (768×512, 128×128 per cell).
+ * The sheet filename is `char_{charId}_slash128.png`.
+ */
+export async function buildCharacterSlash128Sprite(
+  character: CharacterInstance,
+): Promise<{ filename: string; data: string; mimeType: string }> {
+  const result = await compositeCharacterSlash128(character.appearance, character.stats.equipment);
+  return {
+    filename: `char_${character.id}_slash128.png`,
+    mimeType: "image/png",
+    data: result.png.toString("base64"),
+  };
+}
+
+/**
+ * Invalidate a character's cached composite (call when equipment changes).
+ */
+export function invalidateCharacterComposite(character: CharacterInstance): void {
+  invalidateComposite(character.appearance, character.stats.equipment);
+}
+
+// ── Render layers (for backwards compat) ─────────────────────────────────────
+
+/** Render layers — with composites, there's just one: "body" */
+export const RENDER_LAYERS: readonly string[] = ["body"];
+
 

@@ -139,6 +139,8 @@ interface RawNearbyCell {
 interface RawSurroundings {
   character: string;
   position: { x: number; y: number };
+  facing: string;
+  facing_tile: { x: number; y: number; terrain: string; entity?: string; path?: boolean; character?: string } | null;
   standing: { terrain: string; entity?: string; path?: boolean };
   stats: {
     health: number; maxHealth: number;
@@ -243,6 +245,20 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
     .map(c => cellToTileInfo(c, origin, describeDistantCell))
     .filter((t): t is TileInfo => t !== null);
 
+  // Describe what's in front of the character
+  const facingDesc = raw.facing_tile
+    ? (() => {
+        const parts: string[] = [];
+        if (raw.facing_tile.character) parts.push(`a character named ${raw.facing_tile.character}`);
+        if (raw.facing_tile.entity) parts.push(describeEntity(raw.facing_tile.entity));
+        if (raw.facing_tile.terrain === "water") parts.push("water");
+        else if (!raw.facing_tile.entity && !raw.facing_tile.character) {
+          parts.push(raw.facing_tile.path ? "a dirt path" : "open grass");
+        }
+        return parts.join(", ");
+      })()
+    : "the edge of the island";
+
   return {
     character: raw.character,
     position: raw.position,
@@ -252,6 +268,8 @@ export function humanizeSurroundings(raw: RawSurroundings): object {
       return emotion ? `${capitalize(emotion)} and ${physical}` : capitalize(physical);
     })(),
     standing: standingParts.join(", "),
+    facing: `${raw.facing} — ${facingDesc}`,
+    ...(raw.facing_tile ? { facing_tile: { x: raw.facing_tile.x, y: raw.facing_tile.y } } : {}),
     doing: describeAction(raw.action, raw.pathLength),
     carrying: describeInventory(raw.stats.inventory),
     equipment: describeEquipment(raw.stats.equipment),

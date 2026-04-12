@@ -49,7 +49,9 @@ export interface CharacterInstance {
   facing:  CharacterFacing;
   stats:   CharacterStats;
   path:    { x: number; y: number }[];
-  action:  string; // "idle" | "moving" | "searching"
+  action:  string; // "idle" | "moving" | "searching" | "slash" | "thrust"
+  /** Timestamp (ms) when the current action animation expires back to idle */
+  actionUntil?: number;
   moveTicks: number; // tick counter for movement throttle
   speech?: CharacterSpeech;
   /** "x,y" key of the tent base position when the character is inside a tent. */

@@ -119,7 +119,7 @@ export function buildGameRules(): object {
     },
     actions: {
       walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east. You'll automatically find a path around obstacles.",
-      harvest: "Gather resources from things next to you — pick berries from bushes, chop trees for wood (need an axe), collect rocks.",
+      harvest: "Gather resources from the entity you're facing — chop a tree for wood, pick berries from a bush, collect rocks. Just call harvest with no direction; it targets whatever you're looking at.",
       build_structure: "Build things on an empty adjacent tile using materials from your inventory.",
       interact_with: "Interact with nearby things — light or extinguish a campfire, for example.",
       feed_entity: "Feed fuel (like wood) into a campfire to keep it burning.",
@@ -339,11 +339,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "harvest",
-    "Collect resources or deal damage to a nearby entity. For non-blocking entities (berries on the ground) omit target — harvests your current tile. For blocking entities (trees, rocks) provide the direction to the target (e.g. 'n', 'sw') — you must be adjacent.",
+    "Collect resources or deal damage to the entity in front of you (your facing tile). Omit target_direction to harvest whatever you're currently facing. Optionally specify a direction to override the facing tile.",
     {
       session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
       item:             z.string().optional().describe("Specific item to harvest (e.g. 'branches', 'berries'). Omit to harvest everything available."),
-      target_direction: z.string().optional().describe("Direction to the target entity relative to character: n/s/e/w/ne/nw/se/sw."),
+      target_direction: z.string().optional().describe("Direction to the target entity relative to character: n/s/e/w/ne/nw/se/sw. Defaults to the character's current facing direction."),
     },
     async ({ session_token, item, target_direction }) => {
       const check = requireSession(session, session_token);

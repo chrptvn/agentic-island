@@ -90,14 +90,23 @@ export function drawCharacter(
   const cy = Math.round(screenRow * tileSize + offsetY);
   const size = Math.round(tileSize);
 
-  // Draw all character layers in render order: base → legs → body → hair
-  // TODO: re-enable shadow layer when shadow sprite is finalized
-  const LAYER_ORDER = ["base", "legs", "body", "hair"];
+  // Draw layers: tool background → character body → tool foreground
+  const LAYER_ORDER = ["toolBg", "body", "toolFg"];
   if (character.layerTiles) {
     for (const layer of LAYER_ORDER) {
       const tid = character.layerTiles[layer];
       if (tid && registry[tid]) {
-        drawTile(ctx, tid, registry, sprites, cx, cy, size, size, animFrame);
+        const def = registry[tid];
+        const defTileSize = def.tileSize ?? 64;
+        if (defTileSize > 64) {
+          // Oversized tile (e.g. 128px): draw at native ratio, centered
+          const ratio = defTileSize / 64;
+          const dSize = Math.round(size * ratio);
+          const offset = Math.round(size * (ratio - 1) / 2);
+          drawTile(ctx, tid, registry, sprites, cx - offset, cy - offset, dSize, dSize, animFrame);
+        } else {
+          drawTile(ctx, tid, registry, sprites, cx, cy, size, size, animFrame);
+        }
       }
     }
   } else {
