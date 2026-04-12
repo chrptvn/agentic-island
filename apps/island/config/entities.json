@@ -47,7 +47,9 @@
       },
       "stats": {
         "branches": 3,
-        "bark": 1
+        "bark": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -70,7 +72,18 @@
       "harvest": {
         "fullBase": "tree_light2",
         "emptyBase": "tree_light2",
-        "regrowMs": 300000
+        "regrowMs": 300000,
+        "damage": 20,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -108,7 +121,9 @@
       },
       "stats": {
         "branches": 3,
-        "bark": 2
+        "bark": 2,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -131,7 +146,18 @@
       "harvest": {
         "fullBase": "tree_dark2",
         "emptyBase": "tree_dark2",
-        "regrowMs": 300000
+        "regrowMs": 300000,
+        "damage": 20,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -169,7 +195,9 @@
       },
       "stats": {
         "branches": 2,
-        "pine_cone": 1
+        "pine_cone": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -188,7 +216,18 @@
       "harvest": {
         "fullBase": "tree_orange2",
         "emptyBase": "tree_orange2",
-        "regrowMs": 300000
+        "regrowMs": 300000,
+        "damage": 20,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -225,7 +264,9 @@
         "weight": 0.5
       },
       "stats": {
-        "branches": 2
+        "branches": 2,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -248,7 +289,16 @@
       "harvest": {
         "fullBase": "tree_dead2",
         "emptyBase": "tree_dead2",
-        "regrowMs": 300000
+        "regrowMs": 300000,
+        "damage": 20,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {},
+          "dropStats": true
+        }
       }
     },
     {
@@ -268,7 +318,9 @@
         "noForest": true
       },
       "stats": {
-        "branches": 1
+        "branches": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -287,7 +339,18 @@
       "harvest": {
         "fullBase": "bush_light",
         "emptyBase": "bush_light",
-        "regrowMs": 240000
+        "regrowMs": 240000,
+        "damage": 25,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -307,7 +370,9 @@
         "noForest": true
       },
       "stats": {
-        "branches": 1
+        "branches": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -326,7 +391,18 @@
       "harvest": {
         "fullBase": "bush_dark",
         "emptyBase": "bush_dark",
-        "regrowMs": 240000
+        "regrowMs": 240000,
+        "damage": 25,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -347,7 +423,9 @@
       },
       "stats": {
         "branches": 1,
-        "pine_cone": 1
+        "pine_cone": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -366,7 +444,18 @@
       "harvest": {
         "fullBase": "bush_orange",
         "emptyBase": "bush_orange",
-        "regrowMs": 240000
+        "regrowMs": 240000,
+        "damage": 25,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {
+            "wood": 3
+          },
+          "dropStats": true
+        }
       }
     },
     {
@@ -386,7 +475,9 @@
         "noForest": true
       },
       "stats": {
-        "branches": 1
+        "branches": 1,
+        "health": 100,
+        "maxHealth": 100
       },
       "randomStats": {
         "branches": {
@@ -409,7 +500,16 @@
       "harvest": {
         "fullBase": "bush_dead",
         "emptyBase": "bush_dead",
-        "regrowMs": 240000
+        "regrowMs": 240000,
+        "damage": 25,
+        "requires": [
+          "chop"
+        ],
+        "onDeath": {
+          "spawnEntity": "log_pile",
+          "drops": {},
+          "dropStats": true
+        }
       }
     },
     {
@@ -1010,7 +1110,11 @@
       ],
       "blocks": true,
       "build": {
-        "costs": { "wood": 3, "branches": 2, "rocks": 5 }
+        "costs": {
+          "wood": 3,
+          "branches": 2,
+          "rocks": 5
+        }
       },
       "repair": {
         "fuelItem": "wood",
@@ -1122,7 +1226,14 @@
           "tileId": "log_pile"
         }
       ],
-      "blocks": true
+      "blocks": true,
+      "container": true,
+      "acceptedItems": [
+        "wood"
+      ],
+      "harvest": {
+        "fullBase": "log_pile"
+      }
     },
     {
       "id": "green_tent",

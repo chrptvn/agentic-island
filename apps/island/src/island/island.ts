@@ -338,7 +338,7 @@ export class Island extends EventEmitter {
       return `${dy < 0 ? "n" : "s"}${dx > 0 ? "e" : "w"}`;
     }
 
-    const nearby: Array<{ direction: string; steps: number; dx: number; dy: number; terrain: string; entity?: string; path?: true; character?: string }> = [];
+    const nearby: Array<{ direction: string; steps: number; dx: number; dy: number; terrain: string; entity?: string; condition?: string; path?: true; character?: string }> = [];
     for (let dy = -radius; dy <= radius; dy++) {
       for (let dx = -radius; dx <= radius; dx++) {
         if (dx === 0 && dy === 0) continue;
@@ -351,7 +351,13 @@ export class Island extends EventEmitter {
         const terrain = terrainFromLayer1(l1, this.getLayer(cx, cy, 2));
         const cell: (typeof nearby)[0] = { direction: compassDir(dx, dy), steps, dx, dy, terrain };
         const entity = this.getLayer(cx, cy, 3);
-        if (entity) cell.entity = entity;
+        if (entity) {
+          cell.entity = entity;
+          const eStats = this.entityStats.get(`${cx},${cy}`) as EntityStats | undefined;
+          if (eStats && typeof eStats.health === "number" && typeof eStats.maxHealth === "number") {
+            cell.condition = this._healthCondition(eStats.health, eStats.maxHealth);
+          }
+        }
         if (isPathTileId(this.getLayer(cx, cy, 2))) cell.path = true;
         const charHere = [...this.characters.values()].find(c => c !== character && c.x === cx && c.y === cy);
         if (charHere) cell.character = charHere.id;
@@ -366,6 +372,10 @@ export class Island extends EventEmitter {
     const facingEntity = facingTerrain ? (this.getLayer(fx, fy, 3) || undefined) : undefined;
     const facingChar = facingTerrain ? [...this.characters.values()].find(c => c !== character && c.x === fx && c.y === fy) : undefined;
     const facingPath = facingTerrain ? isPathTileId(this.getLayer(fx, fy, 2)) : false;
+    const facingStats = facingEntity ? this.entityStats.get(`${fx},${fy}`) as EntityStats | undefined : undefined;
+    const facingCondition = (facingStats && typeof facingStats.health === "number" && typeof facingStats.maxHealth === "number")
+      ? this._healthCondition(facingStats.health, facingStats.maxHealth)
+      : undefined;
 
     // Terrain for current cell
     const standingL1 = this.getLayer(x, y, 1);
@@ -378,6 +388,7 @@ export class Island extends EventEmitter {
         x: fx, y: fy,
         terrain: facingTerrain,
         ...(facingEntity ? { entity: facingEntity } : {}),
+        ...(facingCondition ? { condition: facingCondition } : {}),
         ...(facingPath ? { path: true as const } : {}),
         ...(facingChar ? { character: facingChar.id } : {}),
       } : null,
@@ -908,6 +919,18 @@ export class Island extends EventEmitter {
     character.stats.energy = Math.max(0, character.stats.energy - cost);
   }
 
+  /** Convert numeric health to a human-readable condition word. */
+  private _healthCondition(health: number, maxHealth: number): string {
+    if (maxHealth <= 0) return "healthy";
+    const pct = (health / maxHealth) * 100;
+    if (pct >= 80) return "healthy";
+    if (pct >= 60) return "scratched";
+    if (pct >= 40) return "damaged";
+    if (pct >= 20) return "battered";
+    if (pct > 0)   return "critical";
+    return "destroyed";
+  }
+
   /** Determine facing direction from source toward target */
   private _facingToward(sx: number, sy: number, tx: number, ty: number): CharacterFacing {
     const dx = tx - sx;
@@ -934,10 +957,15 @@ export class Island extends EventEmitter {
     character.actionUntil = Date.now() + (anim.frames / anim.fps) * 1000;
   }
 
-  harvest(id: string, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; health?: number; maxHealth?: number; destroyed: boolean } } {
+  harvest(id: string, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
     this._checkEnergy(character, "harvest");
+    return this._harvestCore(character, item, targetX, targetY);
+  }
+
+  /** Internal harvest logic — no energy check (used by swing to avoid double deduction). */
+  private _harvestCore(character: CharacterInstance, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
 
     // Determine which cell to harvest from
     let key: string;
@@ -976,14 +1004,11 @@ export class Island extends EventEmitter {
     // ── Tool capability check (damage mode only — chopping trees etc.) ──────────
     // Drain-mode entities with harvestYield use tool level as a yield multiplier
     // instead of a hard block (anyone can try; better tools give more resources).
+    let hasRequiredTool = true;
     if (def.damage !== undefined && item === undefined) {
       if (def.requires && def.requires.length > 0) {
         const equippedItem = character.stats.equipment?.hands?.item ?? null;
-        const satisfied = equippedItem && def.requires.some(cap => hasCapability(equippedItem, cap));
-        if (!satisfied) {
-          const needed = def.requires.join(" or ");
-          throw new Error(`Cannot harvest "${tileId}": requires a tool with [${needed}] capability.`);
-        }
+        hasRequiredTool = !!(equippedItem && def.requires.some(cap => hasCapability(equippedItem, cap)));
       }
     }
 
@@ -994,8 +1019,9 @@ export class Island extends EventEmitter {
     if (def.damage !== undefined) {
       const currentStats = this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[entityId] };
       const currentHealth = (currentStats as EntityStats).health ?? 0;
-      // Route to drain if: caller requested a specific item, OR entity is already dead (health=0)
-      if (item !== undefined || currentHealth <= 0) {
+      // Route to drain if: caller requested a specific item, entity is dead, or
+      // the character lacks the required tool (bare-handed → pick resources, not chop).
+      if (item !== undefined || currentHealth <= 0 || !hasRequiredTool) {
         return this._harvestByDrain(character, key, tileId, def, item);
       }
       return this._harvestByDamage(character, key, tileId, def);
@@ -1003,6 +1029,26 @@ export class Island extends EventEmitter {
 
     // ── Drain mode (berries, rock, etc.) ────────────────────────────────────
     return this._harvestByDrain(character, key, tileId, def, item);
+  }
+
+  /**
+   * Swing the equipped item at the facing cell.
+   * If something harvestable is there, delegates to _harvestCore and returns hit:true.
+   * If nothing is there (or nothing harvestable), triggers the action animation anyway
+   * and returns hit:false — no error thrown.
+   */
+  swing(id: string): { swung: true; hit: false } | { swung: true; hit: true; harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
+    const character = this.characters.get(id);
+    if (!character) throw new Error(`No character named "${id}".`);
+    this._checkEnergy(character, "harvest");
+    try {
+      const result = this._harvestCore(character);
+      return { swung: true, hit: true, ...result };
+    } catch {
+      // Nothing to hit — trigger animation anyway and consume energy
+      this._triggerActionAnimation(character);
+      return { swung: true, hit: false };
+    }
   }
 
   /** Pick up items from a container entity via harvest command. */
@@ -1063,13 +1109,16 @@ export class Island extends EventEmitter {
     key: string,
     tileId: string,
     def: typeof HARVEST_DEFS[string],
-  ): { harvested: Record<string, number>; entity: { tileId: string; health: number; maxHealth: number; destroyed: boolean } } {
+  ): { harvested: Record<string, number>; entity: { tileId: string; condition: string; previousCondition: string; destroyed: boolean } } {
     const [entityX, entityY] = key.split(",").map(Number);
     const entityId = resolveEntityId(tileId);
     const stats = (this.entityStats.get(key) ?? { ...ENTITY_DEFAULTS[entityId] }) as EntityStats;
     const maxHealth = stats.maxHealth ?? (ENTITY_DEFAULTS[entityId]?.maxHealth ?? 0);
-    const newHealth = (stats.health ?? 0) - def.damage!;
+    const prevHealth = stats.health ?? 0;
+    const newHealth = prevHealth - def.damage!;
     const harvested: Record<string, number> = {};
+
+    const previousCondition = this._healthCondition(prevHealth, maxHealth);
 
     // Apply dropPerHit: yield resources directly to character inventory on every hit
     let updatedStats: EntityStats = { ...stats, health: Math.max(newHealth, 0) };
@@ -1093,7 +1142,20 @@ export class Island extends EventEmitter {
         saveEntityStat(entityX, entityY, updatedStats);
         saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
         this.emit("map:updated", this.map);
-        return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: false } };
+        return { harvested, entity: { tileId, condition: "destroyed", previousCondition, destroyed: false } };
+      }
+
+      // dropStats: give all numeric entity stats (except health/maxHealth) to character inventory
+      if (def.onDeath?.dropStats) {
+        const inv = character.stats.inventory as { item: string; qty: number }[];
+        for (const [res, val] of Object.entries(stats)) {
+          if (res === "health" || res === "maxHealth") continue;
+          if (typeof val !== "number" || val <= 0) continue;
+          const existing = inv.find(i => i.item === res);
+          if (existing) existing.qty += val;
+          else inv.push({ item: res, qty: val });
+          harvested[res] = (harvested[res] ?? 0) + val;
+        }
       }
 
       // Split drops: accepted items go into spawned container, rest go to char
@@ -1151,9 +1213,20 @@ export class Island extends EventEmitter {
         saveEntityStat(entityX, entityY, spawnStats);
       }
 
+      // Schedule regrow if defined (trees respawn)
+      if (def.regrowMs) {
+        const existingTimer = this.regrowTimers.get(key);
+        if (existingTimer) clearTimeout(existingTimer);
+        const timer = setTimeout(() => {
+          this.regrowEntity(entityX, entityY, entityId, def);
+        }, def.regrowMs);
+        if (timer.unref) timer.unref();
+        this.regrowTimers.set(key, timer);
+      }
+
       saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
       this.emit("map:updated", this.map);
-      return { harvested, entity: { tileId, health: 0, maxHealth, destroyed: true } };
+      return { harvested, entity: { tileId, condition: "destroyed", previousCondition, destroyed: true } };
     } else {
       // ── Partial hit — update health (and any dropPerHit resources) ────────
       this.entityStats.set(key, updatedStats);
@@ -1161,7 +1234,8 @@ export class Island extends EventEmitter {
 
       saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
       this.emit("map:updated", this.map);
-      return { harvested, entity: { tileId, health: newHealth, maxHealth, destroyed: false } };
+      const condition = this._healthCondition(newHealth, maxHealth);
+      return { harvested, entity: { tileId, condition, previousCondition, destroyed: false } };
     }
   }
 
@@ -2053,6 +2127,11 @@ export class Island extends EventEmitter {
     // Restore ALL resource fields from defaults
     const current = this.entityStats.get(key);
     if (!current && def.emptyBase) return;
+
+    // Don't regrow if a different entity (e.g. log_pile spawned at death) is still here
+    const currentTileId = this.overrides.get(key)?.[3] ?? "";
+    const isExpectedTile = !currentTileId || currentTileId === def.emptyBase || currentTileId === def.fullBase;
+    if (!isExpectedTile) return;
 
     const defaults = ENTITY_DEFAULTS[tileId];
     if (!defaults) return;

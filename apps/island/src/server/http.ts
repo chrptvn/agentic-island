@@ -192,8 +192,17 @@ async function handleRequest(
         return;
       }
 
+      if (body.command.type === "swing") {
+        const result = island.swing(body.id);
+        const msg = result.hit
+          ? `Swung and hit — harvested ${JSON.stringify(result.harvested)}.`
+          : "Swung in the air — nothing to hit.";
+        jsonOk(res, { message: msg, ...result });
+        return;
+      }
+
       if (body.command.type !== "move_to") {
-        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, craft, enter_tent, exit_tent.`);
+        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, craft, enter_tent, exit_tent.`);
         return;
       }
 

@@ -253,9 +253,11 @@ async function loadAllToolSheets(): Promise<{ sheets64: LoadedSheet[]; sheets128
     // Action bg/fg — route to the correct atlas based on overlaySize
     const actionBg =
       loadPng(join(toolDir, `${action}${sizeStr}_background.png`)) ??
+      loadPng(join(toolDir, `${action}_bg.png`)) ??
       loadPng(join(toolDir, `${action}_behind.png`));
     const actionFg =
       loadPng(join(toolDir, `${action}${sizeStr}_foreground.png`)) ??
+      loadPng(join(toolDir, `${action}_fg.png`)) ??
       loadPng(join(toolDir, `${action}.png`));
 
     const targetSheets = overlaySize > 64 ? sheets128 : sheets64;
@@ -280,9 +282,11 @@ async function loadAllToolSheets(): Promise<{ sheets64: LoadedSheet[]; sheets128
     // Walk overlays — always 64px, go into the 64px atlas
     const walkBg =
       loadPng(join(toolDir, "walk_background.png")) ??
+      loadPng(join(toolDir, "walk_bg.png")) ??
       loadPng(join(toolDir, "walk_behind.png"));
     const walkFg =
       loadPng(join(toolDir, "walk_foreground.png")) ??
+      loadPng(join(toolDir, "walk_fg.png")) ??
       loadPng(join(toolDir, "walk.png"));
     const walkMale = loadPng(join(toolDir, "walk_male.png"));
     const walkFemale = loadPng(join(toolDir, "walk_female.png"));

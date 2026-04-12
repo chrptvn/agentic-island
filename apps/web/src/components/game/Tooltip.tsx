@@ -169,10 +169,25 @@ function CharacterBox({ character }: { character: CharacterState }) {
   );
 }
 
+// Must match _healthCondition() in island.ts
+function healthCondition(health: number, maxHealth: number): { label: string; color: string } {
+  if (maxHealth <= 0) return { label: 'healthy', color: 'text-green-400' };
+  const pct = (health / maxHealth) * 100;
+  if (pct >= 80) return { label: 'healthy',   color: 'text-green-400' };
+  if (pct >= 60) return { label: 'scratched',  color: 'text-yellow-400' };
+  if (pct >= 40) return { label: 'damaged',    color: 'text-orange-400' };
+  if (pct >= 20) return { label: 'battered',   color: 'text-red-400' };
+  if (pct > 0)   return { label: 'critical',   color: 'text-red-500' };
+  return { label: 'destroyed', color: 'text-gray-500' };
+}
+
 function EntityBox({ entity }: { entity: EntityInstance }) {
   const name = entity.name ?? ENTITY_LABELS[entity.tileId] ?? entity.tileId;
   const hp = entity.stats?.health;
   const maxHp = entity.stats?.maxHealth;
+  const condition = hp !== undefined && maxHp !== undefined && maxHp > 0
+    ? healthCondition(hp, maxHp)
+    : null;
 
   // Resource counts: numeric stats excluding health/max* keys
   const resources = entity.stats
@@ -187,8 +202,8 @@ function EntityBox({ entity }: { entity: EntityInstance }) {
   return (
     <div className="space-y-1">
       <p className="font-bold text-accent-gold">{name}</p>
-      {hp !== undefined && maxHp !== undefined && maxHp > 0 && (
-        <StatBar label="❤️ HP" value={hp} max={maxHp} color="bg-accent-red" />
+      {condition && (
+        <p className={`${condition.color} italic`}>{condition.label}</p>
       )}
       {resources.length > 0 && (
         <>

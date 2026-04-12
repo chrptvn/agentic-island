@@ -54,17 +54,25 @@
     }
   },
   "tools": {
-    "axe":     { "action": "slash", "pathPrefix": "tools/axe",     "overlaySize": 128 },
-    "hammer":  { "action": "slash", "pathPrefix": "tools/hammer",  "overlaySize": 128 },
-    "pickaxe": { "action": "slash", "pathPrefix": "tools/pickaxe", "overlaySize": 128 },
-    "hoe":     { "action": "thrust", "pathPrefix": "tools/hoe",    "overlaySize": 64 },
-    "shovel":  { "action": "thrust", "pathPrefix": "tools/shovel", "overlaySize": 64 },
-    "dagger":  { "action": "slash", "pathPrefix": "weapons/dagger","overlaySize": 64 }
+    "axe":      { "action": "slash",  "pathPrefix": "tools/axe",       "overlaySize": 128 },
+    "hammer":   { "action": "slash",  "pathPrefix": "tools/hammer",    "overlaySize": 128 },
+    "pickaxe":  { "action": "slash",  "pathPrefix": "tools/pickaxe",   "overlaySize": 128 },
+    "hoe":      { "action": "thrust", "pathPrefix": "tools/hoe",       "overlaySize": 64 },
+    "shovel":   { "action": "thrust", "pathPrefix": "tools/shovel",    "overlaySize": 64 },
+    "watering": { "action": "thrust", "pathPrefix": "tools/watering",  "overlaySize": 64 },
+    "dagger":   { "action": "slash",  "pathPrefix": "weapons/dagger",  "overlaySize": 64 },
+    "spear":    { "action": "thrust", "pathPrefix": "weapons/spear",   "overlaySize": 64 },
+    "sword":    { "action": "slash",  "pathPrefix": "weapons/sword",   "overlaySize": 64 }
   },
   "toolItemMapping": {
-    "stone_axe": "axe",
+    "stone_axe":     "axe",
     "stone_pickaxe": "pickaxe",
-    "stone_knife": "dagger",
-    "plow": "hoe"
+    "stone_knife":   "dagger",
+    "plow":          "hoe",
+    "hammer":        "hammer",
+    "shovel":        "shovel",
+    "watering_can":  "watering",
+    "spear":         "spear",
+    "sword":         "sword"
   }
 }

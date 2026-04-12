@@ -119,7 +119,8 @@ export function buildGameRules(): object {
     },
     actions: {
       walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east. You'll automatically find a path around obstacles.",
-      harvest: "Gather resources from the entity you're facing — chop a tree for wood, pick berries from a bush, collect rocks. Just call harvest with no direction; it targets whatever you're looking at.",
+      harvest: "Gather resources or deal damage to what you're facing. Trees have health (healthy→scratched→damaged→battered→critical→destroyed) — chop with an axe. On tree death, a log pile may appear. Returns condition and previousCondition for health-based entities.",
+      swing: "Swing your equipped item at the facing cell. If something is there, it gets hit (same as harvest); returns condition. If empty, just animates with no error.",
       build_structure: "Build things on an empty adjacent tile using materials from your inventory.",
       interact_with: "Interact with nearby things — light or extinguish a campfire, for example.",
       feed_entity: "Feed fuel (like wood) into a campfire to keep it burning.",
@@ -338,25 +339,37 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "harvest",
-    "Collect resources or deal damage to the entity in front of you (your facing tile). Omit target_direction to harvest whatever you're currently facing. Optionally specify a direction to override the facing tile.",
+    "swing",
+    "Swing or use the item currently equipped in your hands toward the facing cell. If an entity is there, it gets hit — returns hit:true with harvested items and entity condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed'). If the cell is empty, you swing in the air — energy is consumed but no error is thrown.",
     {
-      session_token:    z.string().min(1).describe("Session token returned by the connect tool"),
-      item:             z.string().optional().describe("Specific item to harvest (e.g. 'branches', 'berries'). Omit to harvest everything available."),
-      target_direction: z.string().optional().describe("Direction to the target entity relative to character: n/s/e/w/ne/nw/se/sw. Defaults to the character's current facing direction."),
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
     },
-    async ({ session_token, item, target_direction }) => {
+    async ({ session_token }) => {
       const check = requireSession(session, session_token);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
-        let tx: number | undefined, ty: number | undefined;
-        if (target_direction !== undefined) {
-          const resolved = resolveTarget(character_id, target_direction);
-          if (!resolved) throw new Error("Failed to resolve direction.");
-          tx = resolved.x; ty = resolved.y;
-        }
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "harvest", item, target_x: tx, target_y: ty } });
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "swing" } });
+        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+      } catch (err) {
+        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+      }
+    }
+  );
+
+  server.tool(
+    "harvest",
+    "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. Trees require a tool with 'chop' capability (axe). On death, a log pile container may appear — use harvest again to pick up wood from it.",
+    {
+      session_token: z.string().min(1).describe("Session token returned by the connect tool"),
+      item:          z.string().optional().describe("Specific item to harvest (e.g. 'branches', 'berries'). Omit to harvest everything available."),
+    },
+    async ({ session_token, item }) => {
+      const check = requireSession(session, session_token);
+      if (typeof check !== "string") return check;
+      const character_id = check;
+      try {
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "harvest", item } });
         return { content: [{ type: "text", text: JSON.stringify(humanizeHarvestResult(result as Record<string, unknown>), null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };

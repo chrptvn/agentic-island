@@ -990,5 +990,28 @@
         ]
       }
     ]
+  },
+  "watering_can": {
+    "equippable": true,
+    "wearable": null
+  },
+  "hammer": {
+    "equippable": true,
+    "wearable": null
+  },
+  "shovel": {
+    "equippable": true,
+    "wearable": null,
+    "capabilities": {
+      "plow": 1.5
+    }
+  },
+  "spear": {
+    "equippable": true,
+    "wearable": null
+  },
+  "sword": {
+    "equippable": true,
+    "wearable": null
   }
 }

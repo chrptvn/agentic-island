@@ -5225,6 +5225,15 @@
         { "col": 12, "row": 47 }
       ],
       "fps": 10
+    },
+    {
+      "id": "log_pile",
+      "col": 2,
+      "row": 108,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "vegetation",
+      "description": "Log Pile"
     }
   ]
 }

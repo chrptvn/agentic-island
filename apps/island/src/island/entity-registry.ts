@@ -185,6 +185,9 @@ export interface HarvestDef {
      * Entity is removed only when resources are fully drained.
      */
     keepForPickup?: boolean;
+    /** When true, all numeric non-health entity stats (branches, bark, etc.) are
+     *  given directly to the character's inventory on death. */
+    dropStats?: boolean;
   };
 }
 
