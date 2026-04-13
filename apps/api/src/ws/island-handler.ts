@@ -24,12 +24,10 @@ export const islandViewers = new Map<string, Set<WebSocket>>();
 
 // Cache the last map init per island for late-joining viewers
 export const lastMapInit = new Map<string, string>();
-export const lastMapInitEtags = new Map<string, string>();
 
 // Cache the last initial state (entities, characters, overrides) per island
 // Served via HTTP GET /api/islands/:id/state
 export const lastInitialState = new Map<string, string>();
-export const lastInitialStateEtags = new Map<string, string>();
 // Track the latest tick per island so we can stamp the cached initial state
 const lastTicks = new Map<string, number>();
 
@@ -220,13 +218,11 @@ export function handleIslandConnection(ws: WebSocket): void {
           });
 
           // Detect if map content actually changed (island restart)
-          const prevEtag = lastMapInitEtags.get(core.islandId);
+          const prevMap = lastMapInit.get(core.islandId);
           lastMapInit.set(core.islandId, mapRelay);
-          const newEtag = `"${createHash("md5").update(mapRelay).digest("hex")}"`;
-          lastMapInitEtags.set(core.islandId, newEtag);
 
           // If map changed, notify viewers to re-fetch via HTTP
-          if (prevEtag && prevEtag !== newEtag) {
+          if (prevMap && prevMap !== mapRelay) {
             const notify = JSON.stringify({
               type: "map_changed",
             });
@@ -265,10 +261,6 @@ export function handleIslandConnection(ws: WebSocket): void {
             tick,
           });
           lastInitialState.set(core.islandId, stateJson);
-          lastInitialStateEtags.set(
-            core.islandId,
-            `"${createHash("md5").update(stateJson).digest("hex")}"`,
-          );
           break;
         }
 
@@ -351,12 +343,7 @@ export function handleIslandConnection(ws: WebSocket): void {
             if (cached) {
               const parsed = JSON.parse(cached);
               parsed.spriteVersion = hash;
-              const updated = JSON.stringify(parsed);
-              lastMapInit.set(core.islandId, updated);
-              lastMapInitEtags.set(
-                core.islandId,
-                `"${createHash("md5").update(updated).digest("hex")}"`,
-              );
+              lastMapInit.set(core.islandId, JSON.stringify(parsed));
             }
 
             // Notify viewers immediately so they reload the changed sprite
@@ -386,9 +373,7 @@ export function handleIslandConnection(ws: WebSocket): void {
       ).run(core.islandId);
       connectedIslands.delete(core.islandId);
       lastMapInit.delete(core.islandId);
-      lastMapInitEtags.delete(core.islandId);
       lastInitialState.delete(core.islandId);
-      lastInitialStateEtags.delete(core.islandId);
       lastTicks.delete(core.islandId);
       deltaBuffers.delete(core.islandId);
       spriteHashes.delete(core.islandId);

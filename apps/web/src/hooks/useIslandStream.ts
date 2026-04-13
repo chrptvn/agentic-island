@@ -84,7 +84,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
     let timer: ReturnType<typeof setTimeout> | null = null;
     let delay = WS_RECONNECT_BASE;
 
-    /** Fetch static map data via HTTP (cacheable with ETag). */
+    /** Fetch static map data via HTTP. */
     async function fetchMap(): Promise<boolean> {
       try {
         const resp = await fetch(`/api/islands/${islandId}/map`);
