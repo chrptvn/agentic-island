@@ -253,7 +253,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           broadcastIslandUpdate(core.islandId);
 
           // Cache as initial state for HTTP endpoint (include current tick)
-          const tick = lastTicks.get(core.islandId) ?? 0;
+          const tick = lastTicks.get(core.islandId) ?? -1;
           const stateJson = JSON.stringify({
             entities: msg.entities,
             characters: msg.characters,
@@ -287,6 +287,34 @@ export function handleIslandConnection(ws: WebSocket): void {
               lastPlayerCounts.set(core.islandId, agentCount);
               broadcastIslandUpdate(core.islandId);
             }
+          }
+
+          // Merge delta into cached initial state so the HTTP endpoint stays fresh
+          const cachedJson = lastInitialState.get(core.islandId);
+          if (cachedJson) {
+            const cached = JSON.parse(cachedJson);
+            if (msg.delta.c) cached.characters = msg.delta.c;
+            if (msg.delta.e) {
+              const entityMap = new Map<string, unknown>();
+              for (const e of cached.entities) entityMap.set(`${e.x},${e.y}`, e);
+              for (const p of msg.delta.e) {
+                if (p.a === "upsert" && p.e) entityMap.set(p.k, p.e);
+                else if (p.a === "remove") entityMap.delete(p.k);
+              }
+              cached.entities = Array.from(entityMap.values());
+            }
+            if (msg.delta.o) {
+              const overrideMap = new Map<string, unknown>();
+              for (const o of cached.overrides) overrideMap.set(`${o.x},${o.y},${o.l}`, o);
+              for (const p of msg.delta.o) {
+                const key = `${p.x},${p.y},${p.l}`;
+                if (p.a === "set" && p.t !== undefined) overrideMap.set(key, { x: p.x, y: p.y, l: p.l, t: p.t });
+                else if (p.a === "remove") overrideMap.delete(key);
+              }
+              cached.overrides = Array.from(overrideMap.values());
+            }
+            cached.tick = deltaTick;
+            lastInitialState.set(core.islandId, JSON.stringify(cached));
           }
 
           const deltaViewers = islandViewers.get(core.islandId);
