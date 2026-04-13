@@ -63,6 +63,20 @@ export class StateStreamer {
     this.encoderMap = buildEncoderMap(this.tileLookup);
   }
 
+  /**
+   * Extend the tile lookup with new entries from the registry.
+   * Appends new tile IDs to preserve existing numeric indices so that
+   * already-sent map/entity data isn't invalidated.
+   */
+  private extendTileRegistry(registry: TileRegistry): void {
+    for (const id of Object.keys(registry)) {
+      if (!this.encoderMap.has(id)) {
+        this.encoderMap.set(id, this.tileLookup.length);
+        this.tileLookup.push(id);
+      }
+    }
+  }
+
   /** Register the callback for static map init (map + registry + lookup). */
   onMapReady(fn: (payload: MapInitPayload) => void): void {
     this.mapFn = fn;
@@ -90,8 +104,9 @@ export class StateStreamer {
     const registry: TileRegistry = world.getTileRegistry();
     const registrySize = Object.keys(registry).length;
     if (registrySize > this.tileLookup.length) {
-      this.setTileRegistry(registry);
-      // Re-send map_init so the hub caches the updated registry
+      // Append new tiles — preserves existing indices
+      this.extendTileRegistry(registry);
+      // Re-send map_init so the hub caches the updated registry + lookup
       this.mapFn?.({
         map: encodeMap(world.getMap(), this.encoderMap),
         tileRegistry: registry,
