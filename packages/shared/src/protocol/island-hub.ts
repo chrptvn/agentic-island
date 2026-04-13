@@ -7,7 +7,6 @@ import type {
   WireMapData,
   WireEntityInstance,
   WireCharacterState,
-  WireCharacterPosition,
   WireOverride,
   WireStateDelta,
 } from "../codec.js";
@@ -35,9 +34,9 @@ export interface IslandMapInitMessage {
   tileLookup: string[];
 }
 
-/** Dynamic state — sent on initial connect and resync (no map). */
-export interface IslandStateUpdateMessage {
-  type: "state_update";
+/** Initial state snapshot — sent once after handshake, cached at hub for HTTP serving. */
+export interface IslandInitialStateMessage {
+  type: "initial_state";
   entities: WireEntityInstance[];
   characters: WireCharacterState[];
   overrides: WireOverride[];
@@ -105,11 +104,6 @@ export interface IslandSpriteUpdateMessage {
   sprites: SpriteAsset[];
 }
 
-export interface IslandCharacterUpdateMessage {
-  type: "character_update";
-  characters: WireCharacterPosition[];
-}
-
 export interface IslandStateDeltaMessage {
   type: "state_delta";
   delta: WireStateDelta;
@@ -148,10 +142,9 @@ export interface IslandPassportResponse {
 export type IslandToHubMessage =
   | IslandHandshakeMessage
   | IslandMapInitMessage
-  | IslandStateUpdateMessage
+  | IslandInitialStateMessage
   | IslandPingMessage
   | IslandSpriteUpdateMessage
-  | IslandCharacterUpdateMessage
   | IslandStateDeltaMessage
   | IslandMcpTunnelResponse
   | IslandMcpTunnelSessionClosed

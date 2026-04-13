@@ -3,7 +3,7 @@ import { randomUUID, createHash } from "node:crypto";
 import db from "../db/index.js";
 import type { HubToIslandMessage, IslandPassportResponse } from "@agentic-island/shared";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
-import { sendPassportRequest, lastMapInit, lastMapInitEtags } from "../ws/island-handler.js";
+import { sendPassportRequest, lastMapInit, lastMapInitEtags, lastInitialState, lastInitialStateEtags } from "../ws/island-handler.js";
 import { isValidEmail } from "../lib/validation.js";
 
 const islands = new Hono();
@@ -60,6 +60,25 @@ islands.get("/:id/map", (c) => {
   if (!cached) return c.json({ error: "Island map not available" }, 404);
 
   const etag = lastMapInitEtags.get(id) ?? "";
+  const ifNoneMatch = c.req.header("if-none-match");
+  if (ifNoneMatch && ifNoneMatch === etag) {
+    return c.body(null, 304);
+  }
+
+  return c.body(cached, 200, {
+    "Content-Type": "application/json",
+    "ETag": etag,
+    "Cache-Control": "no-cache",
+  });
+});
+
+/** Serve the dynamic initial state (entities, characters, overrides, tick). */
+islands.get("/:id/state", (c) => {
+  const id = c.req.param("id");
+  const cached = lastInitialState.get(id);
+  if (!cached) return c.json({ error: "Island state not available" }, 404);
+
+  const etag = lastInitialStateEtags.get(id) ?? "";
   const ifNoneMatch = c.req.header("if-none-match");
   if (ifNoneMatch && ifNoneMatch === etag) {
     return c.body(null, 304);

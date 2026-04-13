@@ -22,11 +22,39 @@ const connectedIslands = new Map<string, ConnectedIsland>();
 // islandId → set of viewer WebSockets (shared with viewer-handler)
 export const islandViewers = new Map<string, Set<WebSocket>>();
 
-// Cache the last map init and dynamic state per island separately
-// so late-joining viewers get an immediate snapshot
+// Cache the last map init per island for late-joining viewers
 export const lastMapInit = new Map<string, string>();
 export const lastMapInitEtags = new Map<string, string>();
-export const lastDynamicState = new Map<string, string>();
+
+// Cache the last initial state (entities, characters, overrides) per island
+// Served via HTTP GET /api/islands/:id/state
+export const lastInitialState = new Map<string, string>();
+export const lastInitialStateEtags = new Map<string, string>();
+// Track the latest tick per island so we can stamp the cached initial state
+const lastTicks = new Map<string, number>();
+
+// Ring buffer of recent state_delta messages per island (30s ≈ 150 entries at 200ms)
+const DELTA_BUFFER_SIZE = 150;
+
+interface BufferedDelta {
+  tick: number;
+  json: string;
+}
+
+export const deltaBuffers = new Map<string, BufferedDelta[]>();
+
+function pushDelta(islandId: string, tick: number, json: string): void {
+  let buf = deltaBuffers.get(islandId);
+  if (!buf) {
+    buf = [];
+    deltaBuffers.set(islandId, buf);
+  }
+  buf.push({ tick, json });
+  // Trim to buffer size
+  if (buf.length > DELTA_BUFFER_SIZE) {
+    buf.splice(0, buf.length - DELTA_BUFFER_SIZE);
+  }
+}
 
 // Cache the sprite content hash per island for URL cache busting
 const spriteHashes = new Map<string, string>();
@@ -212,7 +240,7 @@ export function handleIslandConnection(ws: WebSocket): void {
           break;
         }
 
-        case "state_update": {
+        case "initial_state": {
           if (!core) return;
 
           // Update player count from characters
@@ -228,45 +256,33 @@ export function handleIslandConnection(ws: WebSocket): void {
           // Notify lobby viewers of metadata changes (throttled)
           broadcastIslandUpdate(core.islandId);
 
-          const dynamicRelay = JSON.stringify({
-            type: "dynamic_state",
+          // Cache as initial state for HTTP endpoint (include current tick)
+          const tick = lastTicks.get(core.islandId) ?? 0;
+          const stateJson = JSON.stringify({
             entities: msg.entities,
             characters: msg.characters,
             overrides: msg.overrides,
+            tick,
           });
-          lastDynamicState.set(core.islandId, dynamicRelay);
-          const viewers = islandViewers.get(core.islandId);
-          if (viewers) {
-            for (const viewer of viewers) {
-              if (viewer.readyState === 1) viewer.send(dynamicRelay);
-            }
-          }
-          break;
-        }
-
-        case "character_update": {
-          if (!core) return;
-          // Lightweight relay — no DB write, no lobby broadcast
-          const charRelay = JSON.stringify({
-            type: "character_update",
-            characters: msg.characters,
-          });
-          const charViewers = islandViewers.get(core.islandId);
-          if (charViewers) {
-            for (const viewer of charViewers) {
-              if (viewer.readyState === 1) viewer.send(charRelay);
-            }
-          }
+          lastInitialState.set(core.islandId, stateJson);
+          lastInitialStateEtags.set(
+            core.islandId,
+            `"${createHash("md5").update(stateJson).digest("hex")}"`,
+          );
           break;
         }
 
         case "state_delta": {
           if (!core) return;
-          // Relay delta to viewers — lightweight, no DB write
           const deltaRelay = JSON.stringify({
             type: "state_delta",
             delta: msg.delta,
           });
+
+          // Track tick and push to ring buffer
+          const deltaTick = msg.delta.tk;
+          lastTicks.set(core.islandId, deltaTick);
+          pushDelta(core.islandId, deltaTick, deltaRelay);
 
           // Update player count from delta characters if present
           if (msg.delta.c) {
@@ -371,7 +387,10 @@ export function handleIslandConnection(ws: WebSocket): void {
       connectedIslands.delete(core.islandId);
       lastMapInit.delete(core.islandId);
       lastMapInitEtags.delete(core.islandId);
-      lastDynamicState.delete(core.islandId);
+      lastInitialState.delete(core.islandId);
+      lastInitialStateEtags.delete(core.islandId);
+      lastTicks.delete(core.islandId);
+      deltaBuffers.delete(core.islandId);
       spriteHashes.delete(core.islandId);
       lastPlayerCounts.delete(core.islandId);
       closeAllSessionsForIsland(core.islandId);

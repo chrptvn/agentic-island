@@ -2,10 +2,6 @@ import type { TileRegistry } from "../types/island.js";
 import type { IslandMeta } from "../types/hub.js";
 import type {
   WireMapData,
-  WireEntityInstance,
-  WireCharacterState,
-  WireCharacterPosition,
-  WireOverride,
   WireStateDelta,
 } from "../codec.js";
 
@@ -25,14 +21,6 @@ export interface ViewerMapInitMessage {
   spriteVersion?: string;
 }
 
-/** Dynamic state (entities, characters, overrides) — no map. */
-export interface ViewerDynamicStateMessage {
-  type: "dynamic_state";
-  entities: WireEntityInstance[];
-  characters: WireCharacterState[];
-  overrides: WireOverride[];
-}
-
 export interface ViewerSpriteVersionMessage {
   type: "sprite_version";
   spriteVersion: string;
@@ -40,11 +28,6 @@ export interface ViewerSpriteVersionMessage {
 
 export interface ViewerIslandOfflineMessage {
   type: "island_offline";
-}
-
-export interface ViewerCharacterUpdateMessage {
-  type: "character_update";
-  characters: WireCharacterPosition[];
 }
 
 export interface ViewerStateDeltaMessage {
@@ -67,10 +50,8 @@ export interface ViewerErrorMessage {
 /** Messages sent over the island-scoped WS (/ws/island/:id). */
 export type HubToIslandViewerMessage =
   | ViewerMapInitMessage
-  | ViewerDynamicStateMessage
   | ViewerSpriteVersionMessage
   | ViewerIslandOfflineMessage
-  | ViewerCharacterUpdateMessage
   | ViewerStateDeltaMessage
   | ViewerMapChangedMessage
   | ViewerErrorMessage;

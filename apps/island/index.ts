@@ -119,17 +119,14 @@ if (!isPrimary) {
   };
 
   // Wire state streaming (delta-based with tile ID compression)
-  const streamer = new StateStreamer({ minIntervalMs: 200, charIntervalMs: 100 });
+  const streamer = new StateStreamer({ minIntervalMs: 200 });
   streamer.setTileRegistry(island.getTileRegistry() as TileRegistry);
 
   streamer.onMapReady(({ map, tileRegistry, tileLookup }) => {
     connector.sendMapInit(map, tileRegistry, tileLookup);
   });
   streamer.onStateReady(({ entities, characters, overrides }) => {
-    connector.sendStateUpdate(entities, characters, overrides);
-  });
-  streamer.onCharacterReady((characters) => {
-    connector.sendCharacterUpdate(characters);
+    connector.sendInitialState(entities, characters, overrides);
   });
   streamer.onDeltaReady((delta) => {
     connector.sendStateDelta(delta);

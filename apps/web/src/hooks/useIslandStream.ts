@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { IslandState, MapData, TileRegistry, HubToViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
+import type { IslandState, MapData, TileRegistry, HubToIslandViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
 import { decodeMap, decodeEntities, decodeCharacters, decodeOverrides, decodeDelta } from '@agentic-island/shared';
 
 export interface IslandStream {
@@ -73,6 +73,8 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
   const mapRef = useRef<MapData | null>(null);
   const tileRegistryRef = useRef<TileRegistry | null>(null);
   const tileLookupRef = useRef<string[] | null>(null);
+  // Tick from the HTTP initial state — discard WS deltas with tick ≤ this
+  const baseTick = useRef<number>(-1);
 
   useEffect(() => {
     if (!islandId) return;
@@ -101,12 +103,35 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
       }
     }
 
+    /** Fetch dynamic initial state via HTTP. */
+    async function fetchInitialState(): Promise<boolean> {
+      const lookup = tileLookupRef.current;
+      const map = mapRef.current;
+      const tileRegistry = tileRegistryRef.current;
+      if (!lookup || !map || !tileRegistry) return false;
+
+      try {
+        const resp = await fetch(`/api/islands/${islandId}/state`);
+        if (!resp.ok) return false;
+        const data = await resp.json();
+        const entities = decodeEntities(data.entities, lookup);
+        const characters = decodeCharacters(data.characters, lookup);
+        const overrides = decodeOverrides(data.overrides, lookup);
+        baseTick.current = data.tick ?? -1;
+        setState({ map, tileRegistry, entities, characters, overrides });
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     async function connect() {
       if (dead) return;
 
-      // Fetch map via HTTP before opening WS
+      // Fetch map and initial state via HTTP before opening WS
       await fetchMap();
-
+      if (dead) return;
+      await fetchInitialState();
       if (dead) return;
 
       const protocol =
@@ -123,60 +148,22 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
 
       ws.onmessage = (event) => {
         try {
-          const msg: HubToViewerMessage = JSON.parse(event.data as string);
+          const msg = JSON.parse(event.data as string) as HubToIslandViewerMessage;
           switch (msg.type) {
             case 'map_changed': {
-              // Island restarted with a new map — re-fetch via HTTP
-              fetchMap();
-              break;
-            }
-            case 'dynamic_state': {
-              const lookup = tileLookupRef.current;
-              const map = mapRef.current;
-              const tileRegistry = tileRegistryRef.current;
-              if (!lookup || !map || !tileRegistry) {
-                // Map not available yet — try fetching
-                fetchMap();
-                break;
-              }
-              const entities = decodeEntities(msg.entities, lookup);
-              const characters = decodeCharacters(msg.characters, lookup);
-              const overrides = decodeOverrides(msg.overrides, lookup);
-              const fullState: IslandState = { map, tileRegistry, entities, characters, overrides };
-              setState(fullState);
+              // Island restarted with a new map — re-fetch both map and state
+              fetchMap().then(() => fetchInitialState());
               break;
             }
             case 'state_delta': {
               const lookup = tileLookupRef.current;
               if (!lookup) break;
+              // Discard deltas older than or equal to the HTTP-fetched tick
+              if (msg.delta.tk <= baseTick.current) break;
               const delta = decodeDelta(msg.delta, lookup);
               setState((prev) => {
                 if (!prev) return prev;
                 return applyDelta(prev, delta);
-              });
-              break;
-            }
-            case 'character_update': {
-              // Slim position-only update — merge onto existing character state
-              setState((prev) => {
-                if (!prev) return prev;
-                const posMap = new Map<string, typeof msg.characters[number]>();
-                for (const p of msg.characters) {
-                  posMap.set(p.i, p);
-                }
-                const updated = prev.characters.map(c => {
-                  const pos = posMap.get(c.id);
-                  if (!pos) return c;
-                  const merged = { ...c, x: pos.x, y: pos.y };
-                  if (pos.f !== undefined) merged.facing = pos.f;
-                  if (pos.sp !== undefined) {
-                    merged.speech = pos.sp;
-                  } else if (c.speech) {
-                    merged.speech = undefined;
-                  }
-                  return merged;
-                });
-                return { ...prev, characters: updated };
               });
               break;
             }
@@ -189,6 +176,7 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
               mapRef.current = null;
               tileLookupRef.current = null;
               tileRegistryRef.current = null;
+              baseTick.current = -1;
               break;
             case 'error':
               setError(msg.message);

@@ -8,7 +8,6 @@ import type {
   WireMapData,
   WireEntityInstance,
   WireCharacterState,
-  WireCharacterPosition,
   WireOverride,
   WireStateDelta,
 } from "@agentic-island/shared";
@@ -75,19 +74,11 @@ export class HubConnector {
     this.ws.send(JSON.stringify(msg));
   }
 
-  sendStateUpdate(entities: WireEntityInstance[], characters: WireCharacterState[], overrides: WireOverride[]): void {
+  sendInitialState(entities: WireEntityInstance[], characters: WireCharacterState[], overrides: WireOverride[]): void {
     if (!this.connected || !this.ws) {
       return;
     }
-    const msg: IslandToHubMessage = { type: "state_update", entities, characters, overrides };
-    this.ws.send(JSON.stringify(msg));
-  }
-
-  sendCharacterUpdate(characters: WireCharacterPosition[]): void {
-    if (!this.connected || !this.ws) {
-      return;
-    }
-    const msg: IslandToHubMessage = { type: "character_update", characters };
+    const msg: IslandToHubMessage = { type: "initial_state", entities, characters, overrides };
     this.ws.send(JSON.stringify(msg));
   }
 

@@ -61,18 +61,6 @@ export interface WireCharacterState {
   sh?: string;
 }
 
-/** Slim position-only payload for high-frequency character_update (100ms). */
-export interface WireCharacterPosition {
-  /** id */
-  i: string;
-  x: number;
-  y: number;
-  /** facing */
-  f?: CharacterFacing;
-  /** speech */
-  sp?: { text: string; expiresAt: number };
-}
-
 export interface WireOverride {
   x: number;
   y: number;
@@ -226,18 +214,6 @@ export function encodeDelta(delta: StateDelta, enc: Map<string, number>): WireSt
     wire.o = delta.overrides.map(p => encodeOverridePatch(p, enc));
   }
   return wire;
-}
-
-/** Encode only the position/facing/speech fields for high-frequency updates. */
-export function encodeCharacterPosition(c: CharacterState): WireCharacterPosition {
-  const wire: WireCharacterPosition = { i: c.id, x: c.x, y: c.y };
-  if (c.facing) wire.f = c.facing;
-  if (c.speech) wire.sp = c.speech;
-  return wire;
-}
-
-export function encodeCharacterPositions(chars: CharacterState[]): WireCharacterPosition[] {
-  return chars.map(c => encodeCharacterPosition(c));
 }
 
 // ---------------------------------------------------------------------------
