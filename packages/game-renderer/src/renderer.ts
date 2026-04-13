@@ -104,10 +104,16 @@ export class GameRenderer {
   async loadSpritesFromUrls(
     sheets: Record<string, { url: string; tileSize?: number; gap?: number }>,
   ): Promise<void> {
-    const promises = Object.entries(sheets).map(([name, cfg]) =>
-      this.sprites.loadSheet(name, cfg.url, cfg.tileSize, cfg.gap),
+    const results = await Promise.allSettled(
+      Object.entries(sheets).map(([name, cfg]) =>
+        this.sprites.loadSheet(name, cfg.url, cfg.tileSize, cfg.gap),
+      ),
     );
-    await Promise.all(promises);
+    // Log failures but don't reject — partial sprite loading is acceptable
+    // (e.g. character sprite may arrive after terrain sprites).
+    for (const r of results) {
+      if (r.status === "rejected") console.warn(r.reason);
+    }
   }
 
   /** Clear all cached sprite sheets so they can be reloaded. */

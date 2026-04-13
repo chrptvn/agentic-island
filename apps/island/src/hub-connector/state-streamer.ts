@@ -103,7 +103,9 @@ export class StateStreamer {
     // Detect new tile definitions (character spawn, equipment change, etc.)
     const registry: TileRegistry = world.getTileRegistry();
     const registrySize = Object.keys(registry).length;
+    let registryGrew = false;
     if (registrySize > this.tileLookup.length) {
+      registryGrew = true;
       // Append new tiles — preserves existing indices
       this.extendTileRegistry(registry);
       // Re-send map_init so the hub caches the updated registry + lookup
@@ -116,7 +118,10 @@ export class StateStreamer {
 
     const now = Date.now();
 
-    if (now - this.lastSendTime >= this.options.minIntervalMs) {
+    // Force immediate delta when registry grows (e.g. new character spawn)
+    // so connected viewers learn about the new character immediately,
+    // even if the normal 200ms throttle hasn't elapsed yet.
+    if (registryGrew || now - this.lastSendTime >= this.options.minIntervalMs) {
       this.lastSendTime = now;
 
       if (this.deltaFn) {
@@ -130,6 +135,12 @@ export class StateStreamer {
           this.deltaFn(encodeDelta(delta, this.encoderMap));
         }
       }
+    }
+
+    // After a registry change, also send a fresh initial_state so the hub's
+    // HTTP endpoint has the complete state (including new characters).
+    if (registryGrew) {
+      this.sendInitialState(world);
     }
   }
 
