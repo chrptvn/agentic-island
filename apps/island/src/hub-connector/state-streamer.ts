@@ -81,9 +81,24 @@ export class StateStreamer {
   /**
    * Called by the island update listener.
    * Sends throttled deltas at the configured interval.
+   * Also detects when the tile registry grows (e.g. new character spawns)
+   * and re-sends map_init so viewers learn about new sprite sheets.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleIslandUpdate(world: any): void {
+    // Detect new tile definitions (character spawn, equipment change, etc.)
+    const registry: TileRegistry = world.getTileRegistry();
+    const registrySize = Object.keys(registry).length;
+    if (registrySize > this.tileLookup.length) {
+      this.setTileRegistry(registry);
+      // Re-send map_init so the hub caches the updated registry
+      this.mapFn?.({
+        map: encodeMap(world.getMap(), this.encoderMap),
+        tileRegistry: registry,
+        tileLookup: this.tileLookup,
+      });
+    }
+
     const now = Date.now();
 
     if (now - this.lastSendTime >= this.options.minIntervalMs) {
