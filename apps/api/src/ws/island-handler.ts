@@ -276,24 +276,30 @@ export function handleIslandConnection(ws: WebSocket): void {
           lastTicks.set(core.islandId, deltaTick);
           pushDelta(core.islandId, deltaTick, deltaRelay);
 
-          // Update player count from delta characters if present
-          if (msg.delta.c) {
-            const agentCount = msg.delta.c.length;
-            const prevCount = lastPlayerCounts.get(core.islandId);
-            if (prevCount !== agentCount) {
-              db.prepare(
-                "UPDATE islands SET player_count = ? WHERE id = ?",
-              ).run(agentCount, core.islandId);
-              lastPlayerCounts.set(core.islandId, agentCount);
-              broadcastIslandUpdate(core.islandId);
-            }
-          }
-
           // Merge delta into cached initial state so the HTTP endpoint stays fresh
           const cachedJson = lastInitialState.get(core.islandId);
           if (cachedJson) {
             const cached = JSON.parse(cachedJson);
-            if (msg.delta.c) cached.characters = msg.delta.c;
+            if (msg.delta.c) {
+              const charMap = new Map<string, unknown>();
+              for (const c of cached.characters) charMap.set((c as Record<string, unknown>).i as string, c);
+              for (const p of msg.delta.c) {
+                if (p.a === "upsert" && p.c) charMap.set(p.k, p.c);
+                else if (p.a === "remove") charMap.delete(p.k);
+              }
+              cached.characters = Array.from(charMap.values());
+
+              // Update player count from the merged character list
+              const agentCount = cached.characters.length;
+              const prevCount = lastPlayerCounts.get(core.islandId);
+              if (prevCount !== agentCount) {
+                db.prepare(
+                  "UPDATE islands SET player_count = ? WHERE id = ?",
+                ).run(agentCount, core.islandId);
+                lastPlayerCounts.set(core.islandId, agentCount);
+                broadcastIslandUpdate(core.islandId);
+              }
+            }
             if (msg.delta.e) {
               const entityMap = new Map<string, unknown>();
               for (const e of cached.entities) entityMap.set(`${e.x},${e.y}`, e);

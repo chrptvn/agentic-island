@@ -1189,33 +1189,6 @@
       "blocks": true
     },
     {
-      "id": "skull",
-      "name": "Skull",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "skull"
-        }
-      ],
-      "interactionEffect": {
-        "message": "You stare into the empty eye sockets. A chill runs down your spine.",
-        "nearbyMessage": "You notice someone examining a skull. It makes you uneasy.",
-        "radius": 4,
-        "emotionEffects": [
-          {
-            "key": "sad_happy",
-            "delta": -8
-          },
-          {
-            "key": "anxious_confident",
-            "delta": -6
-          }
-        ]
-      }
-    },
-    {
       "id": "log_pile",
       "name": "Log Pile",
       "tiles": [
@@ -1234,68 +1207,6 @@
       "harvest": {
         "fullBase": "log_pile"
       }
-    },
-    {
-      "id": "green_tent",
-      "name": "Green Tent",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "green_tent"
-        },
-        {
-          "dx": 1,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "green_tent_br"
-        },
-        {
-          "dx": 0,
-          "dy": -1,
-          "layer": 3,
-          "tileId": "green_tent_tl"
-        },
-        {
-          "dx": 1,
-          "dy": -1,
-          "layer": 3,
-          "tileId": "green_tent_tr"
-        }
-      ],
-      "blocks": true
-    },
-    {
-      "id": "beige_tent",
-      "name": "Beige Tent",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "beige_tent"
-        },
-        {
-          "dx": 1,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "beige_tent_br"
-        },
-        {
-          "dx": 0,
-          "dy": -1,
-          "layer": 3,
-          "tileId": "beige_tent_tl"
-        },
-        {
-          "dx": 1,
-          "dy": -1,
-          "layer": 3,
-          "tileId": "beige_tent_tr"
-        }
-      ],
-      "blocks": true
     },
     {
       "id": "grass_patch",

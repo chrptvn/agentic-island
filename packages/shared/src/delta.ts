@@ -12,6 +12,13 @@ export interface EntityPatch {
   entity?: EntityInstance;
 }
 
+export interface CharacterPatch {
+  action: "upsert" | "remove";
+  /** Character id */
+  key: string;
+  character?: CharacterState;
+}
+
 export interface OverridePatch {
   action: "set" | "remove";
   x: number;
@@ -26,7 +33,7 @@ export interface OverridePatch {
 
 export interface StateDelta {
   tick: number;
-  characters?: CharacterState[];
+  characters?: CharacterPatch[];
   entities?: EntityPatch[];
   overrides?: OverridePatch[];
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { IslandState, MapData, TileRegistry, HubToIslandViewerMessage, StateDelta, EntityInstance, TileOverride } from '@agentic-island/shared';
+import type { IslandState, MapData, TileRegistry, HubToIslandViewerMessage, StateDelta, EntityInstance, TileOverride, CharacterState } from '@agentic-island/shared';
 import { decodeMap, decodeEntities, decodeCharacters, decodeOverrides, decodeDelta } from '@agentic-island/shared';
 
 export interface IslandStream {
@@ -23,8 +23,19 @@ const WS_RECONNECT_MAX = 30_000;
 function applyDelta(prev: IslandState, delta: StateDelta): IslandState {
   let next = prev;
 
-  if (delta.characters) {
-    next = { ...next, characters: delta.characters };
+  if (delta.characters && delta.characters.length > 0) {
+    const charMap = new Map<string, CharacterState>();
+    for (const c of next.characters) {
+      charMap.set(c.id, c);
+    }
+    for (const patch of delta.characters) {
+      if (patch.action === "upsert" && patch.character) {
+        charMap.set(patch.key, patch.character);
+      } else if (patch.action === "remove") {
+        charMap.delete(patch.key);
+      }
+    }
+    next = { ...next, characters: Array.from(charMap.values()) };
   }
 
   if (delta.entities && delta.entities.length > 0) {

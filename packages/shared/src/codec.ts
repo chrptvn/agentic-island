@@ -8,7 +8,7 @@ import type {
   CharacterAppearance,
   CharacterFacing,
 } from "./types/character.js";
-import type { StateDelta, EntityPatch, OverridePatch } from "./delta.js";
+import type { StateDelta, EntityPatch, OverridePatch, CharacterPatch } from "./delta.js";
 
 // ---------------------------------------------------------------------------
 // Wire format types — compact short-key JSON for transport
@@ -79,6 +79,15 @@ export interface WireEntityPatch {
   e?: WireEntityInstance;
 }
 
+export interface WireCharacterPatch {
+  /** action */
+  a: "upsert" | "remove";
+  /** key (character id) */
+  k: string;
+  /** character */
+  c?: WireCharacterState;
+}
+
 export interface WireOverridePatch {
   /** action */
   a: "set" | "remove";
@@ -93,8 +102,8 @@ export interface WireOverridePatch {
 export interface WireStateDelta {
   /** tick */
   tk: number;
-  /** characters */
-  c?: WireCharacterState[];
+  /** character patches */
+  c?: WireCharacterPatch[];
   /** entities */
   e?: WireEntityPatch[];
   /** overrides */
@@ -194,6 +203,12 @@ export function encodeEntityPatch(p: EntityPatch, enc: Map<string, number>): Wir
   return wire;
 }
 
+export function encodeCharacterPatch(p: CharacterPatch, enc: Map<string, number>): WireCharacterPatch {
+  const wire: WireCharacterPatch = { a: p.action, k: p.key };
+  if (p.character) wire.c = encodeCharacter(p.character, enc);
+  return wire;
+}
+
 export function encodeOverridePatch(p: OverridePatch, enc: Map<string, number>): WireOverridePatch {
   const wire: WireOverridePatch = { a: p.action, x: p.x, y: p.y, l: p.layer };
   if (p.tileId !== undefined) wire.t = encodeTileId(p.tileId, enc);
@@ -205,7 +220,7 @@ export function encodeDelta(delta: StateDelta, enc: Map<string, number>): WireSt
     tk: delta.tick,
   };
   if (delta.characters) {
-    wire.c = encodeCharacters(delta.characters, enc);
+    wire.c = delta.characters.map(p => encodeCharacterPatch(p, enc));
   }
   if (delta.entities) {
     wire.e = delta.entities.map(p => encodeEntityPatch(p, enc));
@@ -290,7 +305,11 @@ export function decodeDelta(delta: WireStateDelta, lookup: string[]): StateDelta
     tick: delta.tk,
   };
   if (delta.c) {
-    result.characters = decodeCharacters(delta.c, lookup);
+    result.characters = delta.c.map(p => {
+      const decoded: CharacterPatch = { action: p.a, key: p.k };
+      if (p.c) decoded.character = decodeCharacter(p.c, lookup);
+      return decoded;
+    });
   }
   if (delta.e) {
     result.entities = delta.e.map(p => {

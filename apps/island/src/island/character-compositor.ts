@@ -32,6 +32,10 @@ interface LayerDef {
   required: boolean;
   items?: string[];
   pathTemplate: string;
+  colors?: string[];
+  colorKey?: string;
+  colorableItems?: string[];
+  colorPathTemplate?: string;
 }
 
 interface CharacterCatalog {
@@ -101,6 +105,12 @@ function cacheKey(appearance: CharacterAppearance, equipment: Equipment): string
   for (const key of Object.keys(catalog.layers).sort()) {
     parts.push(`${key}=${appearance[key] ?? ""}`);
   }
+  // Color keys for colorable layers
+  for (const layerDef of Object.values(catalog.layers)) {
+    if (layerDef.colorKey) {
+      parts.push(`${layerDef.colorKey}=${appearance[layerDef.colorKey] ?? ""}`);
+    }
+  }
   // Only wearable equipment slots affect the composited sprite (NOT hands)
   for (const slot of ["head", "body", "legs", "feet"]) {
     const eq = equipment[slot];
@@ -123,11 +133,27 @@ function resolveLayerPath(
   item: string | undefined,
   gender: string,
   anim: string,
+  appearance: CharacterAppearance,
 ): string {
-  let path = layerDef.pathTemplate;
+  // Choose the right template — colorable items get their own path template
+  let template = layerDef.pathTemplate;
+  if (item && layerDef.colorableItems && layerDef.colorPathTemplate && layerDef.colorableItems.includes(item)) {
+    template = layerDef.colorPathTemplate;
+  }
+
+  let path = template;
   path = path.replace("{gender}", gender);
   path = path.replace("{anim}", anim);
   if (item) path = path.replace("{item}", item);
+
+  // Substitute color placeholder if present
+  if (path.includes("{color}")) {
+    const color = (layerDef.colorKey ? appearance[layerDef.colorKey] : undefined)
+      ?? layerDef.colors?.[0]
+      ?? "brown";
+    path = path.replace("{color}", color);
+  }
+
   return join(LPC_DIR, path);
 }
 
@@ -148,6 +174,10 @@ function getLayerItem(
 ): string | undefined {
   // Body and hair come from appearance
   if (layerName === "body" || layerName === "hair") {
+    // Backward compat: passport UI previously stored skin color as "skinColor"
+    if (layerName === "body" && !appearance[layerName] && appearance["skinColor"]) {
+      return appearance["skinColor"];
+    }
     return appearance[layerName];
   }
   // Clothing layers: prefer equipment, fall back to appearance defaults
@@ -216,6 +246,7 @@ export async function compositeCharacter(
         item,
         gender,
         anim,
+        appearance,
       );
 
       const png = loadPng(filePath);
@@ -302,7 +333,7 @@ export async function compositeCharacterSlash128(
     if (!layerDef.required && !item) continue;
     if (layerName === "body" && !item) continue;
 
-    const filePath = resolveLayerPath(layerName, layerDef, item, gender, "slash_128");
+    const filePath = resolveLayerPath(layerName, layerDef, item, gender, "slash_128", appearance);
     const png = loadPng(filePath);
     if (!png) continue;
 

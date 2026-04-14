@@ -2,6 +2,7 @@ import type { TileRegistry } from "@agentic-island/shared";
 import { startHttpServer } from "./src/server/http.js";
 import { initTileRegistry, getAtlasPng } from "./src/island/tile-registry.js";
 import { Island } from "./src/island/island.js";
+import { validateEntityDefs } from "./src/island/entity-registry.js";
 import { HubConnector } from "./src/hub-connector/connector.js";
 import { packageSprites, type SpritePayload } from "./src/hub-connector/sprite-uploader.js";
 import { StateStreamer } from "./src/hub-connector/state-streamer.js";
@@ -15,6 +16,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Build the tileset atlas in memory (must happen before Island uses tile-registry)
 await initTileRegistry();
+// Validate entity tile IDs now that TILE_BY_ID is populated
+validateEntityDefs();
 // Build the tool overlay atlas in memory
 await initToolAtlas();
 

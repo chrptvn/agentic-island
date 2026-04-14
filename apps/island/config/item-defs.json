@@ -89,30 +89,6 @@
       "plow": 1
     }
   },
-  "skull": {
-    "equippable": false,
-    "wearable": null,
-    "special": [
-      {
-        "verb": "ponder",
-        "description": "Stare into the empty eye sockets and reflect on mortality.",
-        "message": "You stare into the skull's hollow eyes. A cold dread washes over you.",
-        "radius": 3,
-        "emotionEffects": [
-          {
-            "key": "sad_happy",
-            "delta": -10,
-            "self": true
-          },
-          {
-            "key": "anxious_confident",
-            "delta": -8,
-            "self": true
-          }
-        ]
-      }
-    ]
-  },
   "cotton": {
     "equippable": false,
     "wearable": null,

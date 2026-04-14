@@ -7,7 +7,7 @@ export interface EntityInstance {
   stats: EntityStats;
   /** Human-readable display name for tooltips. */
   name?: string;
-  /** Container entities (chests, log piles, skulls) may hold inventory items. */
+  /** Container entities (chests, log piles) may hold inventory items. */
   inventory?: { item: string; qty: number }[];
   /** Character IDs currently sheltered inside this entity (tents). */
   occupants?: string[];

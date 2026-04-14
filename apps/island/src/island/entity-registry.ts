@@ -251,15 +251,6 @@ function buildDerivedExports(defs: EntityDef[]) {
     const anchor = e.tiles?.find((t) => t.dx === 0 && t.dy === 0);
     if (anchor) {
       ENTITY_DEF_BY_TILE_ID.set(anchor.tileId, e);
-      if (!TILE_BY_ID.has(anchor.tileId)) {
-        process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" anchor tileId "${anchor.tileId}" not found in tileset.json — it will spawn but render as invisible\n`);
-      }
-    }
-    // Warn on non-anchor tiles too
-    for (const t of (e.tiles ?? [])) {
-      if ((t.dx !== 0 || t.dy !== 0) && !TILE_BY_ID.has(t.tileId)) {
-        process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" tile tileId "${t.tileId}" (dx=${t.dx}, dy=${t.dy}) not found in tileset.json\n`);
-      }
     }
   }
 
@@ -404,6 +395,25 @@ export function reloadEntities(): void {
   RANDOM_STATS      = _derived.RANDOM_STATS;
   PROXIMITY_TRIGGERS    = _derived.PROXIMITY_TRIGGERS;
   INTERACTION_EFFECTS   = _derived.INTERACTION_EFFECTS;
+  validateEntityDefs(defs);
+}
+
+/**
+ * Validate that all entity tile IDs are registered in tileset.json.
+ * Must be called AFTER initTileRegistry() so TILE_BY_ID is populated.
+ */
+export function validateEntityDefs(defs: EntityDef[] = ENTITY_DEFS): void {
+  for (const e of defs) {
+    const anchor = e.tiles?.find((t) => t.dx === 0 && t.dy === 0);
+    if (anchor && !TILE_BY_ID.has(anchor.tileId)) {
+      process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" anchor tileId "${anchor.tileId}" not found in tileset.json — it will spawn but render as invisible\n`);
+    }
+    for (const t of (e.tiles ?? [])) {
+      if ((t.dx !== 0 || t.dy !== 0) && !TILE_BY_ID.has(t.tileId)) {
+        process.stderr.write(`[entity-registry] WARNING: entity "${e.id}" tile tileId "${t.tileId}" (dx=${t.dx}, dy=${t.dy}) not found in tileset.json\n`);
+      }
+    }
+  }
 }
 
 export function CONFIG_PATH_ENTITIES() { return CONFIG_PATH; }

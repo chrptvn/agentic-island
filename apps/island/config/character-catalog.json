@@ -25,32 +25,55 @@
     "feet": {
       "order": 1,
       "required": false,
-      "items": ["boots", "shoes"],
-      "pathTemplate": "clothing/feet/{item}/{gender}/{anim}.png"
+      "items": ["boots", "shoes", "slippers"],
+      "pathTemplate": "clothing/feet/{item}/{gender}/{color}/{anim}.png",
+      "colors": ["brown", "black", "blue", "forest", "gray", "navy", "red", "tan"],
+      "colorKey": "feet_color"
     },
     "legs": {
       "order": 2,
       "required": false,
       "items": ["pants", "shorts", "skirt"],
-      "pathTemplate": "clothing/legs/{item}/{gender}/{anim}.png"
+      "pathTemplate": "clothing/legs/{item}/{gender}/{color}/{anim}.png",
+      "colors": ["brown", "black", "blue", "forest", "gray", "navy", "red", "tan"],
+      "colorKey": "legs_color",
+      "itemGenders": { "shorts": ["male"] }
     },
     "torso": {
       "order": 3,
       "required": false,
-      "items": ["apron", "jacket", "longsleeve", "tshirt"],
-      "pathTemplate": "clothing/torso/{item}/{gender}/{anim}.png"
+      "items": ["sleeveless", "laced", "blouse_longsleeve"],
+      "pathTemplate": "clothing/torso/{item}/{gender}/{color}/{anim}.png",
+      "colors": ["brown", "black", "blue", "forest", "gray", "navy", "red", "tan"],
+      "colorKey": "torso_color",
+      "itemGenders": { "laced": ["male"], "blouse_longsleeve": ["female"] }
     },
-    "headwear": {
+    "outerwear": {
       "order": 4,
       "required": false,
-      "items": ["headband", "helmet", "hood", "leather_cap"],
-      "pathTemplate": "clothing/headwear/{item}/{anim}.png"
+      "items": ["vest", "apron", "jacket", "corset", "tabard"],
+      "pathTemplate": "clothing/torso/{item}/{gender}/{color}/{anim}.png",
+      "colors": ["brown", "black", "blue", "forest", "gray", "navy", "red", "tan"],
+      "colorKey": "outerwear_color",
+      "itemGenders": { "vest": ["male"], "jacket": ["male"], "corset": ["female"] }
+    },
+    "headwear": {
+      "order": 6,
+      "required": false,
+      "items": ["headband", "tophat", "leather_cap"],
+      "pathTemplate": "clothing/headwear/{item}/{anim}.png",
+      "colorableItems": ["headband", "tophat"],
+      "colorPathTemplate": "clothing/headwear/{item}/{color}/{anim}.png",
+      "colors": ["brown", "black", "blue", "forest", "gray", "navy", "red", "tan"],
+      "colorKey": "headwear_color"
     },
     "hair": {
       "order": 5,
       "required": true,
-      "items": ["bob", "buzzcut", "long", "pixie", "spiked"],
-      "pathTemplate": "hair/{item}/{anim}.png"
+      "items": ["afro", "bangs", "bangsshort", "bob", "buzzcut", "cornrows", "curly_short", "dreadlocks_short", "half_up", "long", "long_straight", "loose", "parted", "pixie", "shorthawk", "spiked"],
+      "pathTemplate": "hair/{item}/{color}/{anim}.png",
+      "colors": ["ash", "black", "blonde", "blue", "carrot", "chestnut", "dark_brown", "dark_gray", "ginger", "gold", "gray", "green", "light_brown", "navy", "orange", "pink", "platinum", "purple", "raven", "red", "redhead", "rose", "sandy", "strawberry", "violet", "white"],
+      "colorKey": "hair_color"
     }
   },
   "tools": {

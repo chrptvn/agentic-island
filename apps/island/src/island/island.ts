@@ -2573,7 +2573,7 @@ export class Island extends EventEmitter {
         changed = true;
       }
 
-      // ── Character death → skull ─────────────────────────────────────────────
+      // ── Character death ──────────────────────────────────────────────────
       if (s.health <= 0) {
         deadCharacters.push(character);
         anyChanged = true;
@@ -2759,7 +2759,7 @@ export class Island extends EventEmitter {
       }
     }
 
-    // ── Process character deaths → spawn skull containers ────────────────────
+    // ── Process character deaths ─────────────────────────────────────────────
     for (const deadChar of deadCharacters) {
       // Combine inventory + equipped items
       const containerInv: { item: string; qty: number }[] = [
@@ -2787,20 +2787,8 @@ export class Island extends EventEmitter {
           statWrites.push({ x: tentX, y: tentY, stats: tentStats as EntityStats });
         }
       } else {
-        // ── Death outside tent: spawn skull as before ──────────────────────
-        const deathKey = `${deadChar.x},${deadChar.y}`;
-
-        // Place skull entity on the map (layer 3)
-        const layers = this.overrides.get(deathKey) ?? [];
-        while (layers.length <= 3) layers.push("");
-        layers[3] = "skull";
-        this.overrides.set(deathKey, layers);
-        overrideWrites.push({ x: deadChar.x, y: deadChar.y, layer: 3, tileId: "skull" });
-
-        // Set skull entity stats (container inventory)
-        const skullStats = { inventory: containerInv } as unknown as EntityStats;
-        this.entityStats.set(deathKey, skullStats);
-        statWrites.push({ x: deadChar.x, y: deadChar.y, stats: skullStats });
+        // ── Death outside tent: inventory is lost (no skull entity) ──────────
+        // TODO: rework death drops
       }
 
       // Remove character from memory

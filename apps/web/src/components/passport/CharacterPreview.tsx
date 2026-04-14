@@ -1,53 +1,60 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import type { CharacterAppearance } from '@agentic-island/shared';
-import catalog from '@/lib/character-catalog.json';
+import type { CharacterAppearance, CharacterCatalog } from '@agentic-island/shared';
 
-const TILE = catalog.tileSize; // 64
 const SCALE = 3; // render at 3× for crisp pixel art
-const CANVAS_SIZE = TILE * SCALE;
 
 // Direction order from catalog: ["n", "w", "s", "e"] → south is row 2
 const SOUTH_ROW = 2;
 
 interface Props {
   appearance: CharacterAppearance;
+  catalog: CharacterCatalog;
   className?: string;
 }
-
-type LayerDef = {
-  order: number;
-  required?: boolean;
-  items?: string[];
-  pathTemplate: string;
-};
-
-const layers = catalog.layers as Record<string, LayerDef>;
 
 /** Build the sprite path for a given layer + appearance. */
 function getSpritePath(
   layerName: string,
-  layer: LayerDef,
+  layer: CharacterCatalog['layers'][string],
   appearance: CharacterAppearance,
 ): string | null {
   const gender = appearance.gender ?? 'male';
 
   if (layerName === 'body') {
-    const skin = appearance.skinColor ?? 'light';
+    const skin = appearance.body ?? appearance.skinColor ?? 'light';
     return `/characters/bodies/${skin}/${gender}/idle.png`;
   }
 
   const itemKey = appearance[layerName as keyof CharacterAppearance] as string | undefined;
   if (!itemKey) return null;
 
-  return `/characters/${layer.pathTemplate
+  // Choose the right template — colorable items get their own path template
+  let template = layer.pathTemplate;
+  if (layer.colorableItems && layer.colorPathTemplate && layer.colorableItems.includes(itemKey)) {
+    template = layer.colorPathTemplate;
+  }
+
+  let path = template
     .replace('{item}', itemKey)
     .replace('{gender}', gender)
-    .replace('{anim}', 'idle')}`;
+    .replace('{anim}', 'idle');
+
+  // Substitute color placeholder if present
+  if (path.includes('{color}')) {
+    const color = (layer.colorKey ? appearance[layer.colorKey] : undefined)
+      ?? layer.colors?.[0]
+      ?? 'brown';
+    path = path.replace('{color}', color);
+  }
+
+  return `/characters/${path}`;
 }
 
-export default function CharacterPreview({ appearance, className }: Props) {
+export default function CharacterPreview({ appearance, catalog, className }: Props) {
+  const TILE = catalog.tileSize;
+  const CANVAS_SIZE = TILE * SCALE;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -59,7 +66,7 @@ export default function CharacterPreview({ appearance, className }: Props) {
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     ctx.imageSmoothingEnabled = false;
 
-    const sortedLayers = Object.entries(layers).sort(
+    const sortedLayers = Object.entries(catalog.layers).sort(
       ([, a], [, b]) => a.order - b.order,
     );
 
@@ -112,7 +119,7 @@ export default function CharacterPreview({ appearance, className }: Props) {
         entry.img.src = '';
       }
     };
-  }, [appearance]);
+  }, [appearance, catalog, TILE, CANVAS_SIZE]);
 
   return (
     <canvas

@@ -128,9 +128,8 @@ export class StateStreamer {
         const characters: CharacterState[] = world.getCharacters();
         const entities = world.getEntities();
         const overrides: TileOverride[] = world.getOverrides();
-        const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
 
-        const delta = this.tracker.computeDelta(characters, entities, overrides, overrideVersion);
+        const delta = this.tracker.computeDelta(characters, entities, overrides);
         if (delta) {
           this.deltaFn(encodeDelta(delta, this.encoderMap));
         }
@@ -183,10 +182,9 @@ export class StateStreamer {
     const characters: CharacterState[] = world.getCharacters();
     const entities = world.getEntities();
     const overrides: TileOverride[] = world.getOverrides();
-    const overrideVersion: number = world.getOverridesVersion?.() ?? 0;
 
     // Seed tracker for subsequent deltas
-    this.tracker.seed(characters, entities, overrides, overrideVersion);
+    this.tracker.seed(characters, entities, overrides);
 
     // Send initial state
     this.stateFn?.({

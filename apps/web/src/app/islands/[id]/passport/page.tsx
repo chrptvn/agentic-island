@@ -9,12 +9,11 @@ import Badge from '@/components/ui/Badge';
 import CharacterPreview from '@/components/passport/CharacterPreview';
 import CharacterDesigner from '@/components/passport/CharacterDesigner';
 import type { CharacterAppearance, CharacterCatalog } from '@agentic-island/shared';
-import { claimPassport, fetchIslandSmtpStatus } from '@/lib/api';
-import catalogJson from '@/lib/character-catalog.json';
+import { claimPassport, fetchIslandSmtpStatus, fetchPassportCatalog } from '@/lib/api';
 
 const DEFAULT_APPEARANCE: CharacterAppearance = {
   gender: 'male',
-  skinColor: 'light',
+  body: 'light',
   hair: 'buzzcut',
 };
 
@@ -37,8 +36,18 @@ export default function PassportPage({
   const [resent, setResent] = useState(false);
   const [smtpConfigured, setSmtpConfigured] = useState(true);
 
-  // The catalog is bundled statically — no need to fetch from API
-  const catalog: CharacterCatalog = catalogJson as unknown as CharacterCatalog;
+  const [catalog, setCatalog] = useState<CharacterCatalog | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
+
+  useEffect(() => {
+    fetchPassportCatalog(id).then((c) => {
+      if (c) {
+        setCatalog(c);
+      } else {
+        setCatalogError(true);
+      }
+    });
+  }, [id]);
 
   useEffect(() => {
     fetchIslandSmtpStatus(id).then(({ smtpConfigured: c }) => setSmtpConfigured(c));
@@ -97,8 +106,16 @@ export default function PassportPage({
       </div>
 
       {state.step !== 'success' ? (
-        <Card className="w-full max-w-2xl">
-          <h1 className="text-2xl font-bold text-text-heading">🏝️ Island Passport</h1>
+        !catalog ? (
+          <Card className="w-full max-w-2xl flex items-center justify-center py-16">
+            {catalogError
+              ? <p className="text-sm text-text-muted">⚠️ Could not load character catalog. Is the island online?</p>
+              : <p className="text-sm text-text-muted animate-pulse">Loading character designer…</p>
+            }
+          </Card>
+        ) : (
+          <Card className="w-full max-w-2xl">
+            <h1 className="text-2xl font-bold text-text-heading">🏝️ Island Passport</h1>
           <p className="mt-2 text-sm text-text-muted">
             Design your character and claim your passport key. You&apos;ll receive it by email —
             use it to connect your AI agent to this island.
@@ -128,7 +145,7 @@ export default function PassportPage({
             {/* Preview */}
             <div className="flex flex-col items-center gap-3">
               <div className="rounded-xl border border-border-default bg-elevated p-4">
-                <CharacterPreview appearance={appearance} />
+                <CharacterPreview appearance={appearance} catalog={catalog} />
               </div>
               <span className="text-xs text-text-muted">Preview</span>
             </div>
@@ -202,7 +219,8 @@ export default function PassportPage({
               {loading ? 'Creating Passport…' : '🏝️ Get My Passport'}
             </Button>
           </div>
-        </Card>
+          </Card>
+        )
       ) : (
         <Card className="w-full max-w-2xl">
           <div className="space-y-4">

@@ -16,20 +16,12 @@ const ENTITY_LABELS: Record<string, string> = {
   campfire_lit: 'Campfire 🔥',
   campfire_extinct: 'Campfire',
   chest: 'Chest',
-  skull: 'Skull 💀',
   flower_blue: 'Blue Flower 🔵',
   flower_red: 'Red Flower 🔴',
   flower_purple: 'Purple Flower 🟣',
   flower_white: 'White Flower ⚪',
   cotton_plant: 'Cotton',
-  green_tent: 'Green Tent ⛺',
-  green_tent_right: 'Green Tent ⛺',
-  green_tent_top: 'Green Tent ⛺',
-  green_tent_top_right: 'Green Tent ⛺',
-  beige_tent: 'Beige Tent ⛺',
-  beige_tent_right: 'Beige Tent ⛺',
-  beige_tent_top: 'Beige Tent ⛺',
-  beige_tent_top_right: 'Beige Tent ⛺',
+
 };
 
 export interface TooltipData {

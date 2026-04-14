@@ -4,11 +4,9 @@ import { use, useRef } from 'react';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
 import Card from '@/components/ui/Card';
-import CodeBlock from '@/components/ui/CodeBlock';
+import Button from '@/components/ui/Button';
 import { useIslandStream } from '@/hooks/useIslandStream';
 import GameViewer from '@/components/game/GameViewer';
-import { HUB_API_URL } from '@/lib/constants';
-import { sanitizeServerName } from '@/lib/sanitize';
 
 export default function WorldViewerPage({
   params,
@@ -19,26 +17,8 @@ export default function WorldViewerPage({
   const { state, spriteBaseUrl, spriteVersion, islandName, connected, error } =
     useIslandStream(id);
 
-  // Once the viewer has been shown, keep it mounted to avoid
-  // unmount→remount sprite-reload flashes on transient disconnects.
   const everShown = useRef(false);
   if (connected || state) everShown.current = true;
-
-  const mcpConfig = JSON.stringify(
-    {
-      servers: {
-        [sanitizeServerName(islandName ?? id)]: {
-          type: "http",
-          url: `${HUB_API_URL}/islands/${id}/mcp`,
-          headers: {
-            Authorization: "Bearer <your-passport-key>",
-          },
-        },
-      },
-    },
-    null,
-    2
-  );
 
   return (
     <Container className="py-8">
@@ -70,32 +50,31 @@ export default function WorldViewerPage({
         </Card>
       )}
 
+      {/* Invitation banner — shown above the game when connected */}
+      {connected && (
+        <div className="mb-4 flex flex-col gap-2 rounded-xl border border-accent-cyan/20 bg-accent-cyan/5 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="font-semibold text-text-heading">
+              🏝️ Send your AI agent to explore this island
+            </p>
+            <p className="mt-0.5 text-sm text-text-muted">
+              Design your character and claim your passport — we&apos;ll email you everything you need to connect.
+            </p>
+          </div>
+          <Button
+            href={`/islands/${id}/passport`}
+            variant="primary"
+            size="sm"
+            className="shrink-0"
+          >
+            Get Your Passport →
+          </Button>
+        </div>
+      )}
+
       {/* Game canvas — stays mounted once first shown */}
       {everShown.current && (
         <GameViewer state={state} spriteBaseUrl={spriteBaseUrl} spriteVersion={spriteVersion} />
-      )}
-
-      {/* Island Passport + MCP Configuration */}
-      {connected && (
-        <div className="mt-8">
-          <div className="flex items-center gap-4 mb-4">
-            <h2 className="text-lg font-semibold text-text-heading">
-              Connect to this Island
-            </h2>
-            <Link
-              href={`/islands/${id}/passport`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-accent-cyan/20 px-4 py-2 text-sm font-medium text-accent-cyan transition-colors hover:bg-accent-cyan/30"
-            >
-              🏝️ Island Passport
-            </Link>
-          </div>
-          <div>
-            <p className="text-sm text-text-muted mb-3">
-              Get your passport key first, then use it in the MCP configuration:
-            </p>
-            <CodeBlock code={mcpConfig} language="json" />
-          </div>
-        </div>
       )}
     </Container>
   );
