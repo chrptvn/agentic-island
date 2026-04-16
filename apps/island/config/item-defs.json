@@ -849,7 +849,11 @@
     "equippable": false,
     "wearable": null,
     "eat": {
-      "hunger": 5
+      "hunger": 5,
+      "health": -10,
+      "message": "You swallow the suspicious mushroom. Your stomach lurches — that was a terrible idea.",
+      "nearbyMessage": "Someone just ate a suspicious mushroom and looks like they immediately regret it.",
+      "emotions": [{ "key": "joy", "delta": -15 }, { "key": "fear", "delta": 10 }]
     },
     "special": [
       {

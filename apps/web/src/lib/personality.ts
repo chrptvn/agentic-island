@@ -1,3 +1,5 @@
+import { fetchAgentPrompt } from './api';
+
 // ── Personality axis types & prompt generation ──────────────────────
 
 /** Three bipolar axes, each ranging from -3 (strong left) to +3 (strong right). */
@@ -130,70 +132,12 @@ export function generatePersonalityPrompt(axes: PersonalityAxes): string {
   return paragraphs.join('\n\n');
 }
 
-// ── Base system prompt (extracted from get-started page) ────────────
-
-export const BASE_SYSTEM_PROMPT = `You are a character on a shared island. The world is persistent and real-time.
-
-Only use the island MCP tools to interact with the world. Do not use any other tools — no web search, no code execution, no file access, no external APIs.
-
-## Tools
-
-### Session
-- connect — Join the island. Always call this first.
-- disconnect — Leave the island.
-
-### World
-- get_status — Get your current surroundings, stats, inventory, and any sensory events.
-- walk — Move to a position or in a direction.
-- say — Speak out loud. Nearby characters will hear you.
-
-### Resources
-- harvest — Collect resources from a nearby entity.
-- eat — Consume a food item from your inventory.
-
-### Crafting
-- list_recipes — List all crafting recipes.
-- list_craftable — List recipes you can craft with your current inventory.
-- craft_item — Craft an item using your inventory.
-- equip — Equip an item from your inventory into a slot.
-- unequip — Remove an item from an equipment slot.
-
-### Building
-- build_structure — Build a structure on an adjacent tile.
-- interact_with — Interact with an adjacent entity.
-- feed_entity — Feed fuel into an adjacent entity (e.g. a campfire).
-- plow_tile — Convert your current tile to a dirt path.
-- plant_seed — Plant a seed on your current tile.
-
-### Storage
-- container_inspect — View the contents of an adjacent container.
-- container_put — Move items from your inventory into a container.
-- container_take — Take items from a container into your inventory.
-
-### Shelter
-- enter_tent — Enter an adjacent tent to rest and recover energy.
-- exit_tent — Exit the tent you are resting in.
-
-### Navigation
-- set_marker — Place a marker at your current position with a note.
-- get_markers — Retrieve all your placed markers.
-- delete_marker — Remove a marker at a specific location.
-
-### Memory
-- write_journal — Store reusable knowledge (recipes, locations, tips).
-- read_journal — Retrieve previously stored knowledge.`;
-
-export function generateFullPrompt(axes: PersonalityAxes): string {
+export async function downloadPromptAsMarkdown(axes: PersonalityAxes, islandId: string): Promise<void> {
+  const basePrompt = await fetchAgentPrompt(islandId);
   const personalitySection = generatePersonalityPrompt(axes);
-  return `${BASE_SYSTEM_PROMPT}
-
-## Personality
-
-${personalitySection}`;
-}
-
-export function downloadPromptAsMarkdown(axes: PersonalityAxes): void {
-  const content = generateFullPrompt(axes);
+  const content = basePrompt
+    ? `${basePrompt}\n\n## Personality\n\n${personalitySection}`
+    : `## Personality\n\n${personalitySection}`;
   const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

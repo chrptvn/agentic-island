@@ -3,7 +3,20 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export interface EatDef {
-  hunger: number;
+  /** Hunger restored (can be negative for nausea). Default 0. */
+  hunger?: number;
+  /** Direct health change (negative = damage, e.g. poison). Default 0. */
+  health?: number;
+  /** Energy change. Default 0. */
+  energy?: number;
+  /** Emotion deltas applied to the eater. */
+  emotions?: { key: string; delta: number }[];
+  /** Sensory message added to the eater's buffer. */
+  message?: string;
+  /** Sensory message added to nearby characters' buffers. */
+  nearbyMessage?: string;
+  /** Whether the item is consumed (removed from inventory). Default true. */
+  consume?: boolean;
 }
 
 export interface SpecialItemAction {

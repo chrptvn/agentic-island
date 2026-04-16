@@ -255,12 +255,13 @@ export class Island extends EventEmitter {
         // Clear expired action
         if (c.actionUntil && Date.now() >= c.actionUntil) {
           c.action = "idle";
+          c.actionItem = undefined;
           c.actionUntil = undefined;
         }
       }
       const layerTiles = computeLayerTiles(
         c.id, c.facing, animAction,
-        c.stats.equipment?.hands?.item,
+        c.actionItem ?? c.stats.equipment?.hands?.item,
         c.appearance?.gender,
       );
 
@@ -678,7 +679,7 @@ export class Island extends EventEmitter {
    * Requires multiple hits bare-handed; fewer hits with a plow or digging tool.
    * Returns progress info so the caller can report hits remaining.
    */
-  plowCell(id: string): { progress: number; required: number; completed: boolean; hitsRemaining: number } {
+  plowCell(id: string, toolItem?: string): { progress: number; required: number; completed: boolean; hitsRemaining: number } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
 
@@ -691,8 +692,8 @@ export class Island extends EventEmitter {
     if (this.getLayer(x, y, 3) !== "") throw new Error(`Cannot plow here: an entity is blocking cell (${x},${y}).`);
 
     // Tool bonus via plow capability
-    const equipped = character.stats.equipment?.hands?.item ?? null;
-    const plowLevel = equipped ? getCapabilityLevel(equipped, "plow") : 0;
+    const effectiveTool = toolItem ?? character.stats.equipment?.hands?.item ?? null;
+    const plowLevel = effectiveTool ? getCapabilityLevel(effectiveTool, "plow") : 0;
 
     // Energy cost scales down with tool level (min 3)
     const cfg = getIslandConfig();
@@ -943,33 +944,34 @@ export class Island extends EventEmitter {
     return dy > 0 ? "s" : "n";
   }
 
-  /** Set a timed action animation (slash/thrust) based on equipped tool.
+  /** Set a timed action animation (slash/thrust) based on the provided tool item (or equipped item as fallback).
    *  Bare-hand actions default to thrust (pickup gesture).
    *  Always faces the target if coordinates are provided. */
-  private _triggerActionAnimation(character: CharacterInstance, targetX?: number, targetY?: number): void {
+  private _triggerActionAnimation(character: CharacterInstance, targetX?: number, targetY?: number, toolItem?: string): void {
     // Always face the target
     if (targetX !== undefined && targetY !== undefined) {
       character.facing = this._facingToward(character.x, character.y, targetX, targetY);
     }
 
-    const equippedItem = character.stats.equipment?.hands?.item;
-    const tool = equippedItem ? getToolForItem(equippedItem) : null;
+    const itemToUse = toolItem ?? character.stats.equipment?.hands?.item;
+    const tool = itemToUse ? getToolForItem(itemToUse) : null;
     const action: "slash" | "thrust" = (tool?.action as "slash" | "thrust") ?? "thrust";
     character.action = action;
+    character.actionItem = itemToUse ?? undefined;
     // Animation duration: frames / fps (in ms)
     const anim = { slash: { frames: 6, fps: 12 }, thrust: { frames: 8, fps: 12 } }[action];
     character.actionUntil = Date.now() + (anim.frames / anim.fps) * 1000;
   }
 
-  harvest(id: string, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
+  harvest(id: string, item?: string, targetX?: number, targetY?: number, toolItem?: string): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
     this._checkEnergy(character, "harvest");
-    return this._harvestCore(character, item, targetX, targetY);
+    return this._harvestCore(character, item, targetX, targetY, toolItem);
   }
 
   /** Internal harvest logic — no energy check (used by swing to avoid double deduction). */
-  private _harvestCore(character: CharacterInstance, item?: string, targetX?: number, targetY?: number): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
+  private _harvestCore(character: CharacterInstance, item?: string, targetX?: number, targetY?: number, toolItem?: string): { harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
 
     // Determine which cell to harvest from
     let key: string;
@@ -1011,13 +1013,13 @@ export class Island extends EventEmitter {
     let hasRequiredTool = true;
     if (def.damage !== undefined && item === undefined) {
       if (def.requires && def.requires.length > 0) {
-        const equippedItem = character.stats.equipment?.hands?.item ?? null;
-        hasRequiredTool = !!(equippedItem && def.requires.some(cap => hasCapability(equippedItem, cap)));
+        const effectiveTool = toolItem ?? character.stats.equipment?.hands?.item ?? null;
+        hasRequiredTool = !!(effectiveTool && def.requires.some(cap => hasCapability(effectiveTool, cap)));
       }
     }
 
-    // ── Trigger action animation (slash/thrust) based on equipped tool ──────
-    this._triggerActionAnimation(character, targetX, targetY);
+    // ── Trigger action animation (slash/thrust) based on tool ──────────────
+    this._triggerActionAnimation(character, targetX, targetY, toolItem);
 
     // ── Health-damage mode (trees, destructible entities) ────────────────────
     if (def.damage !== undefined) {
@@ -1036,21 +1038,21 @@ export class Island extends EventEmitter {
   }
 
   /**
-   * Swing the equipped item at the facing cell.
+   * Swing an item (or bare-handed) at the facing cell.
    * If something harvestable is there, delegates to _harvestCore and returns hit:true.
    * If nothing is there (or nothing harvestable), triggers the action animation anyway
    * and returns hit:false — no error thrown.
    */
-  swing(id: string): { swung: true; hit: false } | { swung: true; hit: true; harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
+  swing(id: string, toolItem?: string): { swung: true; hit: false } | { swung: true; hit: true; harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
     this._checkEnergy(character, "harvest");
     try {
-      const result = this._harvestCore(character);
+      const result = this._harvestCore(character, undefined, undefined, undefined, toolItem);
       return { swung: true, hit: true, ...result };
     } catch {
       // Nothing to hit — trigger animation anyway and consume energy
-      this._triggerActionAnimation(character);
+      this._triggerActionAnimation(character, undefined, undefined, toolItem);
       return { swung: true, hit: false };
     }
   }
@@ -1760,6 +1762,63 @@ export class Island extends EventEmitter {
   }
 
   /**
+   * Use an item from inventory — the single action verb for tools and objects.
+   * - Items whose dominant (highest) capability is "plow" dig the current tile.
+   * - All other items swing at the facing tile (triggering the appropriate animation).
+   * - Items with special effects also trigger those effects.
+   * - Items with no relevant capabilities still swing (thrust animation, does nothing if cell is empty).
+   */
+  use(id: string, item: string): { mode: "plow"; progress: number; required: number; completed: boolean; hitsRemaining: number } | { mode: "swing" } & ({ swung: true; hit: false } | { swung: true; hit: true; harvested: Record<string, number>; entity: { tileId: string; condition?: string; previousCondition?: string; destroyed: boolean } }) {
+    const character = this.characters.get(id);
+    if (!character) throw new Error(`No character named "${id}".`);
+    const inv = character.stats.inventory as { item: string; qty: number }[];
+    if (!inv.find(s => s.item === item && s.qty > 0)) {
+      throw new Error(`"${item}" is not in your inventory.`);
+    }
+
+    // Plow mode only when plow is the item's dominant (highest) capability
+    const plowLevel = getCapabilityLevel(item, "plow");
+    if (plowLevel > 0) {
+      const allCaps = getItemDef(item).capabilities ?? {};
+      const maxCap = Math.max(...Object.values(allCaps));
+      if (plowLevel >= maxCap) {
+        return { mode: "plow", ...this.plowCell(id, item) };
+      }
+    }
+
+    // Special effects → trigger all before swinging
+    const def = getItemDef(item);
+    if (def.special?.length) {
+      const now = Date.now();
+      for (const action of def.special) {
+        if (action.message) character.sensoryEvents.push({ text: action.message, createdAt: now });
+        const radius = action.radius ?? 3;
+        for (const nearby of this.characters.values()) {
+          if (nearby === character) continue;
+          if (Math.max(Math.abs(nearby.x - character.x), Math.abs(nearby.y - character.y)) > radius) continue;
+          if (action.nearbyMessage) nearby.sensoryEvents.push({ text: action.nearbyMessage, createdAt: now });
+          if (action.emotionEffects) {
+            for (const eff of action.emotionEffects) {
+              const current = nearby.stats.emotions?.[eff.key] ?? 50;
+              if (nearby.stats.emotions) nearby.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+            }
+          }
+        }
+        if (action.emotionEffects) {
+          for (const eff of action.emotionEffects) {
+            if (!eff.self) continue;
+            const current = character.stats.emotions?.[eff.key] ?? 50;
+            if (character.stats.emotions) character.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+          }
+        }
+      }
+    }
+
+    // Swing at facing tile
+    return { mode: "swing", ...this.swing(id, item) };
+  }
+
+  /**
    * Feed fuel items from a character's inventory into a decaying entity to restore its health.
    * The entity must have a `decay.fuelItem` defined. Character must be adjacent.
    */
@@ -1846,28 +1905,82 @@ export class Island extends EventEmitter {
     return { crafted: recipe.output };
   }
 
-  /** Consume one food item from inventory to restore hunger. */
-  eat(id: string, item: string): { eaten: string; hungerRestored: number; stats: { hunger: number; maxHunger: number } } {
+  /** Consume one food item from inventory to restore hunger. Non-edible items deal damage instead. */
+  eat(id: string, item: string): { eaten: string; effects: { hunger?: number; health?: number; energy?: number; consumed: boolean; message?: string }; stats: { hunger: number; maxHunger: number; health: number; maxHealth: number; energy: number } } {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
-
-    const eatDef = getEatDef(item);
-    if (!eatDef) throw new Error(`"${item}" is not edible.`);
 
     const inv = character.stats.inventory as { item: string; qty: number }[];
     const slot = inv.find((s) => s.item === item);
     if (!slot || slot.qty < 1) throw new Error(`"${item}" not found in inventory.`);
 
-    const before = character.stats.hunger;
-    character.stats.hunger = Math.min(character.stats.maxHunger, character.stats.hunger + eatDef.hunger);
-    const restored = character.stats.hunger - before;
+    const eatDef = getEatDef(item);
 
-    // Consume one item
-    slot.qty -= 1;
-    if (slot.qty <= 0) inv.splice(inv.indexOf(slot), 1);
+    // Default fallback for items with no eat config
+    const effects = eatDef ?? { health: -5, consume: false, message: "That wasn't food... you feel sick." } as import("./item-registry.js").EatDef;
+
+    const consume = effects.consume !== false; // default true
+    const hungerDelta = effects.hunger ?? 0;
+    const healthDelta = effects.health ?? 0;
+    const energyDelta = effects.energy ?? 0;
+
+    // Apply stat changes
+    if (hungerDelta !== 0) {
+      character.stats.hunger = Math.max(0, Math.min(character.stats.maxHunger, character.stats.hunger + hungerDelta));
+    }
+    if (healthDelta !== 0) {
+      character.stats.health = Math.max(0, Math.min(character.stats.maxHealth, character.stats.health + healthDelta));
+    }
+    if (energyDelta !== 0) {
+      character.stats.energy = Math.max(0, Math.min(100, character.stats.energy + energyDelta));
+    }
+
+    // Apply emotion effects
+    if (effects.emotions?.length) {
+      for (const eff of effects.emotions) {
+        const current = character.stats.emotions?.[eff.key] ?? 50;
+        if (character.stats.emotions) character.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+      }
+    }
+
+    // Sensory messages
+    const now = Date.now();
+    if (effects.message) {
+      character.sensoryEvents.push({ text: effects.message, createdAt: now });
+    }
+    if (effects.nearbyMessage) {
+      const radius = 3;
+      for (const nearby of this.characters.values()) {
+        if (nearby === character) continue;
+        if (Math.max(Math.abs(nearby.x - character.x), Math.abs(nearby.y - character.y)) > radius) continue;
+        nearby.sensoryEvents.push({ text: effects.nearbyMessage, createdAt: now });
+      }
+    }
+
+    // Consume the item if configured
+    if (consume) {
+      slot.qty -= 1;
+      if (slot.qty <= 0) inv.splice(inv.indexOf(slot), 1);
+    }
 
     saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
-    return { eaten: item, hungerRestored: restored, stats: { hunger: character.stats.hunger, maxHunger: character.stats.maxHunger } };
+    return {
+      eaten: item,
+      effects: {
+        ...(hungerDelta !== 0 ? { hunger: hungerDelta } : {}),
+        ...(healthDelta !== 0 ? { health: healthDelta } : {}),
+        ...(energyDelta !== 0 ? { energy: energyDelta } : {}),
+        consumed: consume,
+        ...(effects.message ? { message: effects.message } : {}),
+      },
+      stats: {
+        hunger: character.stats.hunger,
+        maxHunger: character.stats.maxHunger,
+        health: character.stats.health,
+        maxHealth: character.stats.maxHealth,
+        energy: character.stats.energy,
+      },
+    };
   }
 
   // ── Container helpers ────────────────────────────────────────────────────────

@@ -19,6 +19,9 @@ interface ConnectedIsland {
 
 const connectedIslands = new Map<string, ConnectedIsland>();
 
+// islandId → agent prompt markdown (from agent-prompt.md, sent on handshake)
+export const islandAgentPrompts = new Map<string, string>();
+
 // islandId → set of viewer WebSockets (shared with viewer-handler)
 export const islandViewers = new Map<string, Set<WebSocket>>();
 
@@ -191,6 +194,12 @@ export function handleIslandConnection(ws: WebSocket): void {
 
           core = { ws, islandId, apiKeyId: keyRow.id, islandName: msg.island.name, lastPing: Date.now() };
           connectedIslands.set(islandId, core);
+
+          if (msg.island.agentPrompt) {
+            islandAgentPrompts.set(islandId, msg.island.agentPrompt);
+          } else {
+            islandAgentPrompts.delete(islandId);
+          }
 
           const ack: HubToIslandMessage = {
             type: "handshake_ack",
@@ -409,6 +418,7 @@ export function handleIslandConnection(ws: WebSocket): void {
       lastMapInit.delete(core.islandId);
       lastInitialState.delete(core.islandId);
       lastTicks.delete(core.islandId);
+      islandAgentPrompts.delete(core.islandId);
       deltaBuffers.delete(core.islandId);
       spriteHashes.delete(core.islandId);
       lastPlayerCounts.delete(core.islandId);

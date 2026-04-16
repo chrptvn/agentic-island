@@ -318,10 +318,19 @@ export function humanizeHarvestResult(raw: Record<string, unknown>): object {
 
 /** Humanize eat results — fuzzy hunger feeling. */
 export function humanizeEatResult(raw: Record<string, unknown>): object {
-  const stats = raw.stats as { hunger?: number; maxHunger?: number } | undefined;
+  const stats = raw.stats as { hunger?: number; maxHunger?: number; health?: number; maxHealth?: number; energy?: number } | undefined;
+  const effects = raw.effects as { hunger?: number; health?: number; energy?: number; consumed?: boolean; message?: string } | undefined;
+  const parts: string[] = [];
+  if (effects?.hunger && effects.hunger > 0) parts.push(`+${effects.hunger} hunger`);
+  if (effects?.hunger && effects.hunger < 0) parts.push(`${effects.hunger} hunger`);
+  if (effects?.health && effects.health < 0) parts.push(`${effects.health} health`);
+  if (effects?.health && effects.health > 0) parts.push(`+${effects.health} health`);
+  if (effects?.energy && effects.energy !== 0) parts.push(`${effects.energy > 0 ? "+" : ""}${effects.energy} energy`);
+  const effectStr = parts.length ? ` (${parts.join(", ")})` : "";
   return {
-    message: raw.message ?? `You ate something.`,
+    message: effects?.message ?? raw.message ?? `You ate ${raw.eaten ?? "something"}${effectStr}.`,
     ...(stats ? { hunger: humanizeHunger(stats.hunger ?? 0, stats.maxHunger ?? 100) } : {}),
+    ...(effects?.consumed === false ? { note: "Item is still in your inventory." } : {}),
   };
 }
 

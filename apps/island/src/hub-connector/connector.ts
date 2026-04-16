@@ -1,4 +1,7 @@
 import WebSocket from "ws";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type {
   IslandToHubMessage,
   HubToIslandMessage,
@@ -30,7 +33,16 @@ export interface HubConnectorOptions {
 
 export type SpritePayload = SpriteAsset;
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const PREFIX = "[hub-connector]";
+
+function loadAgentPrompt(): string | undefined {
+  try {
+    return readFileSync(join(__dirname, "../..", "config", "agent-prompt.md"), "utf-8").trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export class HubConnector {
   private ws: WebSocket | null = null;
@@ -166,6 +178,7 @@ export class HubConnector {
           id: this.options.islandId,
           description: this.options.islandDescription,
           config: islandConfig,
+          agentPrompt: loadAgentPrompt(),
         },
         sprites,
         ...(thumbnail ? { thumbnail } : {}),

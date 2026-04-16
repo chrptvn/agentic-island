@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import db from "../db/index.js";
 import type { HubToIslandMessage, IslandPassportResponse } from "@agentic-island/shared";
 import { sendPassportEmail, isSmtpConfigured } from "../services/mailer.js";
-import { sendPassportRequest, lastMapInit, lastInitialState } from "../ws/island-handler.js";
+import { sendPassportRequest, lastMapInit, lastInitialState, islandAgentPrompts } from "../ws/island-handler.js";
 import { isValidEmail } from "../lib/validation.js";
 
 const islands = new Hono();
@@ -114,6 +114,14 @@ islands.get("/:id/passport-catalog", async (c) => {
 /** Check if SMTP is configured (so frontend knows whether to offer minutemail). */
 islands.get("/:id/smtp-status", (c) => {
   return c.json({ smtpConfigured: isSmtpConfigured() });
+});
+
+/** Return the island's agent-prompt.md content as plain text. */
+islands.get("/:id/agent-prompt", (c) => {
+  const id = c.req.param("id");
+  const prompt = islandAgentPrompts.get(id);
+  if (!prompt) return c.text("", 404);
+  return c.text(prompt, 200, { "Content-Type": "text/markdown; charset=utf-8" });
 });
 
 /** Create or recover a passport for an island. */

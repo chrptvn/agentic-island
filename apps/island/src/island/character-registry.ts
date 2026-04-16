@@ -52,6 +52,8 @@ export interface CharacterInstance {
   action:  string; // "idle" | "moving" | "searching" | "slash" | "thrust"
   /** Timestamp (ms) when the current action animation expires back to idle */
   actionUntil?: number;
+  /** Item being used in the current action animation (e.g. 'stone_axe'). Cleared when action expires. */
+  actionItem?: string;
   moveTicks: number; // tick counter for movement throttle
   speech?: CharacterSpeech;
   /** "x,y" key of the tent base position when the character is inside a tent. */

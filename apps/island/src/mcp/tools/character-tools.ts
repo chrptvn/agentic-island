@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
 import { Island } from "../../island/island.js";
@@ -9,9 +12,20 @@ import { RECIPES } from "../../island/craft-registry.js";
 // Character appearance is now randomized by the catalog system
 import {
   humanizeSurroundings, humanizeMoveResult, humanizeHarvestResult,
-  humanizeEatResult, humanizeFeedResult, humanizePlowResult,
+  humanizeEatResult, humanizeFeedResult,
 } from "../humanize.js";
 import { upsertMarker, listMarkers, deleteMarkerByLocation } from "../../persistence/db.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const AGENT_PROMPT_PATH = join(__dirname, "../../../config/agent-prompt.md");
+
+function loadAgentPrompt(): string {
+  try {
+    return readFileSync(AGENT_PROMPT_PATH, "utf-8").trim();
+  } catch {
+    return "";
+  }
+}
 
 const BASE_URL = `http://localhost:${process.env.ISLAND_PORT ?? 3002}`;
 
@@ -109,7 +123,7 @@ export function buildGameRules(): object {
   }
 
   return {
-    IMPORTANT: "You are being watched. A real person is observing your character on the island — your text responses are invisible to them. The ONLY way they can experience your personality, reactions, and thoughts is through the 'say' tool, which shows a speech bubble above your head. Speak constantly: narrate what you're doing, react to discoveries, grumble when hungry, cheer when you find food, mutter to yourself while working. Don't be silent. Express yourself freely — this is entertainment, not just survival.",
+    behavior: loadAgentPrompt(),
     overview: "You are a character on a grass island surrounded by water. You need to eat to survive, rest to recover energy, and can craft tools, build structures, and interact with the world around you.",
     survival: {
       health: "You can feel how healthy you are. If you stop eating, you'll starve and your health will drop. Standing on fire also hurts. If your health reaches zero, you die and everything you were carrying is lost. Rest while fed to recover.",
@@ -118,23 +132,24 @@ export function buildGameRules(): object {
     },
     actions: {
       walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east. You'll automatically find a path around obstacles.",
-      harvest: "Gather resources or deal damage to what you're facing. Trees have health (healthy→scratched→damaged→battered→critical→destroyed) — chop with an axe. On tree death, a log pile may appear. Returns condition and previousCondition for health-based entities.",
-      swing: "Swing your equipped item at the facing cell. If something is there, it gets hit (same as harvest); returns condition. If empty, just animates with no error.",
+      harvest: "Gather resources or deal damage to what you're facing. Trees have health (healthy→scratched→damaged→battered→critical→destroyed). On tree death, a log pile may appear. Returns condition and previousCondition for health-based entities.",
+      swing: "Use an item on the facing cell with the `use` action.",
+      use: "Use any item from your inventory. If the item can plow (e.g. 'plow'), it digs the current tile. Otherwise it acts on the facing cell — tools like 'stone_axe' chop, 'hammer' builds — and any item with special effects triggers them. A bare thrust animation plays if the item has no other capability.",
       build_structure: "Build things on an empty adjacent tile using materials from your inventory.",
       interact_with: "Interact with nearby things — light or extinguish a campfire, for example.",
       feed_entity: "Feed fuel (like wood) into a campfire to keep it burning.",
       craft_item: "Craft tools and items from materials in your inventory. Use list_craftable to see what you can make.",
-      eat: "Eat food from your inventory to satisfy hunger.",
+      eat: "Try to eat any item from your inventory. Edible items (berries, acorns) restore hunger. Eating non-food items will hurt you.",
       plant_seed: "Plant a seed where you're standing. It grows into a tree over time.",
-      plow_tile: "Dig up the ground where you're standing to create a dirt path. Easier with the right tool.",
-      equip: "Equip an item (tool, weapon) into your hands or wear it.",
-      unequip: "Put an equipped item back in your inventory.",
-      say: "Speak aloud — appears as a speech bubble above your head, visible to anyone watching (max 280 characters). Use this constantly: narrate actions, react to what you see, express emotions. This is your primary way to be expressive and entertaining. Silence is boring.",
+      plow: "Use the `use` action with a plow or digging tool from your inventory to dig the ground where you're standing.",
+      say: "Speak aloud — appears as a speech bubble above your head, visible to anyone watching (max 280 characters).",
       container_inspect: "Look inside an adjacent container (chest, log pile).",
       container_put: "Put items into an adjacent container.",
       container_take: "Take items from an adjacent container.",
       write_journal: "Record useful knowledge for later — crafting tips, discoveries, survival tricks.",
       read_journal: "Read your saved knowledge entries.",
+      check_self: "Check how you feel (health, hunger, energy as sensations), what you're carrying, and what you're doing.",
+      look_around: "See the tiles around you — what's adjacent, nearby, and in the distance — plus your position and facing direction.",
       set_marker: "Place a marker at your current position with a description. Use markers to remember locations — resource spots, your base camp, or anything worth revisiting. Each location (x, y) can have one marker.",
       get_markers: "Retrieve all your placed markers with their (x, y) coordinates and descriptions. Use this to navigate back to places you've marked.",
       delete_marker: "Remove a marker at a specific (x, y) location you no longer need.",
@@ -144,7 +159,7 @@ export function buildGameRules(): object {
       coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate and remember locations.",
       vision: "You can see the 8 tiles around you in detail, notice things a couple of steps away, and sense terrain changes in the distance.",
       adjacency: "To harvest, build, interact, or use containers, you must be standing next to the target (N/S/E/W).",
-      planting: "To plant or plow, you must be standing ON the tile.",
+      planting: "To plant or plow, you must be standing ON the tile. Use `use` with a plow item to plow.",
       blocking: "Trees, rocks, campfires, chests, and sprouts block movement — walk around them.",
       exploration: "Use markers to remember important locations. When you find resources or build a camp, set a marker so you can navigate back using the coordinates.",
     },
@@ -186,11 +201,11 @@ export function registerFeedEntityTools(server: McpServer, session: McpSession):
 
 export function registerGenericPersonaTools(server: McpServer, session: McpSession): void {
 
-  // ── get_status tool ──────────────────────────────────────────────────────
+  // ── check_self tool ──────────────────────────────────────────────────────
 
   server.tool(
-    "get_status",
-    "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and a description of the tiles immediately surrounding them.",
+    "check_self",
+    "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and what they are currently doing.",
     {},
     async () => {
       const check = requireCharacter(session);
@@ -198,8 +213,43 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
       const character_id = check;
       const snapshot = Island.getInstance().getSurroundings(character_id);
       if (!snapshot) return { content: [{ type: "text", text: `Character "${character_id}" not found on the map.` }], isError: true };
-      const humanized = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]);
-      return { content: [{ type: "text", text: JSON.stringify(humanized, null, 2) }] };
+      const h = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]) as Record<string, unknown>;
+      const result = {
+        character: h.character,
+        feeling: h.feeling,
+        carrying: h.carrying,
+        equipment: h.equipment,
+        doing: h.doing,
+      };
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // ── look_around tool ─────────────────────────────────────────────────────
+
+  server.tool(
+    "look_around",
+    "Returns a description of the tiles immediately surrounding the character — what's adjacent, nearby, and in the distance — plus position, facing direction, and any sensory events.",
+    {},
+    async () => {
+      const check = requireCharacter(session);
+      if (typeof check !== "string") return check;
+      const character_id = check;
+      const snapshot = Island.getInstance().getSurroundings(character_id);
+      if (!snapshot) return { content: [{ type: "text", text: `Character "${character_id}" not found on the map.` }], isError: true };
+      const h = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]) as Record<string, unknown>;
+      const result: Record<string, unknown> = {
+        character: h.character,
+        position: h.position,
+        standing: h.standing,
+        facing: h.facing,
+        ...(h.facing_tile !== undefined ? { facing_tile: h.facing_tile } : {}),
+        surroundings: h.surroundings,
+        ...(h.nearby !== undefined ? { nearby: h.nearby } : {}),
+        ...(h.far_away !== undefined ? { far_away: h.far_away } : {}),
+        ...(h.sensations !== undefined ? { sensations: h.sensations } : {}),
+      };
+      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
     }
   );
 
@@ -253,16 +303,17 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "swing",
-    "Swing or use the item currently equipped in your hands toward the facing cell. If an entity is there, it gets hit — returns hit:true with harvested items and entity condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed'). If the cell is empty, you swing in the air — energy is consumed but no error is thrown.",
+    "use",
+    "Use an item from your inventory. Items with a plow capability (e.g. 'plow') dig the current tile. All other items act on the facing cell — tools like 'stone_axe' chop trees, 'hammer' hits entities. Items with special effects (e.g. rubber_duck) also trigger those. If the item has no special capability a thrust animation plays. Returns mode 'plow' or 'swing', and if swing: hit:true with entity condition and harvested items, or hit:false if nothing was there.",
     {
+      item: z.string().min(1).describe("Item from your inventory to use (e.g. 'stone_axe', 'plow', 'rubber_duck')."),
     },
-    async ({}) => {
+    async ({ item }) => {
       const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "swing" } });
+        const result = await apiPost("/api/use", { id: character_id, item });
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
@@ -305,16 +356,14 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "harvest",
-    "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. Trees require a tool with 'chop' capability (axe). On death, a log pile container may appear — use harvest again to pick up wood from it.",
-    {
-      item:          z.string().optional().describe("Specific item to harvest (e.g. 'branches', 'berries'). Omit to harvest everything available."),
-    },
-    async ({ item }) => {
+    "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. On tree death, a log pile container may appear — use harvest again to pick up wood from it.",
+    {},
+    async ({}) => {
       const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "harvest", item } });
+        const result = await apiPost("/api/command", { id: character_id, command: { type: "harvest" } });
         return { content: [{ type: "text", text: JSON.stringify(humanizeHarvestResult(result as Record<string, unknown>), null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
@@ -324,9 +373,9 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "eat",
-    "Consume one food item from your inventory to satisfy hunger. Edible items include: berries, acorns.",
+    "Try to eat any item from your inventory. Edible items (berries, acorns) are consumed and restore hunger. Eating non-food items (e.g. an axe) will deal damage to you but not consume the item — don't do it unless you have to.",
     {
-      item: z.string().min(1).describe("Name of the food item to eat (e.g. 'berries', 'acorns')"),
+      item: z.string().min(1).describe("Name of the item to eat (e.g. 'berries', 'acorns')"),
     },
     async ({ item }) => {
       const check = requireCharacter(session);
@@ -377,7 +426,13 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
       // eat
       if (def.eat) {
-        actions.push({ action: "eat", item, restores: { hunger: def.eat.hunger } });
+        const eatInfo: Record<string, unknown> = { action: "eat", item };
+        if (def.eat.hunger) eatInfo.hunger = def.eat.hunger;
+        if (def.eat.health) eatInfo.health = def.eat.health;
+        if (def.eat.energy) eatInfo.energy = def.eat.energy;
+        if (def.eat.consume === false) eatInfo.consumed = false;
+        if (def.eat.message) eatInfo.hint = def.eat.message;
+        actions.push(eatInfo);
       }
       // equip (hands)
       if (def.equippable) {
@@ -413,7 +468,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
       }
       // special actions
       for (const special of def.special ?? []) {
-        actions.push({ action: "use_item", verb: special.verb, description: special.description });
+        actions.push({ action: "use", item, description: special.description });
       }
       // fallback — always something to do
       if (actions.length === 0) {
@@ -421,26 +476,6 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
       }
 
       return { content: [{ type: "text", text: JSON.stringify({ item, known, actions }, null, 2) }] };
-    }
-  );
-
-  server.tool(
-    "use_item",
-    "Perform a special interaction with an item in your inventory (e.g. squish a rubber duck, sniff a suspicious mushroom). Use examine_item to discover available verbs.",
-    {
-      item: z.string().min(1).describe("Item name from your inventory (e.g. 'rubber_duck')"),
-      verb: z.string().min(1).describe("The action verb to perform (e.g. 'squish', 'sniff', 'ponder')"),
-    },
-    async ({ item, verb }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        Island.getInstance().useItem(character_id, item, verb);
-        return { content: [{ type: "text", text: JSON.stringify({ done: true, verb, item }, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
     }
   );
 
@@ -549,44 +584,6 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "equip",
-    "Equip an item from a character's inventory into a slot. The 'hands' slot requires the item to have equippable:true in item-defs.json. Body slots (head/body/legs/feet) require the item to have a matching wearable attribute. If the slot is occupied the current item is automatically returned to inventory.",
-    {
-      item: z.string().min(1).describe("Item name from inventory to equip (e.g. 'stone_axe')"),
-      slot: z.enum(["hands", "head", "body", "legs", "feet"]).describe("Equipment slot to fill"),
-    },
-    async ({ item, slot }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/equip", { id: character_id, item, slot });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "unequip",
-    "Unequip a slot — removes the item from the equipment slot and returns it to the character's inventory.",
-    {
-      slot: z.enum(["hands", "head", "body", "legs", "feet"]).describe("Equipment slot to unequip"),
-    },
-    async ({ slot }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/unequip", { id: character_id, slot });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-  server.tool(
     "build_structure",
     "Build a structure on an adjacent empty tile by consuming items from your inventory. You must be next to the target tile (N/S/E/W).",
     {
@@ -622,65 +619,6 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         const pos = resolveTarget(character_id, target_direction);
         if (!pos) throw new Error("Provide a direction.");
         const result = await apiPost("/api/interact", { id: character_id, target_x: pos.x, target_y: pos.y });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "plow_tile",
-    "Plow the character's CURRENT cell to create a dirt path. The cell must be grass with no entity on it. Requires multiple calls to complete bare-handed; equipping a plow or digging tool reduces the number of hits and energy cost needed. Returns progress, total required, whether the path was completed, and hits remaining.",
-    {
-    },
-    async ({}) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/plow", { id: character_id });
-        return { content: [{ type: "text", text: JSON.stringify(humanizePlowResult(result as Record<string, unknown>), null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  // ── Tent tools ─────────────────────────────────────────────────────────────
-
-  server.tool(
-    "enter_tent",
-    "Enter an adjacent tent to rest. While inside, the character disappears from the map and regenerates energy rapidly. You must be next to the tent's door (bottom-left tile) in a cardinal direction.",
-    {
-      target_direction: z.string().describe("Direction to the tent door: n/s/e/w."),
-    },
-    async ({ target_direction }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const pos = resolveTarget(character_id, target_direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "enter_tent", target_x: pos.x, target_y: pos.y } });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "exit_tent",
-    "Exit the tent the character is currently resting in. The character will reappear on an adjacent walkable tile.",
-    {
-    },
-    async ({}) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "exit_tent" } });
         return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };

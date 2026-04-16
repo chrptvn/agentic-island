@@ -165,8 +165,8 @@ async function handleRequest(
       const island = Island.getInstance();
 
       if (body.command.type === "harvest") {
-        const { item, target_x, target_y } = body.command as { item?: string; target_x?: number; target_y?: number };
-        const result = island.harvest(body.id, item, target_x, target_y);
+        const { item, target_x, target_y, tool } = body.command as { item?: string; target_x?: number; target_y?: number; tool?: string };
+        const result = island.harvest(body.id, item, target_x, target_y, tool);
         const pos = target_x !== undefined ? `(${target_x},${target_y})` : "current position";
         jsonOk(res, { message: `Harvested at ${pos}.`, ...result });
         return;
@@ -179,21 +179,9 @@ async function handleRequest(
         return;
       }
 
-      if (body.command.type === "enter_tent") {
-        const { target_x, target_y } = body.command as unknown as { target_x: number; target_y: number };
-        const result = island.enterTent(body.id, target_x, target_y);
-        jsonOk(res, { message: `Entered tent at (${target_x},${target_y}).`, ...result });
-        return;
-      }
-
-      if (body.command.type === "exit_tent") {
-        const result = island.exitTent(body.id);
-        jsonOk(res, { message: `Exited tent. Now at (${result.x},${result.y}).`, ...result });
-        return;
-      }
-
       if (body.command.type === "swing") {
-        const result = island.swing(body.id);
+        const { item } = body.command as unknown as { item?: string };
+        const result = island.swing(body.id, item);
         const msg = result.hit
           ? `Swung and hit — harvested ${JSON.stringify(result.harvested)}.`
           : "Swung in the air — nothing to hit.";
@@ -213,7 +201,7 @@ async function handleRequest(
       }
 
       if (body.command.type !== "move_to") {
-        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, face, craft, enter_tent, exit_tent.`);
+        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, face, craft.`);
         return;
       }
 
@@ -260,7 +248,38 @@ async function handleRequest(
       const body = await readBody(req) as { id: string; item: string };
       const island = Island.getInstance();
       const result = island.eat(body.id, body.item);
-      jsonOk(res, { message: `Ate ${body.item} (+${result.hungerRestored} hunger).`, ...result });
+      const parts: string[] = [];
+      if (result.effects.hunger && result.effects.hunger > 0) parts.push(`+${result.effects.hunger} hunger`);
+      if (result.effects.hunger && result.effects.hunger < 0) parts.push(`${result.effects.hunger} hunger`);
+      if (result.effects.health && result.effects.health < 0) parts.push(`${result.effects.health} health`);
+      if (result.effects.health && result.effects.health > 0) parts.push(`+${result.effects.health} health`);
+      if (result.effects.energy && result.effects.energy !== 0) parts.push(`${result.effects.energy > 0 ? "+" : ""}${result.effects.energy} energy`);
+      const effectStr = parts.length ? ` (${parts.join(", ")})` : "";
+      const consumed = result.effects.consumed ? " It's gone." : " It's still in your inventory.";
+      const msg = result.effects.message ?? `Ate ${body.item}${effectStr}.${consumed}`;
+      jsonOk(res, { message: msg, ...result });
+    } catch (err) {
+      jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  if (url === "/api/use" && method === "POST") {
+    try {
+      const body = await readBody(req) as { id: string; item: string };
+      const island = Island.getInstance();
+      const result = island.use(body.id, body.item);
+      let msg: string;
+      if (result.mode === "plow") {
+        msg = result.completed
+          ? `Path created! Cell plowed successfully.`
+          : `Plowing in progress (${result.progress}/${result.required}). ${result.hitsRemaining} hit(s) remaining.`;
+      } else {
+        msg = result.hit
+          ? `Used ${body.item} and hit — harvested ${JSON.stringify(result.harvested)}.`
+          : `Used ${body.item} — nothing to hit.`;
+      }
+      jsonOk(res, { message: msg, ...result });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
@@ -352,14 +371,26 @@ async function handleRequest(
 
   if (url === "/api/plow" && method === "POST") {
     try {
-      const body = await readBody(req) as { id: string };
-      const result = Island.getInstance().plowCell(body.id);
+      const body = await readBody(req) as { id: string; item?: string };
+      const result = Island.getInstance().plowCell(body.id, body.item);
       const msg = result.completed
         ? `Path created! Cell plowed successfully.`
         : `Plowing in progress (${result.progress}/${result.required}). ${result.hitsRemaining} hit(s) remaining.`;
       jsonOk(res, { ...result, message: msg });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  if (url === "/api/agent-prompt" && method === "GET") {
+    try {
+      const promptPath = join(__dirname, "../..", "config", "agent-prompt.md");
+      const content = await readFile(promptPath, "utf-8");
+      res.writeHead(200, { "Content-Type": "text/markdown; charset=utf-8" });
+      res.end(content);
+    } catch {
+      jsonErr(res, 404, "agent-prompt.md not found");
     }
     return;
   }

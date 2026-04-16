@@ -21,6 +21,8 @@ export interface IslandHandshakeMessage {
     id?: string;
     description?: string;
     config: Partial<IslandConfig>;
+    /** Optional markdown behavior prompt loaded from agent-prompt.md. */
+    agentPrompt?: string;
   };
   sprites: SpriteAsset[];
   thumbnail?: SpriteAsset;

@@ -33,7 +33,6 @@ export interface McpSession {
   lastSnapshot:   string;
   alertCooldowns: AlertCooldowns;
   worldListener:          (() => void) | null;
-  lastActivityAt:         number;
   lastSurroundingsPushAt: number;
 }
 
@@ -42,35 +41,6 @@ const mcpSessions = new Map<string, McpSession>();
 
 /** All active sessions regardless of transport type (HTTP or tunnel). */
 const allMcpSessions = new Set<McpSession>();
-
-// ─── Idle disconnect ──────────────────────────────────────────────────────────
-
-const IDLE_TIMEOUT_MS       = (Number(process.env.IDLE_TIMEOUT_MINUTES) || 3) * 60_000;
-const IDLE_CHECK_INTERVAL_MS = 10_000; // check every 10 seconds
-
-function checkIdleSessions(): void {
-  const now = Date.now();
-  for (const session of allMcpSessions) {
-    if (!session.characterId) continue; // not yet authenticated — skip
-    if (now - session.lastActivityAt < IDLE_TIMEOUT_MS) continue;
-
-    const characterId = session.characterId;
-    console.log(`[mcp] Disconnecting idle character "${characterId}" (inactive for ${Math.round((now - session.lastActivityAt) / 1000)}s)`);
-
-    // Disconnect the character from the world but keep the MCP session alive
-    // so the agent can reconnect by sending a new initialize with the same passport.
-    try { Island.getInstance().disconnect(characterId); } catch { /* already disconnected */ }
-    detachWorldListener(session);
-    session.characterId = null;
-
-    session.server.sendLoggingMessage({
-      level: "warning",
-      data: `🔌 Character "${characterId}" disconnected due to ${Math.round(IDLE_TIMEOUT_MS / 60_000)} minute(s) of inactivity. Reconnect to resume.`,
-    }).catch(() => {});
-  }
-}
-
-setInterval(checkIdleSessions, IDLE_CHECK_INTERVAL_MS).unref();
 
 /** Returns true if another active session already owns this character ID. */
 export function isCharacterClaimed(characterId: string, excludeSession?: McpSession): boolean {
@@ -148,17 +118,6 @@ export function detachWorldListener(session: McpSession): void {
 /** Register all tools, resources, and the surroundings resource on a session. */
 function initServer(server: McpServer, session: McpSession): void {
 
-  // Wrap server.tool so every tool call updates the session's lastActivityAt.
-  const originalTool = server.tool.bind(server) as typeof server.tool;
-  (server as unknown as Record<string, unknown>).tool = (...args: unknown[]) => {
-    const handler = args[args.length - 1] as (...a: unknown[]) => unknown;
-    args[args.length - 1] = (...handlerArgs: unknown[]) => {
-      session.lastActivityAt = Date.now();
-      return (handler as (...a: unknown[]) => unknown)(...handlerArgs);
-    };
-    return (originalTool as (...a: unknown[]) => unknown)(...args);
-  };
-
   // ── Surroundings resource template ────────────────────────────────────────
   server.resource(
     "character-surroundings",
@@ -220,7 +179,6 @@ function makeHttpSession(): McpSession {
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
-    lastActivityAt: Date.now(),
     lastSurroundingsPushAt: 0,
   };
 
@@ -245,7 +203,6 @@ export function makeTunnelSession(transport: Transport, passportKey?: string): M
     lastSnapshot: "",
     alertCooldowns: { energy: 0, hunger: 0 },
     worldListener: null,
-    lastActivityAt: Date.now(),
     lastSurroundingsPushAt: 0,
   };
 

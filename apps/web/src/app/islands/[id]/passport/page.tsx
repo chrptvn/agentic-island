@@ -235,7 +235,7 @@ export default function PassportPage({
               variant="outline"
               size="md"
               className="w-full"
-              onClick={() => downloadPromptAsMarkdown(personality)}
+              onClick={() => void downloadPromptAsMarkdown(personality, id)}
             >
               📄 Download Agent Prompt
             </Button>

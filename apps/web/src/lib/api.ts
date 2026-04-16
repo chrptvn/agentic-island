@@ -67,6 +67,16 @@ export async function fetchIslandSmtpStatus(
   }
 }
 
+export async function fetchAgentPrompt(islandId: string): Promise<string> {
+  try {
+    const res = await fetch(`/api/islands/${islandId}/agent-prompt`);
+    if (!res.ok) return "";
+    return res.text();
+  } catch {
+    return "";
+  }
+}
+
 export async function claimPassport(
   islandId: string,
   email: string,
