@@ -140,10 +140,10 @@ export function buildGameRules(): object {
       feed_entity: "Feed fuel (like wood) into a campfire to keep it burning.",
       craft_item: "Craft tools and items from materials in your inventory. Use list_craftable to see what you can make.",
       eat: "Try to eat any item from your inventory. Edible items (berries, acorns) restore hunger. Eating non-food items will hurt you.",
-      plant_seed: "Plant a seed where you're standing. It grows into a tree over time.",
+      plant_seed: "Plant a seed where you're standing. It grows over time into a tree, bush, flower patch, cotton patch, or moon blossom depending on the seed.",
       plow: "Use the `use` action with a plow or digging tool from your inventory to dig the ground where you're standing.",
       say: "Speak aloud — appears as a speech bubble above your head, visible to anyone watching (max 280 characters).",
-      container_inspect: "Look inside an adjacent container (chest, log pile).",
+      container_inspect: "Look inside an adjacent container (supply cache, log pile).",
       container_put: "Put items into an adjacent container.",
       container_take: "Take items from an adjacent container.",
       write_journal: "Record useful knowledge for later — crafting tips, discoveries, survival tricks.",
@@ -160,7 +160,7 @@ export function buildGameRules(): object {
       vision: "You can see the 8 tiles around you in detail, notice things a couple of steps away, and sense terrain changes in the distance.",
       adjacency: "To harvest, build, interact, or use containers, you must be standing next to the target (N/S/E/W).",
       planting: "To plant or plow, you must be standing ON the tile. Use `use` with a plow item to plow.",
-      blocking: "Trees, rocks, campfires, chests, and sprouts block movement — walk around them.",
+      blocking: "Trees, rocks, campfires, supply caches, and sprouts block movement — walk around them.",
       exploration: "Use markers to remember important locations. When you find resources or build a camp, set a marker so you can navigate back using the coordinates.",
     },
     edible_items: edibleList,
@@ -450,7 +450,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         }
       }
       // plant_seed
-      const PLANTABLE = new Set(["acorns", "berries", "cotton_seed", "flower_blue_seed", "flower_red_seed", "flower_purple_seed", "flower_white_seed"]);
+      const PLANTABLE = new Set(["acorns", "berries", "cotton_seed", "flower_pink_seed", "flower_blue_seed", "flower_red_seed", "sky_blossom_seed", "flower_white_seed", "flower_yellow_seed", "moon_fragment"]);
       if (PLANTABLE.has(item)) {
         actions.push({ action: "plant_seed", item });
       }
@@ -518,7 +518,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "container_inspect",
-    "View the contents of a container (chest, etc.) adjacent to you. You must be next to it.",
+    "View the contents of an adjacent container (supply cache, log pile, etc.). You must be next to it.",
     {
       direction:        z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
     },
@@ -539,7 +539,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "container_put",
-    "Move items from your inventory into an adjacent container (chest, etc.).",
+    "Move items from your inventory into an adjacent container (supply cache, etc.).",
     {
       direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
       item:         z.string().min(1).describe("Item name to store (e.g. 'wood')"),
@@ -562,7 +562,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
   server.tool(
     "container_take",
-    "Take items from an adjacent container (chest, etc.) into your inventory.",
+    "Take items from an adjacent container (supply cache, etc.) into your inventory.",
     {
       direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
       item:         z.string().min(1).describe("Item name to take (e.g. 'wood')"),
@@ -632,7 +632,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     "set_marker",
     "Place a marker at your current position with a description. Use markers to remember locations you want to return to — resource spots, your base camp, points of interest. If a marker already exists at this location, its description is updated.",
     {
-      description: z.string().min(1).max(200).describe("A note describing this location (e.g. 'Berry bush near water', 'Base camp with campfire and chest')"),
+      description: z.string().min(1).max(200).describe("A note describing this location (e.g. 'Berry bush near water', 'Base camp with campfire and supply cache')"),
     },
     async ({ description }) => {
       const check = requireCharacter(session);

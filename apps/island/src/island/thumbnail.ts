@@ -25,6 +25,7 @@ function isVegetationTile(tileId: string): boolean {
     tileId.startsWith("shrub") ||
     tileId.startsWith("bush") ||
     tileId.startsWith("flower") ||
+    tileId.includes("blossom") ||
     tileId.startsWith("berry") ||
     tileId.startsWith("cotton") ||
     tileId === "oak" ||

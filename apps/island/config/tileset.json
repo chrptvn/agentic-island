@@ -24,6 +24,10 @@
     "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water2_pipo.png": {
       "tileSize": 32,
       "tileGap": 0
+    },
+    "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png": {
+      "tileSize": 32,
+      "tileGap": 0
     }
   },
   "tiles": [
@@ -4990,6 +4994,15 @@
       "description": "Plant"
     },
     {
+      "id": "cotton_patch",
+      "col": 0,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Cotton Patch"
+    },
+    {
       "id": "grass_patch",
       "col": 1,
       "row": 6,
@@ -5026,6 +5039,24 @@
       "description": "White Flowers"
     },
     {
+      "id": "white_flowers_patch",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "White Flowers Patch"
+    },
+    {
+      "id": "moon_blossom",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Moon Blossom"
+    },
+    {
       "id": "pink_flowers",
       "col": 5,
       "row": 6,
@@ -5035,6 +5066,15 @@
       "description": "Pink Flowers"
     },
     {
+      "id": "red_flowers",
+      "col": 5,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Red Flowers"
+    },
+    {
       "id": "blue_flowers",
       "col": 6,
       "row": 6,
@@ -5042,6 +5082,24 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "decoration",
       "description": "Blue Flowers"
+    },
+    {
+      "id": "purple_flowers",
+      "col": 6,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Purple Flowers"
+    },
+    {
+      "id": "skyblossoms",
+      "col": 6,
+      "row": 6,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "decoration",
+      "description": "Skyblossoms"
     },
     {
       "id": "yellow_flowers",
@@ -5114,6 +5172,24 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "vegetation",
       "description": "Big Rock"
+    },
+    {
+      "id": "waystone_dormant",
+      "col": 1,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "structure",
+      "description": "Dormant Waystone"
+    },
+    {
+      "id": "waystone_humming",
+      "col": 1,
+      "row": 8,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "structure",
+      "description": "Humming Waystone"
     },
     {
       "id": "fallen_tree_vertical1",
@@ -5201,13 +5277,28 @@
       "layer": 3,
       "sheet": "decoration_medieval/decoration_medieval/decorations-medieval.png",
       "category": "structure",
-      "description": "Campfire (lit) — base with flames",
+      "description": "Campfire (lit) \u2014 base with flames",
       "frames": [
-        { "col": 8, "row": 48 },
-        { "col": 9, "row": 48 },
-        { "col": 10, "row": 48 },
-        { "col": 11, "row": 48 },
-        { "col": 12, "row": 48 }
+        {
+          "col": 8,
+          "row": 48
+        },
+        {
+          "col": 9,
+          "row": 48
+        },
+        {
+          "col": 10,
+          "row": 48
+        },
+        {
+          "col": 11,
+          "row": 48
+        },
+        {
+          "col": 12,
+          "row": 48
+        }
       ],
       "fps": 10
     },
@@ -5216,13 +5307,28 @@
       "layer": 4,
       "sheet": "decoration_medieval/decoration_medieval/decorations-medieval.png",
       "category": "structure",
-      "description": "Campfire (lit) — upper flame sparks",
+      "description": "Campfire (lit) \u2014 upper flame sparks",
       "frames": [
-        { "col": 8, "row": 47 },
-        { "col": 9, "row": 47 },
-        { "col": 10, "row": 47 },
-        { "col": 11, "row": 47 },
-        { "col": 12, "row": 47 }
+        {
+          "col": 8,
+          "row": 47
+        },
+        {
+          "col": 9,
+          "row": 47
+        },
+        {
+          "col": 10,
+          "row": 47
+        },
+        {
+          "col": 11,
+          "row": 47
+        },
+        {
+          "col": 12,
+          "row": 47
+        }
       ],
       "fps": 10
     },
@@ -5234,6 +5340,24 @@
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "vegetation",
       "description": "Log Pile"
+    },
+    {
+      "id": "supply_cache",
+      "col": 2,
+      "row": 108,
+      "layer": 3,
+      "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
+      "category": "structure",
+      "description": "Supply Cache"
+    },
+    {
+      "id": "fly_agaric",
+      "col": 2,
+      "row": 22,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "A bright red-capped mushroom with white spots"
     }
   ]
 }

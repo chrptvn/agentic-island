@@ -2,6 +2,20 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
+export interface HallucinationEffect {
+  /** Emotion pole to target, e.g. "anxious", "glad", "happy". */
+  emotionPole: string;
+  /** How much to shift the emotion when the hallucination starts (reversed on expiry). */
+  delta: number;
+}
+
+export interface HallucinationTrigger {
+  /** How long the hallucination lasts in milliseconds. */
+  durationMs: number;
+  /** Which emotion poles are affected and by how much. */
+  effects: HallucinationEffect[];
+}
+
 export interface EatDef {
   /** Hunger restored (can be negative for nausea). Default 0. */
   hunger?: number;
@@ -17,6 +31,8 @@ export interface EatDef {
   nearbyMessage?: string;
   /** Whether the item is consumed (removed from inventory). Default true. */
   consume?: boolean;
+  /** If present, triggers a hallucination effect for the given duration. */
+  hallucination?: HallucinationTrigger;
 }
 
 export interface SpecialItemAction {

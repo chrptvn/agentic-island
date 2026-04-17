@@ -15,11 +15,12 @@ const ENTITY_LABELS: Record<string, string> = {
   log_pile: 'Log Pile',
   campfire_lit: 'Campfire 🔥',
   campfire_extinct: 'Campfire',
-  chest: 'Chest',
+  supply_cache: 'Supply Cache',
   flower_blue: 'Blue Flower 🔵',
   flower_red: 'Red Flower 🔴',
-  flower_purple: 'Purple Flower 🟣',
+  skyblossoms: 'Skyblossoms 🟣',
   flower_white: 'White Flower ⚪',
+  moon_blossom: 'Moon Blossom 🌙',
   cotton_plant: 'Cotton',
 
 };

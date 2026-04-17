@@ -7,7 +7,7 @@ All game data lives in JSON files under `apps/island/config/`. Changes are hot-r
 | File | Purpose |
 |------|---------|
 | [tileset.json](#tilesetjson) | Sprite coordinates, sheet mappings, animation |
-| [entities.json](#entitiesjson) | Game objects — trees, campfires, chests, items |
+| [entities.json](#entitiesjson) | Game objects — trees, campfires, supply caches, items |
 | [item-defs.json](#item-defsjson) | Item capabilities and consumable effects |
 | [items.json](#itemsjson) | Item display emojis |
 | [recipes.json](#recipesjson) | Crafting recipes |
@@ -108,10 +108,10 @@ Defines all game objects with behavior, stats, and interactions.
 | Property | Used By | Purpose |
 |----------|---------|---------|
 | `growthStages` | Sprouts | `{ nextStage, growthMs }` — auto-growth |
-| `build` | Campfire, chest | `{ costs: { wood: 3 } }` — construction recipe |
+| `build` | Campfire, supply cache | `{ costs: { wood: 3 } }` — construction recipe |
 | `interact` | Campfire | Light/extinguish actions |
 | `decay` | Lit campfire | `{ ratePerSecond, fuelItem }` — health drain |
-| `container` | Chest, log pile | `{ maxItems, acceptedItems, rejectedItems }` |
+| `container` | Supply cache, log pile | `{ maxItems, acceptedItems, rejectedItems }` |
 | `energyRegen` | Campfire | Passive energy restoration nearby |
 
 ---

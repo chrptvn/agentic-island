@@ -378,7 +378,16 @@ export function handleIslandConnection(ws: WebSocket): void {
         case "sprite_update": {
           if (!core) return;
           if (msg.sprites?.length) {
-            const hash = await saveSprites(core.islandId, msg.sprites);
+            const batchHash = await saveSprites(core.islandId, msg.sprites);
+            // Combine with previous hash so the version reflects ALL sprites,
+            // not just this batch.  Prevents browser cache collisions when the
+            // same character reconnects across sessions with a different atlas.
+            const prev = spriteHashes.get(core.islandId) ?? "";
+            const hash = createHash("sha256")
+              .update(prev)
+              .update(batchHash)
+              .digest("hex")
+              .slice(0, 8);
             spriteHashes.set(core.islandId, hash);
 
             // Update cached map init so late-joining viewers get the correct sprite hash

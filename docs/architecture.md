@@ -186,7 +186,7 @@ GameRenderer (orchestrator)
 | 0 | Base terrain | grass, stone, water |
 | 1 | Ground cover | autotiled edges, decorations |
 | 2 | Paths | dirt roads created by characters |
-| 3 | Objects | trees, rocks, campfires, chests |
+| 3 | Objects | trees, rocks, campfires, supply caches |
 | 4 | Canopy | tree tops, roof overhangs |
 
 **Public API:**

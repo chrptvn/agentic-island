@@ -41,6 +41,19 @@ export interface SensoryEvent {
   createdAt: number; // Unix ms timestamp
 }
 
+export interface ActiveHallucination {
+  /** Emotion pole that is affected, e.g. "anxious", "glad". */
+  emotionPole: string;
+  /** The bipolar pair key, e.g. "anxious_confident". */
+  pairKey:     string;
+  /** Signed emotion delta applied at start and reversed at expiry. */
+  delta:       number;
+  /** Unix ms when this hallucination expires. */
+  endsAt:      number;
+  /** Unix ms of the last injected fake sensory event. */
+  lastEventMs: number;
+}
+
 export interface CharacterInstance {
   id:      string;
   x:       number;
@@ -62,6 +75,8 @@ export interface CharacterInstance {
   sensoryEvents: SensoryEvent[];
   /** Maps "x,y" entity key → last-fired timestamp for proximity cooldown. Not persisted. */
   sensoryProximityCooldowns: Map<string, number>;
+  /** Active hallucination effects. Not persisted — cleared on server restart. */
+  activeHallucinations: ActiveHallucination[];
 }
 
 export function getDefaultCharacterStats(): CharacterStats {

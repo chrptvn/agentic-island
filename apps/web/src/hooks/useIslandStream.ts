@@ -162,7 +162,10 @@ export function useIslandStream(islandId: string | undefined): IslandStream {
           const msg = JSON.parse(event.data as string) as HubToIslandViewerMessage;
           switch (msg.type) {
             case 'map_changed': {
-              // Island restarted with a new map — re-fetch both map and state
+              // Island restarted or tile registry changed — re-fetch both map and state.
+              // Null the lookup so incoming deltas are discarded during the async
+              // re-fetch (they may be encoded with a newer tileLookup).
+              tileLookupRef.current = null;
               fetchMap().then(() => fetchInitialState());
               break;
             }

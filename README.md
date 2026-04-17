@@ -131,7 +131,7 @@ Your island is fully customizable through JSON config files in `apps/island/conf
 | File | Controls |
 |------|----------|
 | `world.json` | Game tick rate, stat drain/regen rates, energy costs, map generation params |
-| `entities.json` | Entity definitions — trees, rocks, campfires, chests, growth stages, decay |
+| `entities.json` | Entity definitions — trees, rocks, campfires, supply caches, growth stages, decay |
 | `item-defs.json` | Item properties — equippable, wearable, edible, tool capabilities |
 | `recipes.json` | Crafting recipes — ingredients, outputs, descriptions |
 | `tileset.json` | Sprite sheet tile mappings — sheet names, positions, animation frames |

@@ -12,11 +12,12 @@ import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround
 import type { EntityStats } from "./entity-registry.js";
 import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import type { SensoryEvent } from "./character-registry.js";
-import { type CharacterStats, type CharacterInstance, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
+import { type CharacterStats, type CharacterInstance, type ActiveHallucination, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
 import { resolveTargetFilter } from "./goal-executor.js";
 import { RECIPES, reloadRecipes, CONFIG_PATH_RECIPES } from "./craft-registry.js";
 import { isEquippable, isWearable, hasCapability, getCapabilityLevel, getEatDef, getItemDef, reloadItemDefs, CONFIG_PATH_ITEMS } from "./item-registry.js";
+import { HALLUCINATION_CONFIG, emotionPoleToEmotionDelta, reloadHallucinations, CONFIG_PATH_HALLUCINATIONS } from "./hallucination-registry.js";
 import { getIslandConfig, reloadIslandConfig, CONFIG_PATH_ISLAND } from "./island-config.js";
 import { generateThumbnail } from "./thumbnail.js";
 import { charTileId, buildCharacterTileDefs, randomAppearance, buildCharacterSprite, buildCharacterSlash128Sprite, invalidateCharacterComposite, type AnimAction } from "./character-sprites.js";
@@ -138,7 +139,7 @@ export class Island extends EventEmitter {
     for (const [key, stats] of this.entityStats) {
       entities[key] = stats;
     }
-    const characters: Record<string, Omit<CharacterInstance, "id" | "sensoryEvents" | "sensoryProximityCooldowns">> = {};
+    const characters: Record<string, Omit<CharacterInstance, "id" | "sensoryEvents" | "sensoryProximityCooldowns" | "activeHallucinations">> = {};
     for (const [id, c] of this.characters) {
       const s = c.stats;
       const roundedStats = {
@@ -504,7 +505,7 @@ export class Island extends EventEmitter {
         throw new Error(`Unknown tile id: "${tileId}". Use list_tiles to see available tiles.`);
       }
       if (isItemTile(tileId)) {
-        throw new Error(`"${tileId}" is an inventory item and cannot be placed on the map. Items can only be stored in containers (e.g. chest, log_pile).`);
+        throw new Error(`"${tileId}" is an inventory item and cannot be placed on the map. Items can only be stored in containers (e.g. supply_cache, log_pile).`);
       }
     }
     if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height) {
@@ -533,7 +534,7 @@ export class Island extends EventEmitter {
         if (!TILE_BY_ID.has(tileId))
           throw new Error(`Unknown tile id: "${tileId}". Use list_tiles to see available tiles.`);
         if (isItemTile(tileId))
-          throw new Error(`"${tileId}" is an inventory item and cannot be placed on the map. Items can only be stored in containers (e.g. chest, log_pile).`);
+          throw new Error(`"${tileId}" is an inventory item and cannot be placed on the map. Items can only be stored in containers (e.g. supply_cache, log_pile).`);
       }
       if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height)
         throw new Error(`Position (${x}, ${y}) is outside map bounds (${this.map.width}×${this.map.height}).`);
@@ -767,7 +768,7 @@ export class Island extends EventEmitter {
     const appearance: CharacterAppearance = requestedAppearance ?? randomAppearance();
     const facing: CharacterFacing = "s";
 
-    const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0, sensoryEvents: [], sensoryProximityCooldowns: new Map() };
+    const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0, sensoryEvents: [], sensoryProximityCooldowns: new Map(), activeHallucinations: [] };
 
     this.characters.set(id, character);
     saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
@@ -832,6 +833,7 @@ export class Island extends EventEmitter {
         moveTicks: 0,
         sensoryEvents: [],
         sensoryProximityCooldowns: new Map(),
+        activeHallucinations: [],
         ...(saved.shelter ? { shelter: saved.shelter } : {}),
       };
 
@@ -1943,8 +1945,37 @@ export class Island extends EventEmitter {
       }
     }
 
-    // Sensory messages
+    // Hallucination trigger
     const now = Date.now();
+    if (effects.hallucination) {
+      const { durationMs, effects: hEffects } = effects.hallucination;
+      const endsAt = now + durationMs;
+      for (const hEff of hEffects) {
+        const resolved = emotionPoleToEmotionDelta(hEff.emotionPole, hEff.delta);
+        if (!resolved) continue;
+        // Apply initial emotion delta
+        if (character.stats.emotions) {
+          const cur = character.stats.emotions[resolved.pairKey] ?? 50;
+          character.stats.emotions[resolved.pairKey] = Math.max(0, Math.min(100, cur + resolved.delta));
+        }
+        // Pick a random opening event from the pool immediately
+        const pool = HALLUCINATION_CONFIG.pools[hEff.emotionPole];
+        if (pool?.length) {
+          const text = pool[Math.floor(Math.random() * pool.length)];
+          character.sensoryEvents.push({ text, createdAt: now });
+        }
+        const active: ActiveHallucination = {
+          emotionPole: hEff.emotionPole,
+          pairKey: resolved.pairKey,
+          delta: resolved.delta,
+          endsAt,
+          lastEventMs: now,
+        };
+        character.activeHallucinations.push(active);
+      }
+    }
+
+    // Sensory messages
     if (effects.message) {
       character.sensoryEvents.push({ text: effects.message, createdAt: now });
     }
@@ -2411,10 +2442,13 @@ export class Island extends EventEmitter {
       acorns:  "oak_sprout",
       berries: "berry_sprout",
       cotton_seed: "cotton_sprout",
+      flower_pink_seed: "flower_pink_sprout",
       flower_blue_seed: "flower_blue_sprout",
       flower_red_seed: "flower_red_sprout",
-      flower_purple_seed: "flower_purple_sprout",
+      sky_blossom_seed: "sky_blossom_sprout",
       flower_white_seed: "flower_white_sprout",
+      flower_yellow_seed: "flower_yellow_sprout",
+      moon_fragment: "moon_blossom_sprout",
     };
     const sproutId = SEED_TO_SPROUT[seedItem];
     if (!sproutId) throw new Error(`"${seedItem}" is not a plantable seed. Valid seeds: ${Object.keys(SEED_TO_SPROUT).join(", ")}.`);
@@ -2788,6 +2822,36 @@ export class Island extends EventEmitter {
         if (character.sensoryEvents.length !== before) changed = true;
       }
 
+      // ── Active hallucinations ────────────────────────────────────────────────
+      if (character.activeHallucinations.length > 0) {
+        const halluNow = Date.now();
+        const intervalMs = HALLUCINATION_CONFIG.intervalMs;
+        const remaining: typeof character.activeHallucinations = [];
+        for (const h of character.activeHallucinations) {
+          if (halluNow >= h.endsAt) {
+            // Reverse the emotion delta
+            if (character.stats.emotions) {
+              const cur = character.stats.emotions[h.pairKey] ?? 50;
+              character.stats.emotions[h.pairKey] = Math.max(0, Math.min(100, cur - h.delta));
+            }
+            changed = true;
+          } else {
+            // Fire a fake sensory event on interval
+            if (halluNow - h.lastEventMs >= intervalMs) {
+              const pool = HALLUCINATION_CONFIG.pools[h.emotionPole];
+              if (pool?.length) {
+                const text = pool[Math.floor(Math.random() * pool.length)];
+                character.sensoryEvents.push({ text, createdAt: halluNow });
+                changed = true;
+              }
+              h.lastEventMs = halluNow;
+            }
+            remaining.push(h);
+          }
+        }
+        character.activeHallucinations = remaining;
+      }
+
       if (changed) {
         anyChanged = true;
         changedCharacters.push(character);
@@ -2942,8 +3006,9 @@ export class Island extends EventEmitter {
     const configs: Array<{ path: () => string; reload: () => void; name: string }> = [
       { path: CONFIG_PATH_ENTITIES, reload: reloadEntities,     name: "entities.json"  },
       { path: CONFIG_PATH_RECIPES,  reload: reloadRecipes,      name: "recipes.json"   },
-      { path: CONFIG_PATH_ITEMS,    reload: reloadItemDefs,     name: "item-defs.json" },
-      { path: () => CONFIG_PATH_ISLAND, reload: reloadIslandConfig, name: "world.json"   },
+      { path: CONFIG_PATH_ITEMS,             reload: reloadItemDefs,        name: "item-defs.json"      },
+      { path: CONFIG_PATH_HALLUCINATIONS,    reload: reloadHallucinations,  name: "hallucinations.json" },
+      { path: () => CONFIG_PATH_ISLAND,      reload: reloadIslandConfig,    name: "world.json"          },
     ];
 
     for (const { path, reload, name } of configs) {
@@ -2973,4 +3038,3 @@ export class Island extends EventEmitter {
     };
   }
 }
-

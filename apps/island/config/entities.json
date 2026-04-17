@@ -1,18 +1,6 @@
 {
   "entities": [
     {
-      "id": "berries",
-      "name": "Berries",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "berries"
-        }
-      ]
-    },
-    {
       "id": "big_tree_light",
       "name": "Big Light Tree",
       "tiles": [
@@ -678,16 +666,10 @@
         "dried_grass": {
           "min": 0,
           "max": 1
-        },
-        "candy_wrapper": {
-          "min": 0,
-          "max": 1
         }
       },
       "harvest": {
-        "fullBase": "plant",
-        "emptyBase": "plant",
-        "regrowMs": 180000
+        "fullBase": "plant"
       }
     },
     {
@@ -717,11 +699,7 @@
           "min": 0,
           "max": 1
         },
-        "candy_wrapper": {
-          "min": 0,
-          "max": 1
-        },
-        "mitten": {
+        "flint": {
           "min": 0,
           "max": 1
         }
@@ -734,7 +712,7 @@
     },
     {
       "id": "plant_cluster",
-      "name": "Plant Cluster",
+      "name": "White Flowers",
       "tiles": [
         {
           "dx": 0,
@@ -748,35 +726,26 @@
         "noForest": true
       },
       "stats": {
-        "flower_white": 1
+        "flower_white": 1,
+        "flower_white_seed": 1
       },
       "randomStats": {
         "flower_white": {
           "min": 1,
           "max": 3
         },
-        "wild_herb": {
-          "min": 0,
-          "max": 1
-        },
-        "three_leaf_clover": {
-          "min": 0,
-          "max": 1
-        },
-        "jar_of_nothing": {
-          "min": 0,
-          "max": 1
+        "flower_white_seed": {
+          "min": 1,
+          "max": 2
         }
       },
       "harvest": {
-        "fullBase": "white_flowers",
-        "emptyBase": "white_flowers",
-        "regrowMs": 180000
+        "fullBase": "white_flowers"
       }
     },
     {
       "id": "flowers_mixed",
-      "name": "Mixed Flowers",
+      "name": "Pink Flowers",
       "tiles": [
         {
           "dx": 0,
@@ -790,30 +759,21 @@
         "noForest": true
       },
       "stats": {
-        "flower_pink": 1
+        "flower_pink": 1,
+        "flower_pink_seed": 1
       },
       "randomStats": {
         "flower_pink": {
           "min": 1,
           "max": 3
         },
-        "feather": {
-          "min": 0,
-          "max": 1
-        },
-        "cracked_lens": {
-          "min": 0,
-          "max": 1
-        },
-        "toy_sword": {
-          "min": 0,
-          "max": 1
+        "flower_pink_seed": {
+          "min": 1,
+          "max": 2
         }
       },
       "harvest": {
-        "fullBase": "pink_flowers",
-        "emptyBase": "pink_flowers",
-        "regrowMs": 180000
+        "fullBase": "pink_flowers"
       },
       "proximityTrigger": {
         "message": "You catch a sweet floral scent."
@@ -835,30 +795,21 @@
         "noForest": true
       },
       "stats": {
-        "flower_blue": 1
+        "flower_blue": 1,
+        "flower_blue_seed": 1
       },
       "randomStats": {
         "flower_blue": {
           "min": 1,
           "max": 3
         },
-        "wild_herb": {
-          "min": 0,
-          "max": 1
-        },
-        "message_in_a_bottle": {
-          "min": 0,
-          "max": 1
-        },
-        "moon_fragment": {
-          "min": 0,
-          "max": 1
+        "flower_blue_seed": {
+          "min": 1,
+          "max": 2
         }
       },
       "harvest": {
-        "fullBase": "blue_flowers",
-        "emptyBase": "blue_flowers",
-        "regrowMs": 180000
+        "fullBase": "blue_flowers"
       },
       "proximityTrigger": {
         "message": "A delicate floral fragrance drifts by."
@@ -880,30 +831,21 @@
         "noForest": true
       },
       "stats": {
-        "flower_yellow": 1
+        "flower_yellow": 1,
+        "flower_yellow_seed": 1
       },
       "randomStats": {
         "flower_yellow": {
           "min": 1,
           "max": 3
         },
-        "feather": {
-          "min": 0,
-          "max": 1
-        },
-        "coin": {
-          "min": 0,
-          "max": 1
-        },
-        "bottlecap": {
-          "min": 0,
-          "max": 1
+        "flower_yellow_seed": {
+          "min": 1,
+          "max": 2
         }
       },
       "harvest": {
-        "fullBase": "yellow_flowers",
-        "emptyBase": "yellow_flowers",
-        "regrowMs": 180000
+        "fullBase": "yellow_flowers"
       },
       "proximityTrigger": {
         "message": "The air smells faintly of honey and petals."
@@ -930,10 +872,6 @@
         "mushroom": {
           "min": 1,
           "max": 3
-        },
-        "suspicious_mushroom": {
-          "min": 0,
-          "max": 1
         }
       },
       "harvest": {
@@ -1121,7 +1059,9 @@
         "healthPerFuel": 10
       },
       "interact": {
-        "costs": {},
+        "costs": {
+          "firestarter_kit": 1
+        },
         "result": "campfire_lit",
         "preserveHealth": true,
         "minHealth": 10
@@ -1176,17 +1116,30 @@
       }
     },
     {
-      "id": "chest",
-      "name": "Chest",
+      "id": "supply_cache",
+      "name": "Supply Cache",
       "tiles": [
         {
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "chest"
+          "tileId": "supply_cache"
         }
       ],
-      "blocks": true
+      "blocks": true,
+      "build": {
+        "costs": {
+          "wood": 2,
+          "branches": 4,
+          "vine": 2
+        }
+      },
+      "container": true,
+      "maxItems": 40,
+      "proximityTrigger": {
+        "message": "Someone has stacked useful supplies here.",
+        "radius": 1
+      }
     },
     {
       "id": "log_pile",
@@ -1276,20 +1229,10 @@
         "vine": {
           "min": 0,
           "max": 1
-        },
-        "rusty_nail": {
-          "min": 0,
-          "max": 1
-        },
-        "expired_map": {
-          "min": 0,
-          "max": 1
         }
       },
       "harvest": {
-        "fullBase": "dead_plant",
-        "emptyBase": "dead_plant",
-        "regrowMs": 240000
+        "fullBase": "dead_plant"
       }
     },
     {
@@ -1314,10 +1257,6 @@
         "purple_mushroom": {
           "min": 1,
           "max": 3
-        },
-        "suspicious_mushroom": {
-          "min": 0,
-          "max": 1
         }
       },
       "harvest": {
@@ -1325,6 +1264,37 @@
       },
       "proximityTrigger": {
         "message": "Something smells... strange. Slightly sweet, slightly wrong."
+      }
+    },
+    {
+      "id": "fly_agaric",
+      "name": "Fly Agaric",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "fly_agaric"
+        }
+      ],
+      "blocks": false,
+      "spawn": {
+        "weight": 0.15
+      },
+      "stats": {
+        "suspicious_mushroom": 1
+      },
+      "randomStats": {
+        "suspicious_mushroom": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "fly_agaric"
+      },
+      "proximityTrigger": {
+        "message": "A vivid red cap dotted with white spots catches your eye. It looks beautiful... and dangerous."
       }
     },
     {
@@ -1372,11 +1342,7 @@
           "tileId": "sprout"
         }
       ],
-      "blocks": false,
-      "spawn": {
-        "weight": 1.0,
-        "noForest": true
-      }
+      "blocks": false
     },
     {
       "id": "carrot_sprout",
@@ -1393,6 +1359,10 @@
       "spawn": {
         "weight": 0.5,
         "noForest": true
+      },
+      "growthStages": {
+        "nextStage": "carrot",
+        "growthMs": 120000
       }
     },
     {
@@ -1439,6 +1409,10 @@
       "spawn": {
         "weight": 0.5,
         "noForest": true
+      },
+      "growthStages": {
+        "nextStage": "lettuce",
+        "growthMs": 120000
       }
     },
     {
@@ -1485,6 +1459,10 @@
       "spawn": {
         "weight": 0.4,
         "noForest": true
+      },
+      "growthStages": {
+        "nextStage": "pumpkin",
+        "growthMs": 180000
       }
     },
     {
@@ -1531,6 +1509,10 @@
       "spawn": {
         "weight": 0.4,
         "noForest": true
+      },
+      "growthStages": {
+        "nextStage": "cabbage",
+        "growthMs": 180000
       }
     },
     {
@@ -1577,11 +1559,15 @@
       "spawn": {
         "weight": 0.4,
         "noForest": true
+      },
+      "growthStages": {
+        "nextStage": "berry_bush_empty",
+        "growthMs": 180000
       }
     },
     {
       "id": "berry_bush_empty",
-      "name": "Berry Bush (Empty)",
+      "name": "Berry Bush",
       "tiles": [
         {
           "dx": 0,
@@ -1598,7 +1584,7 @@
     },
     {
       "id": "berry_bush_full",
-      "name": "Berry Bush (Full)",
+      "name": "Berry Bush",
       "tiles": [
         {
           "dx": 0,
@@ -1619,14 +1605,6 @@
         "berries": {
           "min": 2,
           "max": 5
-        },
-        "wild_herb": {
-          "min": 0,
-          "max": 1
-        },
-        "bottle": {
-          "min": 0,
-          "max": 1
         }
       },
       "harvest": {
@@ -1636,6 +1614,408 @@
       },
       "proximityTrigger": {
         "message": "You smell ripe berries nearby."
+      }
+    },
+    {
+      "id": "oak_sprout",
+      "name": "Oak Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "oak_sapling",
+        "growthMs": 120000
+      }
+    },
+    {
+      "id": "oak_sapling",
+      "name": "Oak Sapling",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "bush_light"
+        }
+      ],
+      "blocks": true,
+      "growthStages": {
+        "nextStage": "small_tree_light",
+        "growthMs": 300000
+      }
+    },
+    {
+      "id": "berry_sprout",
+      "name": "Berry Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "berry_bush_sprout",
+        "growthMs": 120000
+      }
+    },
+    {
+      "id": "cotton_sprout",
+      "name": "Cotton Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "cotton_patch",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_pink_sprout",
+      "name": "Pink Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "flowers_mixed",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_blue_sprout",
+      "name": "Blue Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "flowers_blue",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_red_sprout",
+      "name": "Red Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "red_flowers",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "sky_blossom_sprout",
+      "name": "Skyblossom Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "skyblossoms",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_white_sprout",
+      "name": "White Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "white_flowers_patch",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "flower_yellow_sprout",
+      "name": "Yellow Flower Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "flowers_yellow",
+        "growthMs": 180000
+      }
+    },
+    {
+      "id": "cotton_patch",
+      "name": "Cotton Patch",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "cotton_patch"
+        }
+      ],
+      "spawn": {
+        "weight": 0.4,
+        "noForest": true
+      },
+      "stats": {
+        "cotton": 2
+      },
+      "randomStats": {
+        "cotton": {
+          "min": 1,
+          "max": 3
+        },
+        "cotton_seed": {
+          "min": 0,
+          "max": 1
+        }
+      },
+      "harvest": {
+        "fullBase": "cotton_patch"
+      }
+    },
+    {
+      "id": "red_flowers",
+      "name": "Red Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "red_flowers"
+        }
+      ],
+      "spawn": {
+        "weight": 0.6,
+        "noForest": true
+      },
+      "stats": {
+        "flower_red": 1,
+        "flower_red_seed": 1
+      },
+      "randomStats": {
+        "flower_red": {
+          "min": 1,
+          "max": 3
+        },
+        "flower_red_seed": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "red_flowers"
+      }
+    },
+    {
+      "id": "skyblossoms",
+      "name": "Skyblossoms",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "skyblossoms"
+        }
+      ],
+      "spawn": {
+        "weight": 0.4,
+        "noForest": true
+      },
+      "stats": {
+        "sky_blossom": 1,
+        "sky_blossom_seed": 1
+      },
+      "randomStats": {
+        "sky_blossom": {
+          "min": 1,
+          "max": 3
+        },
+        "sky_blossom_seed": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "skyblossoms"
+      }
+    },
+    {
+      "id": "white_flowers_patch",
+      "name": "White Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "white_flowers_patch"
+        }
+      ],
+      "spawn": {
+        "weight": 0.8,
+        "noForest": true
+      },
+      "stats": {
+        "flower_white": 1,
+        "flower_white_seed": 1
+      },
+      "randomStats": {
+        "flower_white": {
+          "min": 1,
+          "max": 3
+        },
+        "flower_white_seed": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "white_flowers_patch"
+      }
+    },
+    {
+      "id": "moon_blossom_sprout",
+      "name": "Moon Blossom Sprout",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sprout"
+        }
+      ],
+      "blocks": false,
+      "growthStages": {
+        "nextStage": "moon_blossom",
+        "growthMs": 240000
+      }
+    },
+    {
+      "id": "moon_blossom",
+      "name": "Moon Blossom",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "moon_blossom"
+        }
+      ],
+      "blocks": false,
+      "stats": {
+        "moon_blossom": 1,
+        "moon_blossom_seed": 1
+      },
+      "randomStats": {
+        "moon_blossom": {
+          "min": 1,
+          "max": 2
+        },
+        "moon_blossom_seed": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "harvest": {
+        "fullBase": "moon_blossom"
+      },
+      "proximityTrigger": {
+        "message": "A pale lunar shimmer clings to the flower.",
+        "radius": 1
+      }
+    },
+    {
+      "id": "waystone_dormant",
+      "name": "Dormant Waystone",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "waystone_dormant"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 0.03,
+        "noForest": true
+      },
+      "interact": {
+        "costs": {
+          "mysterious_key": 1
+        },
+        "result": "waystone_humming"
+      },
+      "proximityTrigger": {
+        "message": "The air grows strangely still around this stone.",
+        "radius": 2
+      },
+      "interactionEffect": {
+        "message": "The key turns with a soft click. The stone answers with a low hum.",
+        "nearbyMessage": "A low hum rolls out from a nearby stone.",
+        "radius": 4
+      }
+    },
+    {
+      "id": "waystone_humming",
+      "name": "Humming Waystone",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "waystone_humming"
+        }
+      ],
+      "blocks": true,
+      "energyRegen": 2.5,
+      "proximityTrigger": {
+        "message": "A steady hum settles your nerves. Rest comes easier here.",
+        "radius": 2
       }
     }
   ]

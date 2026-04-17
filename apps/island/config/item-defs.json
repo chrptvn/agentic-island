@@ -112,7 +112,7 @@
     "equippable": false,
     "wearable": null
   },
-  "flower_purple": {
+  "sky_blossom": {
     "equippable": false,
     "wearable": null
   },
@@ -128,11 +128,19 @@
     "equippable": false,
     "wearable": null
   },
-  "flower_purple_seed": {
+  "flower_pink_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "sky_blossom_seed": {
     "equippable": false,
     "wearable": null
   },
   "flower_white_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "flower_yellow_seed": {
     "equippable": false,
     "wearable": null
   },
@@ -853,7 +861,14 @@
       "health": -10,
       "message": "You swallow the suspicious mushroom. Your stomach lurches — that was a terrible idea.",
       "nearbyMessage": "Someone just ate a suspicious mushroom and looks like they immediately regret it.",
-      "emotions": [{ "key": "joy", "delta": -15 }, { "key": "fear", "delta": 10 }]
+      "emotions": [{ "key": "joy", "delta": -15 }, { "key": "fear", "delta": 10 }],
+      "hallucination": {
+        "durationMs": 300000,
+        "effects": [
+          { "emotionPole": "anxious", "delta": 30 },
+          { "emotionPole": "happy", "delta": 25 }
+        ]
+      }
     },
     "special": [
       {
@@ -907,6 +922,400 @@
     "wearable": null,
     "eat": {
       "hunger": 10
+    }
+  },
+  "bark": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "peel",
+        "description": "Run your thumb along the bark's rough edge.",
+        "message": "The bark flakes under your thumb. It smells dry and woody."
+      }
+    ]
+  },
+  "vine": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "braid",
+        "description": "Twist the vine into a rough cord.",
+        "message": "You twist the vine between your fingers. It feels stubborn but useful."
+      }
+    ]
+  },
+  "feather": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "brush",
+        "description": "Brush the feather across your palm.",
+        "message": "The feather is impossibly soft. For a moment the island feels gentle."
+      }
+    ]
+  },
+  "moss": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "press",
+        "description": "Squeeze the moss in your hand.",
+        "message": "The moss is cool and damp. It holds the smell of shade and stone."
+      }
+    ]
+  },
+  "pine_cone": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "roll",
+        "description": "Roll the pine cone in your palm.",
+        "message": "The pine cone pricks your skin and leaves a resin smell behind."
+      }
+    ]
+  },
+  "sap": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "sniff",
+        "description": "Lift the sticky sap to your nose.",
+        "message": "The sap smells sharp and sweet, like sun-warmed bark."
+      }
+    ]
+  },
+  "dried_grass": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "crumble",
+        "description": "Rub the dried grass between your fingers.",
+        "message": "It crackles into dust. Good tinder, bad bedding."
+      }
+    ]
+  },
+  "reed": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "whistle",
+        "description": "Blow softly across the reed.",
+        "message": "A thin note slips out of the reed.",
+        "nearbyMessage": "You hear someone coax a soft whistle from a reed nearby.",
+        "radius": 4
+      }
+    ]
+  },
+  "pebble": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "skip",
+        "description": "Practice the perfect lake-skip in the air.",
+        "message": "You weigh the pebble in your hand and imagine the throw.",
+        "nearbyMessage": "Someone nearby is fussing over a pebble like it matters deeply.",
+        "radius": 3
+      }
+    ]
+  },
+  "flint": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "strike",
+        "description": "Tap the flint and watch for sparks.",
+        "message": "A tiny spark snaps from the flint. Useful.",
+        "nearbyMessage": "You hear the dry click of stone on stone nearby.",
+        "radius": 3
+      }
+    ]
+  },
+  "clay": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "knead",
+        "description": "Work the clay in your fingers.",
+        "message": "The clay yields slowly. It wants shape."
+      }
+    ]
+  },
+  "coin": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "flip",
+        "description": "Flip the coin and catch it.",
+        "message": "The coin flashes once and lands back in your palm."
+      }
+    ]
+  },
+  "ancient_coin": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "polish",
+        "description": "Rub the ancient coin clean.",
+        "message": "Worn markings glint through the grime. You still can't place them."
+      }
+    ]
+  },
+  "mysterious_key": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "listen",
+        "description": "Hold the key up and listen to the metal.",
+        "message": "The key is cold and heavy. It feels like it belongs somewhere important."
+      }
+    ]
+  },
+  "broken_compass": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "orient",
+        "description": "Turn the broken compass in your hands.",
+        "message": "The needle stutters and fails. Whatever guided it is long gone."
+      }
+    ]
+  },
+  "compass_needle": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "balance",
+        "description": "Try to balance the compass needle on a fingertip.",
+        "message": "The needle quivers, twitching toward a direction you can't trust."
+      }
+    ]
+  },
+  "cracked_lens": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "peer",
+        "description": "Peer through the cracked glass.",
+        "message": "The world splits at the fracture and recombines stranger than before."
+      }
+    ]
+  },
+  "crystal_shard": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "catchlight",
+        "description": "Turn the shard until it catches the light.",
+        "message": "The shard answers with a cold gleam."
+      }
+    ]
+  },
+  "tiny_anchor": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "weigh",
+        "description": "Feel the tiny anchor in your hand.",
+        "message": "It's heavier than it looks, like it remembers the sea."
+      }
+    ]
+  },
+  "love_letter": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "read",
+        "description": "Read the love letter one more time.",
+        "message": "The letter is worn soft at the folds. Someone cared enough to keep it close."
+      }
+    ]
+  },
+  "message_in_a_bottle": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "uncork",
+        "description": "Try to free the note inside.",
+        "message": "The glass is fogged, but the note inside is real. Someone meant to be found."
+      }
+    ]
+  },
+  "moon_fragment": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "gaze",
+        "description": "Hold the fragment up to the light.",
+        "message": "The fragment glows faintly at the edges, as if moonlight got trapped in it."
+      }
+    ]
+  },
+  "moon_blossom": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "smell",
+        "description": "Breathe in the moon blossom's cool scent.",
+        "message": "The moon blossom smells cold and clear, like midnight air after rain."
+      }
+    ]
+  },
+  "moon_blossom_seed": {
+    "equippable": false,
+    "wearable": null
+  },
+  "miniature_portrait": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "study",
+        "description": "Study the tiny portrait closely.",
+        "message": "The painted face is almost rubbed away, but the eyes still feel familiar."
+      }
+    ]
+  },
+  "pocket_diary": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "read",
+        "description": "Flip through the pocket diary.",
+        "message": "Most of the diary is unreadable from damp, but a few stubborn lines remain."
+      }
+    ]
+  },
+  "three_leaf_clover": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "tuck",
+        "description": "Tuck the clover behind your ear for luck.",
+        "message": "You tuck the clover away. It feels silly. It still helps."
+      }
+    ]
+  },
+  "pressed_fern": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "trace",
+        "description": "Trace the pressed fern with one finger.",
+        "message": "The fern is fragile as old paper, but the shape still holds."
+      }
+    ]
+  },
+  "expired_map": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "unfold",
+        "description": "Unfold the old map carefully.",
+        "message": "The map is water-damaged and out of date, but a few landmarks still whisper of routes."
+      }
+    ]
+  },
+  "rusty_nail": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "turn",
+        "description": "Turn the rusty nail over in your fingers.",
+        "message": "The nail stains your fingertips orange."
+      }
+    ]
+  },
+  "shed_fang": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "inspect",
+        "description": "Inspect the shed fang closely.",
+        "message": "The fang is old and hollow at the root. Something out here grew it."
+      }
+    ]
+  },
+  "bent_spoon": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "reflect",
+        "description": "Peer at your face in the bent spoon.",
+        "message": "Your reflection comes back warped and lopsided."
+      }
+    ]
+  },
+  "flower_pink": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "smell",
+        "description": "Lift the pink flower to your nose.",
+        "message": "The pink flower smells light and bright."
+      }
+    ]
+  },
+  "flower_yellow": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "smell",
+        "description": "Lift the yellow flower to your nose.",
+        "message": "The yellow flower smells warm, sweet, and a little wild."
+      }
+    ]
+  },
+  "firestarter_kit": {
+    "equippable": false,
+    "wearable": null,
+    "special": [
+      {
+        "verb": "check",
+        "description": "Check the flint, bark, and tinder bundle.",
+        "message": "Everything is dry enough. You could get a fire going with this."
+      }
+    ]
+  },
+  "herbal_tonic": {
+    "equippable": false,
+    "wearable": null,
+    "eat": {
+      "hunger": 5,
+      "health": 12,
+      "message": "You drink the bitter herbal tonic. It steadies you.",
+      "nearbyMessage": "Someone nearby drinks something bitter and exhales like they needed it."
     }
   },
   "last_donut": {

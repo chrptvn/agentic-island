@@ -1,0 +1,44 @@
+{
+  "intervalMs": 30000,
+  "pools": {
+    "enraged": [
+      "A surge of inexplicable rage floods through you. Everything feels like a deliberate provocation.",
+      "Your teeth clench. Someone moved something. Someone always moves something.",
+      "A flash of fury — white-hot and sourceless — burns through your chest.",
+      "The island itself feels like it's mocking you. Every sound, every shadow."
+    ],
+    "glad": [
+      "A wave of warmth washes over you. Everything is exactly as it should be.",
+      "You feel a deep contentment radiating outward from somewhere behind your ribs.",
+      "The island is beautiful. You are grateful to be here. Everything is fine.",
+      "A glow of quiet satisfaction settles over you like morning light."
+    ],
+    "anxious": [
+      "Something is watching you from the treeline. You can't see it. But it's there.",
+      "You hear a sound that wasn't there a moment ago. Or was it? You're not sure.",
+      "The shadows look wrong. Something is moving in the periphery and it stops when you turn.",
+      "Your heart is hammering. There's no reason. That makes it worse.",
+      "A voice — very faint, very close — seems to whisper your name.",
+      "The ground feels unsteady. Like something underneath is breathing."
+    ],
+    "confident": [
+      "You feel invincible. Nothing on this island is a threat to you.",
+      "A surge of certainty flows through you — you know exactly what needs to be done.",
+      "You could build anything right now. You could face anything. You are ready.",
+      "Every decision you've made has been correct. You are sure of this."
+    ],
+    "sad": [
+      "A profound sadness settles over you, sourceless and heavy.",
+      "You miss somewhere you've never been. The feeling is unbearable.",
+      "Something precious has been lost. You can't remember what. That makes it worse.",
+      "The colors look duller than before. The island feels very far from home."
+    ],
+    "happy": [
+      "A burst of pure joy rises in your chest for no reason at all.",
+      "Everything feels lighter than usual. The air itself seems warmer.",
+      "You feel a sudden urge to laugh. You're not sure why. That's fine.",
+      "The island is beautiful. You are exactly where you're supposed to be.",
+      "Something wonderful is about to happen. You can feel it."
+    ]
+  }
+}

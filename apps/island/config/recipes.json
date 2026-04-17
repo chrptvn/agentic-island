@@ -39,6 +39,28 @@
       },
       "description": "A simple wooden plow \u2014 till soil into dirt paths faster"
     },
+    "firestarter_kit": {
+      "ingredients": {
+        "flint": 1,
+        "bark": 1,
+        "dried_grass": 1
+      },
+      "output": {
+        "firestarter_kit": 1
+      },
+      "description": "A dry bundle of tinder and flint for lighting campfires"
+    },
+    "herbal_tonic": {
+      "ingredients": {
+        "moss": 1,
+        "wild_herb": 2,
+        "berries": 1
+      },
+      "output": {
+        "herbal_tonic": 1
+      },
+      "description": "A bitter restorative brewed from herbs, moss, and berries"
+    },
     "fabric": {
       "ingredients": {
         "cotton": 3
@@ -71,12 +93,12 @@
     "purple_fabric": {
       "ingredients": {
         "fabric": 1,
-        "flower_purple": 2
+        "sky_blossom": 2
       },
       "output": {
         "purple_fabric": 1
       },
-      "description": "Dye fabric purple with purple flowers"
+      "description": "Dye fabric purple with skyblossoms"
     },
     "green_fabric": {
       "ingredients": {

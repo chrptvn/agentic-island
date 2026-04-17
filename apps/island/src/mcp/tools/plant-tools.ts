@@ -8,9 +8,9 @@ const BASE_URL = `http://localhost:${process.env.ISLAND_PORT ?? 3002}`;
 export function registerPlantTools(server: McpServer, session: McpSession): void {
   server.tool(
     "plant_seed",
-    "Plant a seed at the character's current position. Consumes 1 seed from inventory and places a sprout that grows into a full tree over time (2 min → bigger sprout, then 5 min → mature tree). Character must be standing on an empty grass cell.",
+    "Plant a seed at the character's current position. Consumes 1 seed from inventory and places a sprout that grows over time into a tree, bush, flower patch, cotton patch, or moon blossom depending on the seed. Character must be standing on an empty grass cell.",
     {
-      seed_item: z.enum(["acorns", "berries", "cotton_seed", "flower_blue_seed", "flower_red_seed", "flower_purple_seed", "flower_white_seed"]).describe("The seed to plant: 'acorns' grows an oak tree, 'berries' grows a berry tree, 'cotton_seed' grows a cotton plant, 'flower_*_seed' grows a flower of that color"),
+      seed_item: z.enum(["acorns", "berries", "cotton_seed", "flower_pink_seed", "flower_blue_seed", "flower_red_seed", "sky_blossom_seed", "flower_white_seed", "flower_yellow_seed", "moon_fragment"]).describe("The seed to plant: 'acorns' grows an oak tree, 'berries' grows a berry bush, 'cotton_seed' grows a cotton patch, flower seeds grow their matching flower patch, and 'moon_fragment' grows a moon blossom (the only way to grow one)"),
     },
     async ({ seed_item }) => {
       const check = requireCharacter(session);

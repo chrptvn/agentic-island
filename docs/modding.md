@@ -4,7 +4,7 @@ All game data lives in `apps/island/config/`. The island process **hot-reloads**
 
 | File | What it controls |
 |---|---|
-| `entities.json` | Every world object (trees, rocks, campfire, chest, etc.) |
+| `entities.json` | Every world object (trees, rocks, campfire, supply cache, etc.) |
 | `item-defs.json` | Item behaviour (equippable, capabilities, eat effects, specials) |
 | `items.json` | Item display emoji in the UI |
 | `recipes.json` | Crafting recipes |
@@ -129,13 +129,13 @@ Each entry in `tiles` places one sprite relative to the entity's anchor cell `(0
 | Trees (big) | `tree_light0–3`, `tree_dark0–3`, `tree_orange0–3`, `tree_dead0–3` |
 | Trees (small) | `bush_light`, `bush_dark`, `bush_orange`, `bush_dead` |
 | Stumps & logs | `small_stump`, `large_stump`, `fallen_tree_horrizontal0–1`, `fallen_tree_vertical0–1`, `log_pile` |
-| Plants | `plant`, `grass_patch`, `dead_plant`, `dead_grass_patch`, `sprout` |
-| Flowers | `white_flowers`, `pink_flowers`, `blue_flowers`, `yellow_flowers` |
+| Plants | `plant`, `cotton_patch`, `grass_patch`, `dead_plant`, `dead_grass_patch`, `sprout` |
+| Flowers | `white_flowers`, `white_flowers_patch`, `moon_blossom`, `pink_flowers`, `red_flowers`, `blue_flowers`, `skyblossoms`, `yellow_flowers` |
 | Mushrooms | `orange_mushrooms`, `purple_mushrooms` |
 | Rocks | `small_rock`, `big_rock`, `rock_small`, `rock_large` |
 | Crops | `carrot`, `lettuce`, `pumpkin`, `cabbage` |
 | Bushes | `berry_bush_empty`, `berry_bush_full` |
-| Structures | `campfire_extinct`, `campfire_lit`, `campfire_lit_top`, `chest` |
+| Structures | `campfire_extinct`, `campfire_lit`, `campfire_lit_top`, `supply_cache`, `waystone_dormant`, `waystone_humming` |
 | Water plants | `lily_pad_small`, `lily_pad_big`, `berries` |
 
 ---
@@ -410,4 +410,4 @@ Structure: `{ "recipes": { "<output_item>": { ... } } }`
 - **IDs must be unique** across all entities. Duplicate IDs will silently overwrite each other.
 - **`tileId` must exist** in `tileset.json`. Using an unknown tile ID will render nothing or cause errors.
 - **Hot reload** applies to new and modified entities. The world map itself is NOT regenerated — spawned entities and overrides persist. Changes only affect new spawns and entities placed by the build tool.
-- The `chest` entity has no tile in the current `tileset.json`. It is referenced but not rendered. Add custom rendering by mapping it to an existing tile.
+- The old `chest` entity has been replaced by `supply_cache`, which reuses an existing visible tile and works as a real buildable container.
