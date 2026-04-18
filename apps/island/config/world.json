@@ -32,13 +32,17 @@
     "grassThreshold": 5,
     "waterThreshold": 4,
     "gapFillPasses": 10,
-    "lakeProbability": 0.005,
-    "lakeRadiusMin": 4,
-    "lakeRadiusMax": 8,
+    "lakeProbability": 0.001,
+    "lakeRadiusMin": 8,
+    "lakeRadiusMax": 20,
     "vegetationDensity": 0.1,
     "sandSeedProb": 0.05,
     "sandGrowProb": 2,
     "sandMaxDepth": 2,
+    "gapFillThreshold": 3,
+    "biomeBorderMargin": 2,
+    "sandSeedDistance": 1,
+    "sandGrowProbWave3": 0.55,
     "biomes": [
       {
         "id": "forest",
@@ -64,5 +68,48 @@
       }
     ],
     "lilyPadDensity": 0.10
+  },
+  "mapSizes": {
+    "very_small": { "width": 120, "height": 80  },
+    "small":      { "width": 160, "height": 110 },
+    "medium":     { "width": 210, "height": 140 },
+    "large":      { "width": 280, "height": 190 },
+    "very_large": { "width": 400, "height": 270 }
+  },
+  "defaultMapSize": "medium",
+  "gameplay": {
+    "healthConditions": [
+      { "minPct": 80, "label": "healthy"   },
+      { "minPct": 60, "label": "scratched" },
+      { "minPct": 40, "label": "damaged"   },
+      { "minPct": 20, "label": "battered"  },
+      { "minPct":  1, "label": "critical"  },
+      { "minPct":  0, "label": "destroyed" }
+    ],
+    "plow": {
+      "required": 40,
+      "baseDamage": 10,
+      "damagePerLevel": 30,
+      "minCost": 3,
+      "costReductionPerLevel": 5
+    },
+    "speech": {
+      "maxChars": 280,
+      "durationMs": 8000
+    },
+    "emotion": {
+      "defaultValue": 50,
+      "min": 0,
+      "max": 100
+    },
+    "tentRegenPerSecond": 5,
+    "startingInventory": [{ "item": "rocks", "qty": 1 }],
+    "scanNearbyRadius": 15,
+    "surroundingsRadius": 3,
+    "defaultEffectRadius": 3,
+    "animations": {
+      "slash":  { "frames": 6, "fps": 12 },
+      "thrust": { "frames": 8, "fps": 12 }
+    }
   }
 }

@@ -1,14 +1,8 @@
+import { getIslandConfig } from "./island-config.js";
+
 export type TileType = "grass" | "water" | "sand";
 
-export type MapSize = "very_small" | "small" | "medium" | "large" | "very_large";
-
-export const MAP_SIZE_PRESETS: Record<MapSize, { width: number; height: number }> = {
-  very_small: { width: 120, height: 80  },
-  small:      { width: 160, height: 110 },
-  medium:     { width: 210, height: 140 },
-  large:      { width: 280, height: 190 },
-  very_large: { width: 400, height: 270 },
-};
+export type MapSize = string;
 
 export interface MapOptions {
   size?: MapSize;
@@ -23,8 +17,6 @@ export interface Tile {
   type: TileType;
 }
 
-const DEFAULT_SIZE: MapSize = "medium";
-
 export class IslandMap {
   readonly width: number;
   readonly height: number;
@@ -33,8 +25,9 @@ export class IslandMap {
   private tiles: Map<string, TileType>;
 
   constructor(options: MapOptions = {}) {
-    const size = options.size ?? DEFAULT_SIZE;
-    const preset = MAP_SIZE_PRESETS[size];
+    const cfg = getIslandConfig();
+    const size = options.size ?? cfg.defaultMapSize;
+    const preset = cfg.mapSizes[size] ?? cfg.mapSizes[cfg.defaultMapSize] ?? { width: 210, height: 140 };
     this.size = size;
     this.width = options.width ?? preset.width;
     this.height = options.height ?? preset.height;

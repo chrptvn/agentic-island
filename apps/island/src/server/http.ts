@@ -3,7 +3,8 @@ import { readFile, readdir } from "fs/promises";
 import { join, extname, dirname } from "path";
 import { fileURLToPath } from "url";
 import { Island } from "../island/island.js";
-import { MAP_SIZE_PRESETS, type MapSize } from "../island/map.js";
+import { type MapSize } from "../island/map.js";
+import { getIslandConfig } from "../island/island-config.js";
 import { TILES, TILE_SIZE, TILE_GAP, TILE_SHEET, SHEET_OVERRIDES } from "../island/tile-registry.js";
 import { allItemDefs } from "../island/item-registry.js";
 import { RECIPES } from "../island/craft-registry.js";
@@ -211,8 +212,8 @@ async function handleRequest(
   if (url === "/api/regenerate" && method === "POST") {
     try {
       const body = await readBody(req) as { size?: MapSize; seed?: number };
-      if (body.size && !MAP_SIZE_PRESETS[body.size]) {
-        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(MAP_SIZE_PRESETS).join(", ")}`);
+      if (body.size && !getIslandConfig().mapSizes[body.size]) {
+        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(getIslandConfig().mapSizes).join(", ")}`);
         return;
       }
       const island = Island.getInstance();
@@ -227,8 +228,8 @@ async function handleRequest(
   if (url === "/api/reset" && method === "POST") {
     try {
       const body = await readBody(req) as { size?: MapSize; characterId?: string };
-      if (body.size && !MAP_SIZE_PRESETS[body.size]) {
-        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(MAP_SIZE_PRESETS).join(", ")}`);
+      if (body.size && !getIslandConfig().mapSizes[body.size]) {
+        jsonErr(res, 400, `Invalid size "${body.size}". Valid sizes: ${Object.keys(getIslandConfig().mapSizes).join(", ")}`);
         return;
       }
       const island = Island.getInstance();

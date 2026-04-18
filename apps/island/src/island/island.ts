@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { watch } from "fs";
-import { IslandMap, type MapOptions, type MapSize, MAP_SIZE_PRESETS } from "./map.js";
+import { IslandMap, type MapOptions, type MapSize } from "./map.js";
 import {
   loadState, saveState,
   loadOverrides, saveOverride, saveOverridesBatch, clearTileOverride, clearOverrides, loadOverridesVersion,
@@ -79,6 +79,15 @@ const MAP_STATE_KEY = "map_config";
 
 const TERRAIN_TYPES = new Set(["grass", "water", "sand"]);
 
+/** Read an emotion value with config-driven default, and clamp after mutation. */
+function emotionGet(emotions: Record<string, number> | undefined, key: string): number {
+  return emotions?.[key] ?? getIslandConfig().gameplay.emotion.defaultValue;
+}
+function emotionClamp(value: number): number {
+  const e = getIslandConfig().gameplay.emotion;
+  return Math.max(e.min, Math.min(e.max, value));
+}
+
 /** Returns true if the given tile ID is an inventory item that cannot be placed on the map. */
 function isItemTile(tileId: string): boolean {
   return TILE_BY_ID.get(tileId)?.category === "item";
@@ -103,7 +112,7 @@ export class Island extends EventEmitter {
     const saved = loadState<MapOptions>(MAP_STATE_KEY);
     if (!saved) {
       const envSize = process.env.ISLAND_SIZE as MapSize | undefined;
-      const size = envSize && MAP_SIZE_PRESETS[envSize] ? envSize : undefined;
+      const size = envSize && getIslandConfig().mapSizes[envSize] ? envSize : undefined;
       this.map = new IslandMap(size ? { size } : undefined);
     } else {
       this.map = new IslandMap(saved);
@@ -358,9 +367,10 @@ export class Island extends EventEmitter {
    * Includes terrain type, path tiles, and entity IDs for nearby cells.
    * Nearby cells use relative direction + steps instead of absolute coordinates.
    */
-  getSurroundings(characterId: string, radius = 3): object | null {
+  getSurroundings(characterId: string, radius?: number): object | null {
     const character = this.characters.get(characterId);
     if (!character) return null;
+    const r = radius ?? getIslandConfig().gameplay.surroundingsRadius;
     const { x, y } = character;
 
     function compassDir(dx: number, dy: number): string {
@@ -375,8 +385,8 @@ export class Island extends EventEmitter {
     }
 
     const nearby: Array<{ direction: string; steps: number; dx: number; dy: number; terrain: string; entity?: string; condition?: string; path?: true; character?: string }> = [];
-    for (let dy = -radius; dy <= radius; dy++) {
-      for (let dx = -radius; dx <= radius; dx++) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
         if (dx === 0 && dy === 0) continue;
         const cx = x + dx, cy = y + dy;
         // Bounds check — map.getTile returns null for out-of-bounds
@@ -612,14 +622,15 @@ export class Island extends EventEmitter {
   }
 
   /** Scan within `radius` tiles of `origin` and return entity counts by tile ID (layer 3). */
-  private scanNearby(origin: Point, radius = 15): Record<string, number> {
+  private scanNearby(origin: Point, radius?: number): Record<string, number> {
+    const r = radius ?? getIslandConfig().gameplay.scanNearbyRadius;
     const counts: Record<string, number> = {};
     for (const [key, layers] of this.overrides) {
       const entity = layers[3];
       if (!entity) continue;
       const [xs, ys] = key.split(",");
       const x = parseInt(xs, 10), y = parseInt(ys, 10);
-      if (Math.abs(x - origin.x) <= radius && Math.abs(y - origin.y) <= radius) {
+      if (Math.abs(x - origin.x) <= r && Math.abs(y - origin.y) <= r) {
         counts[entity] = (counts[entity] ?? 0) + 1;
       }
     }
@@ -726,20 +737,20 @@ export class Island extends EventEmitter {
     const effectiveTool = toolItem ?? character.stats.equipment?.hands?.item ?? null;
     const plowLevel = effectiveTool ? getCapabilityLevel(effectiveTool, "plow") : 0;
 
-    // Energy cost scales down with tool level (min 3)
+    // Energy cost scales down with tool level
     const cfg = getIslandConfig();
+    const plowCfg = cfg.gameplay.plow;
     const baseCost = cfg.energyCosts.plow;
-    const cost = Math.max(3, baseCost - Math.floor(plowLevel * 5));
+    const cost = Math.max(plowCfg.minCost, baseCost - Math.floor(plowLevel * plowCfg.costReductionPerLevel));
     this._checkEnergy(character, "plow");  // uses cfg.energyCosts.plow for threshold check
     character.stats.energy = Math.max(0, character.stats.energy - cost);
 
     // Progress per hit scales up with tool level
-    const REQUIRED = 40;
-    const damage = 10 + Math.floor(plowLevel * 30);
+    const damage = plowCfg.baseDamage + Math.floor(plowLevel * plowCfg.damagePerLevel);
     const key = `${x},${y}`;
     const prev = this.pathProgress.get(key) ?? 0;
     const next = prev + damage;
-    const completed = next >= REQUIRED;
+    const completed = next >= plowCfg.required;
 
     if (completed) {
       this.pathProgress.delete(key);
@@ -748,9 +759,9 @@ export class Island extends EventEmitter {
       this.pathProgress.set(key, next);
     }
 
-    const progress = completed ? REQUIRED : next;
-    const hitsRemaining = completed ? 0 : Math.ceil((REQUIRED - progress) / damage);
-    return { progress, required: REQUIRED, completed, hitsRemaining };
+    const progress = completed ? plowCfg.required : next;
+    const hitsRemaining = completed ? 0 : Math.ceil((plowCfg.required - progress) / damage);
+    return { progress, required: plowCfg.required, completed, hitsRemaining };
   }
 
   /**
@@ -792,7 +803,7 @@ export class Island extends EventEmitter {
       throw new Error(`A character named "${id}" already exists.`);
     }
 
-    const stats: CharacterStats = { ...getDefaultCharacterStats(), equipment: defaultEquipment(), inventory: [{ item: "rocks", qty: 1 }] };
+    const stats: CharacterStats = { ...getDefaultCharacterStats(), equipment: defaultEquipment(), inventory: [...getIslandConfig().gameplay.startingInventory] };
 
     // Resolve appearance: catalog-driven random if not specified
     const appearance: CharacterAppearance = requestedAppearance ?? randomAppearance();
@@ -960,12 +971,11 @@ export class Island extends EventEmitter {
   private _healthCondition(health: number, maxHealth: number): string {
     if (maxHealth <= 0) return "healthy";
     const pct = (health / maxHealth) * 100;
-    if (pct >= 80) return "healthy";
-    if (pct >= 60) return "scratched";
-    if (pct >= 40) return "damaged";
-    if (pct >= 20) return "battered";
-    if (pct > 0)   return "critical";
-    return "destroyed";
+    const conditions = getIslandConfig().gameplay.healthConditions;
+    for (const c of conditions) {
+      if (pct >= c.minPct) return c.label;
+    }
+    return conditions[conditions.length - 1]?.label ?? "destroyed";
   }
 
   /** Determine facing direction from source toward target */
@@ -991,7 +1001,8 @@ export class Island extends EventEmitter {
     character.action = action;
     character.actionItem = itemToUse ?? undefined;
     // Animation duration: frames / fps (in ms)
-    const anim = { slash: { frames: 6, fps: 12 }, thrust: { frames: 8, fps: 12 } }[action];
+    const animCfg = getIslandConfig().gameplay.animations[action];
+    const anim = animCfg ?? { frames: 6, fps: 12 };
     character.actionUntil = Date.now() + (anim.frames / anim.fps) * 1000;
   }
 
@@ -1712,7 +1723,7 @@ export class Island extends EventEmitter {
       if (effect.message) {
         character.sensoryEvents.push({ text: effect.message, createdAt: now });
       }
-      const radius = effect.radius ?? 3;
+      const radius = effect.radius ?? getIslandConfig().gameplay.defaultEffectRadius;
       for (const nearby of this.characters.values()) {
         if (nearby === character) continue;
         const dx = Math.abs(nearby.x - targetX), dy = Math.abs(nearby.y - targetY);
@@ -1722,8 +1733,8 @@ export class Island extends EventEmitter {
         }
         if (effect.emotionEffects) {
           for (const emotionEffect of effect.emotionEffects) {
-            const current = nearby.stats.emotions?.[emotionEffect.key] ?? 50;
-            const next = Math.max(0, Math.min(100, current + emotionEffect.delta));
+            const current = emotionGet(nearby.stats.emotions, emotionEffect.key);
+            const next = emotionClamp(current + emotionEffect.delta);
             if (nearby.stats.emotions) nearby.stats.emotions[emotionEffect.key] = next;
           }
         }
@@ -1732,8 +1743,8 @@ export class Island extends EventEmitter {
       if (effect.emotionEffects) {
         for (const emotionEffect of effect.emotionEffects) {
           if (!emotionEffect.self) continue;
-          const current = character.stats.emotions?.[emotionEffect.key] ?? 50;
-          const next = Math.max(0, Math.min(100, current + emotionEffect.delta));
+          const current = emotionGet(character.stats.emotions, emotionEffect.key);
+          const next = emotionClamp(current + emotionEffect.delta);
           if (character.stats.emotions) character.stats.emotions[emotionEffect.key] = next;
         }
       }
@@ -1766,7 +1777,7 @@ export class Island extends EventEmitter {
     if (action.message) {
       character.sensoryEvents.push({ text: action.message, createdAt: now });
     }
-    const radius = action.radius ?? 3;
+    const radius = action.radius ?? getIslandConfig().gameplay.defaultEffectRadius;
     for (const nearby of this.characters.values()) {
       if (nearby === character) continue;
       const dx = Math.abs(nearby.x - character.x), dy = Math.abs(nearby.y - character.y);
@@ -1776,8 +1787,8 @@ export class Island extends EventEmitter {
       }
       if (action.emotionEffects) {
         for (const eff of action.emotionEffects) {
-          const current = nearby.stats.emotions?.[eff.key] ?? 50;
-          const next = Math.max(0, Math.min(100, current + eff.delta));
+          const current = emotionGet(nearby.stats.emotions, eff.key);
+          const next = emotionClamp(current + eff.delta);
           if (nearby.stats.emotions) nearby.stats.emotions[eff.key] = next;
         }
       }
@@ -1786,8 +1797,8 @@ export class Island extends EventEmitter {
     if (action.emotionEffects) {
       for (const eff of action.emotionEffects) {
         if (!eff.self) continue;
-        const current = character.stats.emotions?.[eff.key] ?? 50;
-        const next = Math.max(0, Math.min(100, current + eff.delta));
+        const current = emotionGet(character.stats.emotions, eff.key);
+        const next = emotionClamp(current + eff.delta);
         if (character.stats.emotions) character.stats.emotions[eff.key] = next;
       }
     }
@@ -1824,23 +1835,23 @@ export class Island extends EventEmitter {
       const now = Date.now();
       for (const action of def.special) {
         if (action.message) character.sensoryEvents.push({ text: action.message, createdAt: now });
-        const radius = action.radius ?? 3;
+        const radius = action.radius ?? getIslandConfig().gameplay.defaultEffectRadius;
         for (const nearby of this.characters.values()) {
           if (nearby === character) continue;
           if (Math.max(Math.abs(nearby.x - character.x), Math.abs(nearby.y - character.y)) > radius) continue;
           if (action.nearbyMessage) nearby.sensoryEvents.push({ text: action.nearbyMessage, createdAt: now });
           if (action.emotionEffects) {
             for (const eff of action.emotionEffects) {
-              const current = nearby.stats.emotions?.[eff.key] ?? 50;
-              if (nearby.stats.emotions) nearby.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+              const current = emotionGet(nearby.stats.emotions, eff.key);
+              if (nearby.stats.emotions) nearby.stats.emotions[eff.key] = emotionClamp(current + eff.delta);
             }
           }
         }
         if (action.emotionEffects) {
           for (const eff of action.emotionEffects) {
             if (!eff.self) continue;
-            const current = character.stats.emotions?.[eff.key] ?? 50;
-            if (character.stats.emotions) character.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+            const current = emotionGet(character.stats.emotions, eff.key);
+            if (character.stats.emotions) character.stats.emotions[eff.key] = emotionClamp(current + eff.delta);
           }
         }
       }
@@ -1964,14 +1975,14 @@ export class Island extends EventEmitter {
       character.stats.health = Math.max(0, Math.min(character.stats.maxHealth, character.stats.health + healthDelta));
     }
     if (energyDelta !== 0) {
-      character.stats.energy = Math.max(0, Math.min(100, character.stats.energy + energyDelta));
+      character.stats.energy = Math.max(0, Math.min(character.stats.maxEnergy, character.stats.energy + energyDelta));
     }
 
     // Apply emotion effects
     if (effects.emotions?.length) {
       for (const eff of effects.emotions) {
-        const current = character.stats.emotions?.[eff.key] ?? 50;
-        if (character.stats.emotions) character.stats.emotions[eff.key] = Math.max(0, Math.min(100, current + eff.delta));
+        const current = emotionGet(character.stats.emotions, eff.key);
+        if (character.stats.emotions) character.stats.emotions[eff.key] = emotionClamp(current + eff.delta);
       }
     }
 
@@ -1985,8 +1996,8 @@ export class Island extends EventEmitter {
         if (!resolved) continue;
         // Apply initial emotion delta
         if (character.stats.emotions) {
-          const cur = character.stats.emotions[resolved.pairKey] ?? 50;
-          character.stats.emotions[resolved.pairKey] = Math.max(0, Math.min(100, cur + resolved.delta));
+          const cur = emotionGet(character.stats.emotions, resolved.pairKey);
+          character.stats.emotions[resolved.pairKey] = emotionClamp(cur + resolved.delta);
         }
         // Pick a random opening event from the pool immediately
         const pool = HALLUCINATION_CONFIG.pools[hEff.emotionPole];
@@ -2010,7 +2021,7 @@ export class Island extends EventEmitter {
       character.sensoryEvents.push({ text: effects.message, createdAt: now });
     }
     if (effects.nearbyMessage) {
-      const radius = 3;
+      const radius = getIslandConfig().gameplay.defaultEffectRadius;
       for (const nearby of this.characters.values()) {
         if (nearby === character) continue;
         if (Math.max(Math.abs(nearby.x - character.x), Math.abs(nearby.y - character.y)) > radius) continue;
@@ -2443,9 +2454,9 @@ export class Island extends EventEmitter {
   say(id: string, text: string): void {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
-    const MAX_CHARS = 280;
-    if (text.length > MAX_CHARS) throw new Error(`Text too long: ${text.length} chars (max ${MAX_CHARS}).`);
-    character.speech = { text: text.trim(), expiresAt: Date.now() + 8000 };
+    const { maxChars, durationMs } = getIslandConfig().gameplay.speech;
+    if (text.length > maxChars) throw new Error(`Text too long: ${text.length} chars (max ${maxChars}).`);
+    character.speech = { text: text.trim(), expiresAt: Date.now() + durationMs };
     this.emit("map:updated", this.map);
   }
 
@@ -2706,7 +2717,7 @@ export class Island extends EventEmitter {
           continue;
         }
         // Boosted energy regen (same rate as campfire aura)
-        const tentRegenRate = 5 * TICK_S;
+        const tentRegenRate = cfg.gameplay.tentRegenPerSecond * TICK_S;
         if (s.energy < s.maxEnergy) {
           s.energy = Math.min(s.maxEnergy, s.energy + tentRegenRate);
           changed = true;
@@ -2850,8 +2861,8 @@ export class Island extends EventEmitter {
           if (halluNow >= h.endsAt) {
             // Reverse the emotion delta
             if (character.stats.emotions) {
-              const cur = character.stats.emotions[h.pairKey] ?? 50;
-              character.stats.emotions[h.pairKey] = Math.max(0, Math.min(100, cur - h.delta));
+              const cur = emotionGet(character.stats.emotions, h.pairKey);
+              character.stats.emotions[h.pairKey] = emotionClamp(cur - h.delta);
             }
             changed = true;
           } else {

@@ -22,6 +22,70 @@ export interface CharacterStats {
   maxEnergy: number;
 }
 
+/** Health-condition display thresholds: each entry is [minimumPercent, label]. Evaluated top-down. */
+export interface HealthCondition {
+  minPct: number;
+  label:  string;
+}
+
+/** Plow/path-building tuning. */
+export interface PlowConfig {
+  /** Total progress needed to complete a path cell. */
+  required:       number;
+  /** Base damage dealt per hit (before tool scaling). */
+  baseDamage:     number;
+  /** Extra damage per plow-tool level. */
+  damagePerLevel: number;
+  /** Minimum energy cost per hit. */
+  minCost:        number;
+  /** Energy cost reduction per plow-tool level. */
+  costReductionPerLevel: number;
+}
+
+/** Speech bubble tuning. */
+export interface SpeechConfig {
+  /** Maximum character count for a speech bubble. */
+  maxChars:   number;
+  /** How long (ms) a speech bubble stays visible. */
+  durationMs: number;
+}
+
+/** Emotion system tuning. */
+export interface EmotionConfig {
+  /** Default emotion value when not yet set. */
+  defaultValue: number;
+  /** Minimum clamped value. */
+  min: number;
+  /** Maximum clamped value. */
+  max: number;
+}
+
+/** Action animation tuning (frames / fps → duration). */
+export interface AnimationConfig {
+  frames: number;
+  fps:    number;
+}
+
+/** Gameplay constants that were previously hardcoded. */
+export interface GameplayConfig {
+  healthConditions:   HealthCondition[];
+  plow:               PlowConfig;
+  speech:             SpeechConfig;
+  emotion:            EmotionConfig;
+  /** Energy regen multiplier inside a tent (per second). */
+  tentRegenPerSecond: number;
+  /** Starting inventory for newly spawned characters. */
+  startingInventory:  Array<{ item: string; qty: number }>;
+  /** Default radius for `scanNearby()` entity detection. */
+  scanNearbyRadius:   number;
+  /** Default radius for `getSurroundings()` character awareness. */
+  surroundingsRadius: number;
+  /** Fallback radius for interaction/eat/special-action nearby broadcasts. */
+  defaultEffectRadius: number;
+  /** Default animation timings per action type. */
+  animations: Record<string, AnimationConfig>;
+}
+
 /** A named biome zone that is BFS-grown on the island during map generation.
  *  Each biome can override per-entity spawn weights via the entity's `spawn.biomes` map. */
 export interface BiomeConfig {
@@ -70,6 +134,14 @@ export interface MapGenConfig {
   biomes: BiomeConfig[];
   /** Fraction (0–1) of lake-border water cells that receive a lily pad. */
   lilyPadDensity: number;
+  /** Minimum cardinal grass neighbors to fill a water gap during gap-fill. */
+  gapFillThreshold: number;
+  /** Biome center candidates must be this many cells from the map border. */
+  biomeBorderMargin: number;
+  /** Sand only seeds on cells exactly this distance from water. */
+  sandSeedDistance: number;
+  /** Probability multiplier for the third sand-spread wave (relative to sandGrowProb). */
+  sandGrowProbWave3: number;
 }
 
 export interface IslandConfig {
@@ -88,10 +160,16 @@ export interface IslandConfig {
   equipmentSlots:       string[];
   /** Procedural map generation tuning. */
   mapGen:               MapGenConfig;
+  /** Map dimension presets by size name. */
+  mapSizes:             Record<string, { width: number; height: number }>;
+  /** Default map size preset name. */
+  defaultMapSize:       string;
   /** How long (ms) before an unread sensory event expires from a character's buffer. */
   sensoryBufferTimeoutMs:    number;
   /** Cooldown (ms) before the same entity can fire another proximity event for the same character. */
   sensoryProximityCooldownMs: number;
+  /** Gameplay constants (health conditions, plow, speech, emotions, etc.). */
+  gameplay: GameplayConfig;
 }
 
 const DEFAULT_ISLAND_CONFIG: IslandConfig = {
@@ -122,7 +200,41 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     biomes: [
       { id: "forest", count: 2, radiusMin: 3, radiusMax: 6, vegetationDensity: 0.35 },
     ],
-    lilyPadDensity:          0.25,
+    lilyPadDensity:    0.25,
+    gapFillThreshold:  3,
+    biomeBorderMargin: 2,
+    sandSeedDistance:   1,
+    sandGrowProbWave3: 0.55,
+  },
+  mapSizes: {
+    very_small: { width: 120, height: 80  },
+    small:      { width: 160, height: 110 },
+    medium:     { width: 210, height: 140 },
+    large:      { width: 280, height: 190 },
+    very_large: { width: 400, height: 270 },
+  },
+  defaultMapSize: "medium",
+  gameplay: {
+    healthConditions: [
+      { minPct: 80, label: "healthy"   },
+      { minPct: 60, label: "scratched" },
+      { minPct: 40, label: "damaged"   },
+      { minPct: 20, label: "battered"  },
+      { minPct:  1, label: "critical"  },
+      { minPct:  0, label: "destroyed" },
+    ],
+    plow: { required: 40, baseDamage: 10, damagePerLevel: 30, minCost: 3, costReductionPerLevel: 5 },
+    speech: { maxChars: 280, durationMs: 8000 },
+    emotion: { defaultValue: 50, min: 0, max: 100 },
+    tentRegenPerSecond: 5,
+    startingInventory: [{ item: "rocks", qty: 1 }],
+    scanNearbyRadius: 15,
+    surroundingsRadius: 3,
+    defaultEffectRadius: 3,
+    animations: {
+      slash:  { frames: 6, fps: 12 },
+      thrust: { frames: 8, fps: 12 },
+    },
   },
 };
 
@@ -155,6 +267,16 @@ function loadIslandConfig(): IslandConfig {
       merged.biomes = rawMapGen.biomes ?? DEFAULT_ISLAND_CONFIG.mapGen.biomes;
     }
 
+    const rawGameplay = (raw.gameplay ?? {}) as Partial<GameplayConfig>;
+    const mergedGameplay: GameplayConfig = {
+      ...DEFAULT_ISLAND_CONFIG.gameplay,
+      ...rawGameplay,
+      plow:    { ...DEFAULT_ISLAND_CONFIG.gameplay.plow,    ...(rawGameplay.plow    ?? {}) },
+      speech:  { ...DEFAULT_ISLAND_CONFIG.gameplay.speech,  ...(rawGameplay.speech  ?? {}) },
+      emotion: { ...DEFAULT_ISLAND_CONFIG.gameplay.emotion, ...(rawGameplay.emotion ?? {}) },
+      animations: { ...DEFAULT_ISLAND_CONFIG.gameplay.animations, ...(rawGameplay.animations ?? {}) },
+    };
+
     return {
       ...DEFAULT_ISLAND_CONFIG,
       ...raw,
@@ -162,6 +284,8 @@ function loadIslandConfig(): IslandConfig {
       characterStats: { ...DEFAULT_ISLAND_CONFIG.characterStats, ...(raw.characterStats ?? {}) },
       equipmentSlots: raw.equipmentSlots ?? DEFAULT_ISLAND_CONFIG.equipmentSlots,
       mapGen:         merged,
+      mapSizes:       { ...DEFAULT_ISLAND_CONFIG.mapSizes, ...(raw.mapSizes ?? {}) },
+      gameplay:       mergedGameplay,
     };
   } catch {
     return { ...DEFAULT_ISLAND_CONFIG };

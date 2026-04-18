@@ -183,7 +183,7 @@ export function buildIslandLayer1(
       let changed = false;
       for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
-          if (!grid[y][x] && (cardinalGrassCount(x, y) >= 3 || hasOppositeDiagGrass(x, y))) {
+          if (!grid[y][x] && (cardinalGrassCount(x, y) >= mapGen.gapFillThreshold || hasOppositeDiagGrass(x, y))) {
             grid[y][x] = true;
             changed = true;
           }
@@ -280,9 +280,10 @@ export function buildIslandLayer1(
 
     // Collect deep-interior grass cells (all 8 neighbors are grass) that are
     // not already claimed by another biome as center candidates
+    const margin = mapGen.biomeBorderMargin;
     const biomeCandidates: [number, number][] = [];
-    for (let y = 2; y < h - 2; y++) {
-      for (let x = 2; x < w - 2; x++) {
+    for (let y = margin; y < h - margin; y++) {
+      for (let x = margin; x < w - margin; x++) {
         if (!grid[y][x]) continue;
         if (biomeGrid.has(`${x},${y}`)) continue;
         let deep = true;
@@ -368,7 +369,7 @@ export function buildIslandLayer1(
   const wave1: [number, number][] = [];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (terrain[y][x] === "grass" && distToWater[y][x] === 1 && rng() < sandSeedProb) {
+      if (terrain[y][x] === "grass" && distToWater[y][x] === mapGen.sandSeedDistance && rng() < sandSeedProb) {
         terrain[y][x] = "sand";
         wave1.push([x, y]);
       }
@@ -393,7 +394,7 @@ export function buildIslandLayer1(
     for (const [dx, dy] of CARDINALS) {
       const nx = cx + dx, ny = cy + dy;
       if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb * 0.55) {
+      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb * mapGen.sandGrowProbWave3) {
         terrain[ny][nx] = "sand";
       }
     }
