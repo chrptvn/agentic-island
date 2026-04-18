@@ -693,7 +693,8 @@ export function buildVegetationLayer(
       if (!isG(x, y)) continue;
       const key = `${x},${y}`;
       const cellBiome = biomeGrid.get(key);
-      const density = cellBiome ? (biomeDensityMap.get(cellBiome) ?? SPAWN_DENSITY) : SPAWN_DENSITY;
+      if (!cellBiome) continue;
+      const density = biomeDensityMap.get(cellBiome) ?? SPAWN_DENSITY;
       if (rng() < density) candidates.push(key);
     }
   }
