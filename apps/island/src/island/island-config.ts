@@ -22,6 +22,21 @@ export interface CharacterStats {
   maxEnergy: number;
 }
 
+/** A named biome zone that is BFS-grown on the island during map generation.
+ *  Each biome can override per-entity spawn weights via the entity's `spawn.biomes` map. */
+export interface BiomeConfig {
+  /** Unique biome identifier referenced by entity spawn configs (e.g. "forest", "flower_field"). */
+  id: string;
+  /** Number of zones of this biome to generate. */
+  count: number;
+  /** Minimum BFS radius for each zone (in cells). */
+  radiusMin: number;
+  /** Maximum BFS radius for each zone (in cells). */
+  radiusMax: number;
+  /** Fraction (0–1) of eligible cells inside this biome that receive vegetation. */
+  vegetationDensity: number;
+}
+
 export interface MapGenConfig {
   /** Initial probability (0–1) that a cell starts as grass before cellular automata. */
   fillProbability:  number;
@@ -47,14 +62,8 @@ export interface MapGenConfig {
   sandGrowProb: number;
   /** Maximum distance from water (in cells) that sand can reach. */
   sandMaxDepth: number;
-  /** Number of forest zones to generate on the island. */
-  forestCount: number;
-  /** Minimum BFS radius for each forest zone (in cells). */
-  forestRadiusMin: number;
-  /** Maximum BFS radius for each forest zone (in cells). */
-  forestRadiusMax: number;
-  /** Fraction (0–1) of eligible inner cells inside a forest that receive vegetation. */
-  forestVegetationDensity: number;
+  /** Named biome zones generated via BFS on deep-interior grass cells. */
+  biomes: BiomeConfig[];
   /** Fraction (0–1) of lake-border water cells that receive a lily pad. */
   lilyPadDensity: number;
 }
@@ -106,26 +115,49 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     sandSeedProb:      0.07,
     sandGrowProb:      0.80,
     sandMaxDepth:      3,
-    forestCount:             2,
-    forestRadiusMin:         3,
-    forestRadiusMax:         6,
-    forestVegetationDensity: 0.35,
+    biomes: [
+      { id: "forest", count: 2, radiusMin: 3, radiusMax: 6, vegetationDensity: 0.35 },
+    ],
     lilyPadDensity:          0.25,
   },
 };
 
 let _config: IslandConfig = loadIslandConfig();
 
+/** Legacy mapGen fields from before the biome system. */
+interface LegacyMapGen {
+  forestCount?: number;
+  forestRadiusMin?: number;
+  forestRadiusMax?: number;
+  forestVegetationDensity?: number;
+}
+
 function loadIslandConfig(): IslandConfig {
   try {
     const raw = JSON.parse(readFileSync(CONFIG_PATH_ISLAND, "utf-8")) as Partial<IslandConfig>;
+    const rawMapGen = (raw.mapGen ?? {}) as Partial<MapGenConfig> & LegacyMapGen;
+    const merged: MapGenConfig = { ...DEFAULT_ISLAND_CONFIG.mapGen, ...rawMapGen };
+
+    // Backward compat: synthesize biomes from legacy forest fields if no biomes array provided
+    if (!rawMapGen.biomes && (rawMapGen.forestCount !== undefined || rawMapGen.forestRadiusMin !== undefined)) {
+      merged.biomes = [{
+        id: "forest",
+        count: rawMapGen.forestCount ?? 2,
+        radiusMin: rawMapGen.forestRadiusMin ?? 3,
+        radiusMax: rawMapGen.forestRadiusMax ?? 6,
+        vegetationDensity: rawMapGen.forestVegetationDensity ?? 0.35,
+      }];
+    } else {
+      merged.biomes = rawMapGen.biomes ?? DEFAULT_ISLAND_CONFIG.mapGen.biomes;
+    }
+
     return {
       ...DEFAULT_ISLAND_CONFIG,
       ...raw,
       energyCosts:    { ...DEFAULT_ISLAND_CONFIG.energyCosts,    ...(raw.energyCosts    ?? {}) },
       characterStats: { ...DEFAULT_ISLAND_CONFIG.characterStats, ...(raw.characterStats ?? {}) },
       equipmentSlots: raw.equipmentSlots ?? DEFAULT_ISLAND_CONFIG.equipmentSlots,
-      mapGen:         { ...DEFAULT_ISLAND_CONFIG.mapGen,         ...(raw.mapGen         ?? {}) },
+      mapGen:         merged,
     };
   } catch {
     return { ...DEFAULT_ISLAND_CONFIG };

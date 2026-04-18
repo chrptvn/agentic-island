@@ -205,8 +205,8 @@ export class Island extends EventEmitter {
     return registry;
   }
 
-  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[] }> {
-    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[] }> = [];
+  getEntities(): Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[]; renderScale?: number }> {
+    const result: Array<{ x: number; y: number; tileId: string; stats: EntityStats; name?: string; inventory?: { item: string; qty: number }[]; occupants?: string[]; renderScale?: number }> = [];
 
     // Build a map of tent base positions → occupant character IDs
     const tentOccupants = new Map<string, string[]>();
@@ -225,9 +225,15 @@ export class Island extends EventEmitter {
       if (tileId && tileId !== "") {
         const inv = (stats as unknown as { inventory?: { item: string; qty: number }[] }).inventory;
         const occupants = tentOccupants.get(key);
-        const def = ENTITY_DEF_BY_TILE_ID.get(tileId);
+        // Try entity ID first (character-planted or entity ID stored in override), then tile ID lookup
+        const def = ENTITY_DEF_BY_ID.get(tileId) ?? ENTITY_DEF_BY_TILE_ID.get(tileId);
         const name = def?.name;
-        result.push({ x, y, tileId, stats, ...(name ? { name } : {}), ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}) });
+        const renderScale = def?.renderScale;
+        // If the stored tileId is an entity ID, resolve to the anchor tile's actual render tileId
+        const renderTileId = ENTITY_DEF_BY_ID.has(tileId)
+          ? (def?.tiles.find(t => t.dx === 0 && t.dy === 0)?.tileId ?? tileId)
+          : tileId;
+        result.push({ x, y, tileId: renderTileId, stats, ...(name ? { name } : {}), ...(inv ? { inventory: inv } : {}), ...(occupants ? { occupants } : {}), ...(renderScale != null ? { renderScale } : {}) });
 
         // Emit extra tiles from the entity's tiles array (non-anchor tiles)
         if (def) {
@@ -296,6 +302,30 @@ export class Island extends EventEmitter {
   getCharacter(id: string): { id: string; x: number; y: number } | null {
     const c = this.characters.get(id);
     return c ? { id: c.id, x: c.x, y: c.y } : null;
+  }
+
+  /**
+   * Give one or more items directly to a character's inventory.
+   * Merges with existing stack if the item is already present.
+   * Returns the updated inventory entry.
+   */
+  giveItem(characterId: string, itemId: string, qty: number): { item: string; qty: number } {
+    if (qty <= 0) throw new Error("Quantity must be greater than 0.");
+    const character = this.characters.get(characterId);
+    if (!character) throw new Error(`Character "${characterId}" is not on the island.`);
+    const def = getItemDef(itemId);
+    if (def === undefined) throw new Error(`Unknown item "${itemId}".`);
+
+    const inv = character.stats.inventory as { item: string; qty: number }[];
+    const existing = inv.find(i => i.item === itemId);
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      inv.push({ item: itemId, qty });
+    }
+    saveCharacter(character.id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
+    this.addSensoryEvent(characterId, `You received ${qty}× ${itemId}.`);
+    return existing ?? inv[inv.length - 1];
   }
 
   /** Add a sensory event to a character's buffer. Can be called by any game system. */
@@ -458,11 +488,11 @@ export class Island extends EventEmitter {
 
   /** Compute and persist the grass-island layer-1 tiles + vegetation layer 2/3. */
   private applyIslandOverrides(): void {
-    const { overrides: islandTiles, grassGrid, sandGrid, forestGrid, lakeGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
+    const { overrides: islandTiles, grassGrid, sandGrid, biomeGrid, lakeGrid } = buildIslandLayer1(this.map.width, this.map.height, this.map.seed);
     this.grassGrid = grassGrid;
 
     const { tileOverrides: vegTiles, entityStats: vegStats } =
-      buildVegetationLayer(this.map.width, this.map.height, this.map.seed, grassGrid, sandGrid, forestGrid, lakeGrid);
+      buildVegetationLayer(this.map.width, this.map.height, this.map.seed, grassGrid, sandGrid, biomeGrid, lakeGrid);
 
     const allTiles = [...islandTiles, ...vegTiles];
     saveOverridesBatch(allTiles);
@@ -2442,12 +2472,11 @@ export class Island extends EventEmitter {
       acorns:  "oak_sprout",
       berries: "berry_sprout",
       cotton_seed: "cotton_sprout",
-      flower_pink_seed: "flower_pink_sprout",
-      flower_blue_seed: "flower_blue_sprout",
+      geranium_seed: "geranium_sprout",
       flower_red_seed: "flower_red_sprout",
       sky_blossom_seed: "sky_blossom_sprout",
       flower_white_seed: "flower_white_sprout",
-      flower_yellow_seed: "flower_yellow_sprout",
+      sunflower_seed: "sunflower_sprout",
       moon_fragment: "moon_blossom_sprout",
     };
     const sproutId = SEED_TO_SPROUT[seedItem];

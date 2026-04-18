@@ -303,7 +303,9 @@
       "blocks": true,
       "spawn": {
         "weight": 3,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "branches": 1,
@@ -355,7 +357,9 @@
       "blocks": true,
       "spawn": {
         "weight": 3,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "branches": 1,
@@ -407,7 +411,9 @@
       "blocks": true,
       "spawn": {
         "weight": 0.1,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "branches": 1,
@@ -460,7 +466,9 @@
       "blocks": true,
       "spawn": {
         "weight": 0.3,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "branches": 1,
@@ -600,8 +608,10 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.1,
-        "forestOnly": true
+        "weight": 0,
+        "biomes": {
+          "forest": 0.1
+        }
       },
       "stats": {
         "branches": 2,
@@ -645,7 +655,10 @@
       ],
       "spawn": {
         "weight": 1.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 4.5
+        }
       },
       "stats": {
         "vine": 1
@@ -685,7 +698,10 @@
       ],
       "spawn": {
         "weight": 0.3,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 0.9
+        }
       },
       "stats": {
         "dried_grass": 1
@@ -723,7 +739,10 @@
       ],
       "spawn": {
         "weight": 1.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 4.5
+        }
       },
       "stats": {
         "flower_white": 1,
@@ -744,8 +763,8 @@
       }
     },
     {
-      "id": "flowers_mixed",
-      "name": "Pink Flowers",
+      "id": "geraniums",
+      "name": "Geraniums",
       "tiles": [
         {
           "dx": 0,
@@ -756,18 +775,21 @@
       ],
       "spawn": {
         "weight": 1.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 4.5
+        }
       },
       "stats": {
-        "flower_pink": 1,
-        "flower_pink_seed": 1
+        "geranium": 1,
+        "geranium_seed": 1
       },
       "randomStats": {
-        "flower_pink": {
+        "geranium": {
           "min": 1,
           "max": 3
         },
-        "flower_pink_seed": {
+        "geranium_seed": {
           "min": 1,
           "max": 2
         }
@@ -780,44 +802,8 @@
       }
     },
     {
-      "id": "flowers_blue",
-      "name": "Blue Flowers",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "blue_flowers"
-        }
-      ],
-      "spawn": {
-        "weight": 1.5,
-        "noForest": true
-      },
-      "stats": {
-        "flower_blue": 1,
-        "flower_blue_seed": 1
-      },
-      "randomStats": {
-        "flower_blue": {
-          "min": 1,
-          "max": 3
-        },
-        "flower_blue_seed": {
-          "min": 1,
-          "max": 2
-        }
-      },
-      "harvest": {
-        "fullBase": "blue_flowers"
-      },
-      "proximityTrigger": {
-        "message": "A delicate floral fragrance drifts by."
-      }
-    },
-    {
-      "id": "flowers_yellow",
-      "name": "Yellow Flowers",
+      "id": "sunflowers",
+      "name": "Sunflowers",
       "tiles": [
         {
           "dx": 0,
@@ -828,18 +814,21 @@
       ],
       "spawn": {
         "weight": 1.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 4.5
+        }
       },
       "stats": {
-        "flower_yellow": 1,
-        "flower_yellow_seed": 1
+        "sunflower": 1,
+        "sunflower_seed": 1
       },
       "randomStats": {
-        "flower_yellow": {
+        "sunflower": {
           "min": 1,
           "max": 3
         },
-        "flower_yellow_seed": {
+        "sunflower_seed": {
           "min": 1,
           "max": 2
         }
@@ -900,8 +889,10 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.1,
-        "forestOnly": true
+        "weight": 0,
+        "biomes": {
+          "forest": 0.1
+        }
       },
       "stats": {
         "branches": 2,
@@ -1175,7 +1166,10 @@
       "blocks": false,
       "spawn": {
         "weight": 3,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 9
+        }
       },
       "stats": {
         "wild_herb": 1
@@ -1269,6 +1263,7 @@
     {
       "id": "fly_agaric",
       "name": "Fly Agaric",
+      "renderScale": 0.6,
       "tiles": [
         {
           "dx": 0,
@@ -1279,7 +1274,10 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 0.15
+        "weight": 0,
+        "biomes": {
+          "forest": 0.3
+        }
       },
       "stats": {
         "suspicious_mushroom": 1
@@ -1332,19 +1330,6 @@
       }
     },
     {
-      "id": "sprout",
-      "name": "Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "sprout"
-        }
-      ],
-      "blocks": false
-    },
-    {
       "id": "carrot_sprout",
       "name": "Carrot Sprout",
       "tiles": [
@@ -1358,7 +1343,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "growthStages": {
         "nextStage": "carrot",
@@ -1379,7 +1366,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.8,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "carrot": 1
@@ -1408,7 +1397,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.5,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "growthStages": {
         "nextStage": "lettuce",
@@ -1429,7 +1420,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.8,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "lettuce": 1
@@ -1458,7 +1451,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.4,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "growthStages": {
         "nextStage": "pumpkin",
@@ -1479,7 +1474,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.6,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "pumpkin": 1
@@ -1508,7 +1505,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.4,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "growthStages": {
         "nextStage": "cabbage",
@@ -1529,7 +1528,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.6,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "cabbage": 1
@@ -1558,7 +1559,9 @@
       "blocks": false,
       "spawn": {
         "weight": 0.4,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "growthStages": {
         "nextStage": "berry_bush_empty",
@@ -1579,7 +1582,9 @@
       "blocks": true,
       "spawn": {
         "weight": 0.8,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       }
     },
     {
@@ -1596,7 +1601,9 @@
       "blocks": true,
       "spawn": {
         "weight": 0.6,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "stats": {
         "berries": 2
@@ -1685,8 +1692,8 @@
       }
     },
     {
-      "id": "flower_pink_sprout",
-      "name": "Pink Flower Sprout",
+      "id": "geranium_sprout",
+      "name": "Geranium Sprout",
       "tiles": [
         {
           "dx": 0,
@@ -1697,24 +1704,7 @@
       ],
       "blocks": false,
       "growthStages": {
-        "nextStage": "flowers_mixed",
-        "growthMs": 180000
-      }
-    },
-    {
-      "id": "flower_blue_sprout",
-      "name": "Blue Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "sprout"
-        }
-      ],
-      "blocks": false,
-      "growthStages": {
-        "nextStage": "flowers_blue",
+        "nextStage": "geraniums",
         "growthMs": 180000
       }
     },
@@ -1770,8 +1760,8 @@
       }
     },
     {
-      "id": "flower_yellow_sprout",
-      "name": "Yellow Flower Sprout",
+      "id": "sunflower_sprout",
+      "name": "Sunflower Sprout",
       "tiles": [
         {
           "dx": 0,
@@ -1782,7 +1772,7 @@
       ],
       "blocks": false,
       "growthStages": {
-        "nextStage": "flowers_yellow",
+        "nextStage": "sunflowers",
         "growthMs": 180000
       }
     },
@@ -1799,7 +1789,10 @@
       ],
       "spawn": {
         "weight": 0.4,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 1.2
+        }
       },
       "stats": {
         "cotton": 2
@@ -1831,7 +1824,10 @@
       ],
       "spawn": {
         "weight": 0.6,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 1.8
+        }
       },
       "stats": {
         "flower_red": 1,
@@ -1864,7 +1860,10 @@
       ],
       "spawn": {
         "weight": 0.4,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 1.2
+        }
       },
       "stats": {
         "sky_blossom": 1,
@@ -1897,7 +1896,10 @@
       ],
       "spawn": {
         "weight": 0.8,
-        "noForest": true
+        "biomes": {
+          "forest": 0,
+          "flower_field": 2.4
+        }
       },
       "stats": {
         "flower_white": 1,
@@ -1982,7 +1984,9 @@
       "blocks": true,
       "spawn": {
         "weight": 0.03,
-        "noForest": true
+        "biomes": {
+          "forest": 0
+        }
       },
       "interact": {
         "costs": {

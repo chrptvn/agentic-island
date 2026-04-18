@@ -87,7 +87,7 @@ export function buildIslandLayer1(
   w: number,
   h: number,
   seed = 0,
-): { overrides: Array<{ x: number; y: number; layer: number; tileId: string }>; grassGrid: boolean[][]; sandGrid: Set<string>; forestGrid: Set<string>; lakeGrid: Set<string> } {
+): { overrides: Array<{ x: number; y: number; layer: number; tileId: string }>; grassGrid: boolean[][]; sandGrid: Set<string>; biomeGrid: Map<string, string>; lakeGrid: Set<string> } {
   const rng = mulberry32(seed);
   const mapGen = getIslandConfig().mapGen;
 
@@ -270,47 +270,50 @@ export function buildIslandLayer1(
     }
   }
 
-  // ── 8. Generate forest zones ──────────────────────────────────────────────
-  // BFS-grow N roughly-circular forest blobs from random deep-interior grass
-  // cells.  Forest zones get higher vegetation density and are the only places
-  // where forestOnly entities (e.g. fallen trees) can spawn.
-  const { forestCount, forestRadiusMin, forestRadiusMax } = mapGen;
-  const forestGrid = new Set<string>();
+  // ── 8. Generate biome zones ─────────────────────────────────────────────
+  // BFS-grow N roughly-circular biome blobs from random deep-interior grass
+  // cells.  Each biome can override per-entity spawn weights and vegetation density.
+  const biomeGrid = new Map<string, string>();
 
-  if (forestCount > 0) {
-    // Collect deep-interior grass cells (all 8 neighbors are grass) as center candidates
-    const forestCandidates: [number, number][] = [];
+  for (const biome of mapGen.biomes) {
+    if (biome.count <= 0) continue;
+
+    // Collect deep-interior grass cells (all 8 neighbors are grass) that are
+    // not already claimed by another biome as center candidates
+    const biomeCandidates: [number, number][] = [];
     for (let y = 2; y < h - 2; y++) {
       for (let x = 2; x < w - 2; x++) {
         if (!grid[y][x]) continue;
+        if (biomeGrid.has(`${x},${y}`)) continue;
         let deep = true;
         for (let dy = -1; dy <= 1 && deep; dy++)
           for (let dx = -1; dx <= 1 && deep; dx++)
             if (!grid[y + dy]?.[x + dx]) deep = false;
-        if (deep) forestCandidates.push([x, y]);
+        if (deep) biomeCandidates.push([x, y]);
       }
     }
 
-    for (let f = 0; f < forestCount && forestCandidates.length > 0; f++) {
-      const idx = Math.floor(rng() * forestCandidates.length);
-      const [fx, fy] = forestCandidates.splice(idx, 1)[0];
-      const radius = forestRadiusMin + Math.floor(rng() * (forestRadiusMax - forestRadiusMin + 1));
+    for (let f = 0; f < biome.count && biomeCandidates.length > 0; f++) {
+      const idx = Math.floor(rng() * biomeCandidates.length);
+      const [bx, by] = biomeCandidates.splice(idx, 1)[0];
+      const radius = biome.radiusMin + Math.floor(rng() * (biome.radiusMax - biome.radiusMin + 1));
 
-      // BFS-grow forest zone, staying within grass cells
-      const forestQ: [number, number, number][] = [[fx, fy, 0]];
-      const forestVis = new Set<string>([`${fx},${fy}`]);
-      while (forestQ.length) {
-        const [cx, cy, d] = forestQ.shift()!;
-        forestGrid.add(`${cx},${cy}`);
+      // BFS-grow biome zone, staying within grass cells
+      const bfsQ: [number, number, number][] = [[bx, by, 0]];
+      const bfsVis = new Set<string>([`${bx},${by}`]);
+      while (bfsQ.length) {
+        const [cx, cy, d] = bfsQ.shift()!;
+        const key = `${cx},${cy}`;
+        if (!biomeGrid.has(key)) biomeGrid.set(key, biome.id);
         if (d >= radius) continue;
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
-          const nx = cx + dx, ny = cy + dy;
-          const key = `${nx},${ny}`;
-          if (forestVis.has(key)) continue;
+        for (const [ddx, ddy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+          const nx = cx + ddx, ny = cy + ddy;
+          const nkey = `${nx},${ny}`;
+          if (bfsVis.has(nkey)) continue;
           if (nx < 1 || nx >= w - 1 || ny < 1 || ny >= h - 1) continue;
           if (!grid[ny][nx]) continue;
-          forestVis.add(key);
-          forestQ.push([nx, ny, d + 1]);
+          bfsVis.add(nkey);
+          bfsQ.push([nx, ny, d + 1]);
         }
       }
     }
@@ -443,7 +446,7 @@ export function buildIslandLayer1(
   for (let y = 0; y < h; y++)
     for (let x = 0; x < w; x++)
       if (terrain[y][x] === "sand") sandGrid.add(`${x},${y}`);
-  return { overrides: result, grassGrid: grassOnlyGrid, sandGrid, forestGrid, lakeGrid };
+  return { overrides: result, grassGrid: grassOnlyGrid, sandGrid, biomeGrid, lakeGrid };
 }
 
 // ── Dirt-path autotiling ──────────────────────────────────────────────────────
@@ -549,7 +552,7 @@ import {
   type TilePlacement,
   applyRandomStats,
 } from "./entity-registry.js";
-import { getIslandConfig } from "./island-config.js";
+import { getIslandConfig, type BiomeConfig } from "./island-config.js";
 
 /**
  * Scatter vegetation on inner grass cells using a seeded RNG.
@@ -563,7 +566,7 @@ export function buildVegetationLayer(
   seed: number,
   grassGrid: boolean[][],
   sandGrid: Set<string>,
-  forestGrid: Set<string>,
+  biomeGrid: Map<string, string>,
   lakeGrid: Set<string>,
 ): {
   tileOverrides: Array<{ x: number; y: number; layer: number; tileId: string }>;
@@ -578,8 +581,8 @@ export function buildVegetationLayer(
     isBlocking: boolean;
     requiresDeep: boolean;
     requiresWide: boolean;
-    forestOnly: boolean;
-    noForest: boolean;
+    biomeWeights: Record<string, number>;
+    baseWeight: number;
     lakeOnly: boolean;
     lakeInterior: boolean;
   }
@@ -588,7 +591,7 @@ export function buildVegetationLayer(
   const spawnWeights: number[] = [];
 
   for (const def of ENTITY_DEFS) {
-    if (!def.spawn || def.spawn.weight <= 0) continue;
+    if (!def.spawn || def.spawn.weight <= 0 && !def.spawn.biomes) continue;
     const tiles = def.tiles;
     const maxDx = Math.max(0, ...tiles.map((t) => t.dx));
     const minDy = Math.min(0, ...tiles.map((t) => t.dy));
@@ -598,8 +601,8 @@ export function buildVegetationLayer(
       isBlocking: def.blocks === true,
       requiresDeep: minDy < 0,
       requiresWide: maxDx > 0,
-      forestOnly: def.spawn.forestOnly === true,
-      noForest: def.spawn.noForest === true,
+      biomeWeights: def.spawn.biomes ?? {},
+      baseWeight: def.spawn.weight,
       lakeOnly: def.spawn.lakeOnly === true,
       lakeInterior: def.spawn.lakeInterior === true,
     });
@@ -608,10 +611,21 @@ export function buildVegetationLayer(
 
   const totalWeight = spawnWeights.reduce((a, b) => a + b, 0);
 
-  function pickCandidate(isDeep: boolean, isWide: boolean, inForest: boolean): SpawnCandidate | null {
+  /** Pick a spawn candidate for a cell, using biome-specific weights when inside a biome. */
+  function pickCandidate(isDeep: boolean, isWide: boolean, biomeId: string | undefined): SpawnCandidate | null {
     const eligible = spawnPool
-      .map((c, i) => ({ c, w: spawnWeights[i] }))
-      .filter(({ c }) => !c.lakeOnly && !c.lakeInterior && (!c.requiresDeep || isDeep) && (!c.requiresWide || isWide) && (!c.forestOnly || inForest) && (!c.noForest || !inForest));
+      .map((c, i) => {
+        if (c.lakeOnly || c.lakeInterior) return null;
+        if (c.requiresDeep && !isDeep) return null;
+        if (c.requiresWide && !isWide) return null;
+        // Resolve weight: biome-specific override if present, otherwise base weight
+        const w = biomeId !== undefined && biomeId in c.biomeWeights
+          ? c.biomeWeights[biomeId]
+          : c.baseWeight;
+        if (w <= 0) return null;
+        return { c, w };
+      })
+      .filter((x): x is { c: SpawnCandidate; w: number } => x !== null);
     if (eligible.length === 0) return null;
     const total = eligible.reduce((s, { w }) => s + w, 0);
     let r = rng() * total;
@@ -623,7 +637,11 @@ export function buildVegetationLayer(
   }
 
   const SPAWN_DENSITY = totalWeight > 0 ? getIslandConfig().mapGen.vegetationDensity : 0;
-  const FOREST_DENSITY = totalWeight > 0 ? getIslandConfig().mapGen.forestVegetationDensity : 0;
+  // Build a lookup from biome ID → vegetationDensity for fast per-cell access
+  const biomeDensityMap = new Map<string, number>();
+  for (const b of getIslandConfig().mapGen.biomes) {
+    biomeDensityMap.set(b.id, b.vegetationDensity);
+  }
 
   const isG = (x: number, y: number) =>
     x >= 0 && x < w && y >= 0 && y < h && grassGrid[y]?.[x] === true;
@@ -674,7 +692,8 @@ export function buildVegetationLayer(
     for (let x = 1; x < w - 1; x++) {
       if (!isG(x, y)) continue;
       const key = `${x},${y}`;
-      const density = forestGrid.has(key) ? FOREST_DENSITY : SPAWN_DENSITY;
+      const cellBiome = biomeGrid.get(key);
+      const density = cellBiome ? (biomeDensityMap.get(cellBiome) ?? SPAWN_DENSITY) : SPAWN_DENSITY;
       if (rng() < density) candidates.push(key);
     }
   }
@@ -690,8 +709,8 @@ export function buildVegetationLayer(
     const [x, y] = key.split(",").map(Number);
     const isDeep = isG(x, y - 1);
     const isWide = isG(x + 1, y);
-    const inForest = forestGrid.has(key);
-    const candidate = pickCandidate(isDeep, isWide, inForest);
+    const biomeId = biomeGrid.get(key);
+    const candidate = pickCandidate(isDeep, isWide, biomeId);
     if (!candidate) continue;
 
     if (!canPlace(x, y, candidate)) continue;
@@ -703,7 +722,7 @@ export function buildVegetationLayer(
   const LILY_DENSITY = lilyPool.length > 0 ? getIslandConfig().mapGen.lilyPadDensity : 0;
 
   if (LILY_DENSITY > 0) {
-    const lilyWeights = lilyPool.map(c => spawnWeights[spawnPool.indexOf(c)]);
+    const lilyWeights = lilyPool.map(c => c.baseWeight);
 
     function pickLilyPad(isBorder: boolean): SpawnCandidate | null {
       // lakeInterior entities are excluded from border cells

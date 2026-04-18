@@ -30,11 +30,15 @@ export interface EntityDef {
   /** If true, this entity is a solid obstacle — characters cannot walk through layer-3 tiles. */
   blocks?: boolean;
   spawn?: {
-    /** Relative spawn weight; higher = more frequent. */
+    /** Relative spawn weight for open terrain (no biome); higher = more frequent. */
     weight: number;
-    /** If true, this entity only spawns inside forest zones. */
+    /** Per-biome weight overrides. Key = biome ID, value = spawn weight inside that biome.
+     *  If a biome is not listed, the base `weight` is used.
+     *  Set to 0 to prevent spawning inside a specific biome. */
+    biomes?: Record<string, number>;
+    /** @deprecated Use `biomes: { forest: <weight> }` with base weight 0 instead. */
     forestOnly?: boolean;
-    /** If true, this entity never spawns inside forest zones. */
+    /** @deprecated Use `biomes: { forest: 0 }` instead. */
     noForest?: boolean;
     /** If true, this entity only spawns on lake-border water cells. */
     lakeOnly?: boolean;
@@ -62,6 +66,8 @@ export interface EntityDef {
   proximityTrigger?: ProximityTriggerDef;
   /** Fires effects when a character interacts with this entity. */
   interactionEffect?: InteractionEffectDef;
+  /** Render scale factor (0–1). Shrinks single-tile entity sprites, keeping them centered in the tile. */
+  renderScale?: number;
 }
 
 /** Recipe cost to build an entity onto the map from an adjacent cell. */
@@ -198,6 +204,17 @@ function loadConfig(): EntitiesConfig {
   // Normalize: ensure every entity has a tiles array (items may omit it in JSON)
   for (const e of raw.entities) {
     (e as { tiles?: TilePlacement[] }).tiles ??= [];
+    // Migrate legacy forestOnly/noForest flags to biomes weights
+    if (e.spawn && !e.spawn.biomes) {
+      if (e.spawn.forestOnly) {
+        e.spawn.biomes = { forest: e.spawn.weight };
+        e.spawn.weight = 0;
+      } else if (e.spawn.noForest) {
+        e.spawn.biomes = { forest: 0 };
+      }
+      delete e.spawn.forestOnly;
+      delete e.spawn.noForest;
+    }
   }
   return raw;
 }

@@ -39,10 +39,22 @@
     "sandSeedProb": 0.05,
     "sandGrowProb": 2,
     "sandMaxDepth": 2,
-    "forestCount": 2,
-    "forestRadiusMin": 3,
-    "forestRadiusMax": 15,
-    "forestVegetationDensity": 1,
+    "biomes": [
+      {
+        "id": "forest",
+        "count": 2,
+        "radiusMin": 3,
+        "radiusMax": 15,
+        "vegetationDensity": 1.0
+      },
+      {
+        "id": "flower_field",
+        "count": 2,
+        "radiusMin": 3,
+        "radiusMax": 8,
+        "vegetationDensity": 0.6
+      }
+    ],
     "lilyPadDensity": 0.10
   }
 }

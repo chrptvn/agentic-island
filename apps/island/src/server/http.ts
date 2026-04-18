@@ -7,7 +7,7 @@ import { MAP_SIZE_PRESETS, type MapSize } from "../island/map.js";
 import { TILES, TILE_SIZE, TILE_GAP, TILE_SHEET, SHEET_OVERRIDES } from "../island/tile-registry.js";
 import { allItemDefs } from "../island/item-registry.js";
 import { RECIPES } from "../island/craft-registry.js";
-import { BUILD_DEFS } from "../island/entity-registry.js";
+import { BUILD_DEFS, ENTITY_DEFS } from "../island/entity-registry.js";
 import { handleMcpRequest } from "../mcp/mcp-server.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -102,6 +102,37 @@ async function handleRequest(
     return;
   }
 
+  if (url === "/api/entities" && method === "GET") {
+    const entities = ENTITY_DEFS.map((e) => {
+      const tags: string[] = [];
+      if (e.blocks) tags.push("blocking");
+      if (e.harvest) tags.push("harvestable");
+      if (e.build) tags.push("buildable");
+      if (e.container) tags.push("container");
+      if (e.interact) tags.push("interactable");
+      if (e.spawn) {
+        const hints: string[] = [];
+        if (e.spawn.biomes) {
+          const biomeNames = Object.entries(e.spawn.biomes)
+            .filter(([, w]) => w > 0)
+            .map(([id]) => id);
+          if (biomeNames.length > 0) hints.push(biomeNames.join(", "));
+        }
+        if (e.spawn.lakeOnly) hints.push("lake border");
+        if (e.spawn.lakeInterior) hints.push("deep lake");
+        tags.push(hints.length ? `spawns (${hints.join(", ")})` : "spawns");
+      }
+      if (e.growthStages) tags.push(`grows → ${e.growthStages.nextStage}`);
+      if (e.decay) tags.push("decays");
+      if (e.energyRegen) tags.push("regen");
+      if (e.proximityTrigger) tags.push("proximity trigger");
+      if (e.interactionEffect) tags.push("interaction effect");
+      return { id: e.id, name: e.name ?? e.id, description: tags.join(", ") || "—" };
+    });
+    jsonOk(res, entities);
+    return;
+  }
+
   if (url === "/api/characters" && method === "GET") {
     const island = Island.getInstance();
     const characters = Object.fromEntries(
@@ -118,6 +149,59 @@ async function handleRequest(
       const body = await readBody(req) as { id: string };
       Island.getInstance().disconnect(body.id);
       jsonOk(res, { message: `Character "${body.id}" disconnected from the island.` });
+    } catch (err) {
+      jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  if (url === "/api/give" && method === "POST") {
+    try {
+      const body = await readBody(req) as { id: string; item: string; qty?: number };
+      if (!body.id || !body.item) {
+        jsonErr(res, 400, "Required: id, item");
+        return;
+      }
+      const qty = Math.floor(body.qty ?? 1);
+      const entry = Island.getInstance().giveItem(body.id, body.item, qty);
+      jsonOk(res, { message: `Gave ${qty}× ${body.item} to "${body.id}".`, inventory_entry: entry });
+    } catch (err) {
+      jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  // Alias: /api/despawn → /api/disconnect
+  if (url === "/api/despawn" && method === "POST") {
+    try {
+      const body = await readBody(req) as { id: string };
+      Island.getInstance().disconnect(body.id);
+      jsonOk(res, { message: `Character "${body.id}" removed from the island.` });
+    } catch (err) {
+      jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  if (url === "/api/spawn" && method === "POST") {
+    try {
+      const body = await readBody(req) as { id: string; x: number; y: number };
+      const island = Island.getInstance();
+      const character = island.spawnCharacter(body.x, body.y, body.id);
+      jsonOk(res, { message: `Character "${body.id}" spawned at (${character.x}, ${character.y}).`, id: character.id, x: character.x, y: character.y });
+    } catch (err) {
+      jsonErr(res, 400, (err as Error).message);
+    }
+    return;
+  }
+
+  if (url === "/api/spawn_random" && method === "POST") {
+    try {
+      const body = await readBody(req) as { id: string };
+      const island = Island.getInstance();
+      const { character, reconnected } = island.connect(body.id);
+      const verb = reconnected ? "reconnected" : "spawned";
+      jsonOk(res, { message: `Character "${body.id}" ${verb} at (${character.x}, ${character.y}).`, id: character.id, x: character.x, y: character.y, reconnected });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
     }
