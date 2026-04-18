@@ -31,7 +31,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 4
+        "weight": 4,
+        "biomes": {
+          "grass_field": 4,
+          "forest": 4,
+          "flower_field": 0
+        }
       },
       "stats": {
         "branches": 3,
@@ -105,7 +110,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 4
+        "weight": 4,
+        "biomes": {
+          "grass_field": 4,
+          "forest": 4,
+          "flower_field": 0
+        }
       },
       "stats": {
         "branches": 3,
@@ -179,7 +189,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.1
+        "weight": 0.1,
+        "biomes": {
+          "grass_field": 0.1,
+          "forest": 0.1,
+          "flower_field": 0
+        }
       },
       "stats": {
         "branches": 2,
@@ -249,7 +264,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.5
+        "weight": 0.5,
+        "biomes": {
+          "grass_field": 0.5,
+          "forest": 0.5,
+          "flower_field": 0
+        }
       },
       "stats": {
         "branches": 2,
@@ -304,7 +324,9 @@
       "spawn": {
         "weight": 3,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 3,
+          "flower_field": 0
         }
       },
       "stats": {
@@ -358,7 +380,9 @@
       "spawn": {
         "weight": 3,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 3,
+          "flower_field": 0
         }
       },
       "stats": {
@@ -412,7 +436,9 @@
       "spawn": {
         "weight": 0.1,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.1,
+          "flower_field": 0
         }
       },
       "stats": {
@@ -467,7 +493,9 @@
       "spawn": {
         "weight": 0.3,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.3,
+          "flower_field": 0
         }
       },
       "stats": {
@@ -520,7 +548,12 @@
         }
       ],
       "spawn": {
-        "weight": 0.3
+        "weight": 0.3,
+        "biomes": {
+          "grass_field": 0.3,
+          "forest": 0.3,
+          "flower_field": 0
+        }
       },
       "stats": {
         "bark": 1,
@@ -559,7 +592,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.3
+        "weight": 0.3,
+        "biomes": {
+          "grass_field": 0.3,
+          "forest": 0.3,
+          "flower_field": 0
+        }
       },
       "stats": {
         "bark": 1,
@@ -657,7 +695,8 @@
         "weight": 1.5,
         "biomes": {
           "forest": 0,
-          "flower_field": 4.5
+          "flower_field": 4.5,
+          "grass_field": 1.5
         }
       },
       "stats": {
@@ -700,7 +739,8 @@
         "weight": 0.3,
         "biomes": {
           "forest": 0,
-          "flower_field": 0.9
+          "flower_field": 0.9,
+          "grass_field": 0.3
         }
       },
       "stats": {
@@ -741,7 +781,8 @@
         "weight": 1.5,
         "biomes": {
           "forest": 0,
-          "flower_field": 4.5
+          "flower_field": 4.5,
+          "grass_field": 1.5
         }
       },
       "stats": {
@@ -777,7 +818,8 @@
         "weight": 1.5,
         "biomes": {
           "forest": 0,
-          "flower_field": 4.5
+          "flower_field": 4.5,
+          "grass_field": 1.5
         }
       },
       "stats": {
@@ -816,7 +858,8 @@
         "weight": 1.5,
         "biomes": {
           "forest": 0,
-          "flower_field": 4.5
+          "flower_field": 4.5,
+          "grass_field": 1.5
         }
       },
       "stats": {
@@ -852,7 +895,12 @@
         }
       ],
       "spawn": {
-        "weight": 0.8
+        "weight": 0.8,
+        "biomes": {
+          "grass_field": 0.8,
+          "forest": 0.8,
+          "flower_field": 0.8
+        }
       },
       "stats": {
         "mushroom": 1
@@ -936,7 +984,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.3
+        "weight": 0.3,
+        "biomes": {
+          "grass_field": 0.3,
+          "forest": 0.3,
+          "flower_field": 0
+        }
       },
       "stats": {
         "rocks": 1,
@@ -983,7 +1036,12 @@
       ],
       "blocks": true,
       "spawn": {
-        "weight": 0.1
+        "weight": 0.1,
+        "biomes": {
+          "grass_field": 0.1,
+          "forest": 0.1,
+          "flower_field": 0
+        }
       },
       "stats": {
         "rocks": 2,
@@ -1168,7 +1226,8 @@
         "weight": 3,
         "biomes": {
           "forest": 0,
-          "flower_field": 9
+          "flower_field": 9,
+          "grass_field": 3
         }
       },
       "stats": {
@@ -1210,7 +1269,12 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 0.1
+        "weight": 0.1,
+        "biomes": {
+          "grass_field": 0.1,
+          "forest": 0.1,
+          "flower_field": 0.1
+        }
       },
       "stats": {
         "dried_grass": 1
@@ -1242,7 +1306,12 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 1
+        "weight": 1,
+        "biomes": {
+          "grass_field": 1,
+          "forest": 1,
+          "flower_field": 1
+        }
       },
       "stats": {
         "purple_mushroom": 1
@@ -1344,7 +1413,9 @@
       "spawn": {
         "weight": 0.5,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.5,
+          "flower_field": 0.5
         }
       },
       "growthStages": {
@@ -1367,7 +1438,9 @@
       "spawn": {
         "weight": 0.8,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.8,
+          "flower_field": 0.8
         }
       },
       "stats": {
@@ -1398,7 +1471,9 @@
       "spawn": {
         "weight": 0.5,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.5,
+          "flower_field": 0.5
         }
       },
       "growthStages": {
@@ -1421,7 +1496,9 @@
       "spawn": {
         "weight": 0.8,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.8,
+          "flower_field": 0.8
         }
       },
       "stats": {
@@ -1452,7 +1529,9 @@
       "spawn": {
         "weight": 0.4,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.4,
+          "flower_field": 0.4
         }
       },
       "growthStages": {
@@ -1475,7 +1554,9 @@
       "spawn": {
         "weight": 0.6,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.6,
+          "flower_field": 0.6
         }
       },
       "stats": {
@@ -1506,7 +1587,9 @@
       "spawn": {
         "weight": 0.4,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.4,
+          "flower_field": 0.4
         }
       },
       "growthStages": {
@@ -1529,7 +1612,9 @@
       "spawn": {
         "weight": 0.6,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.6,
+          "flower_field": 0.6
         }
       },
       "stats": {
@@ -1560,7 +1645,9 @@
       "spawn": {
         "weight": 0.4,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.4,
+          "flower_field": 0.4
         }
       },
       "growthStages": {
@@ -1583,7 +1670,9 @@
       "spawn": {
         "weight": 0.8,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.8,
+          "flower_field": 0.8
         }
       }
     },
@@ -1602,7 +1691,9 @@
       "spawn": {
         "weight": 0.6,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.6,
+          "flower_field": 0.6
         }
       },
       "stats": {
@@ -1791,7 +1882,8 @@
         "weight": 0.4,
         "biomes": {
           "forest": 0,
-          "flower_field": 1.2
+          "flower_field": 1.2,
+          "grass_field": 0.4
         }
       },
       "stats": {
@@ -1826,7 +1918,8 @@
         "weight": 0.6,
         "biomes": {
           "forest": 0,
-          "flower_field": 1.8
+          "flower_field": 1.8,
+          "grass_field": 0.6
         }
       },
       "stats": {
@@ -1862,7 +1955,8 @@
         "weight": 0.4,
         "biomes": {
           "forest": 0,
-          "flower_field": 1.2
+          "flower_field": 1.2,
+          "grass_field": 0.4
         }
       },
       "stats": {
@@ -1898,7 +1992,8 @@
         "weight": 0.8,
         "biomes": {
           "forest": 0,
-          "flower_field": 2.4
+          "flower_field": 2.4,
+          "grass_field": 0.8
         }
       },
       "stats": {
@@ -1985,7 +2080,9 @@
       "spawn": {
         "weight": 0.03,
         "biomes": {
-          "forest": 0
+          "forest": 0,
+          "grass_field": 0.03,
+          "flower_field": 0.03
         }
       },
       "interact": {

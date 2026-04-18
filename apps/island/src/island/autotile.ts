@@ -630,10 +630,10 @@ export function buildVegetationLayer(
         if (c.lakeOnly || c.lakeInterior) return null;
         if (c.requiresDeep && !isDeep) return null;
         if (c.requiresWide && !isWide) return null;
-        // Resolve weight: biome-specific override if present, otherwise base weight
+        // Resolve weight: biome-specific weight only — no fallback to base
         const w = biomeId !== undefined && biomeId in c.biomeWeights
           ? c.biomeWeights[biomeId]
-          : c.baseWeight;
+          : 0;
         if (w <= 0) return null;
         return { c, w };
       })
