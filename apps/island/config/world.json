@@ -43,15 +43,15 @@
       {
         "id": "forest",
         "count": 2,
-        "radiusMin": 3,
-        "radiusMax": 15,
+        "radiusMin": 15,
+        "radiusMax": 30,
         "vegetationDensity": 1.0
       },
       {
         "id": "flower_field",
         "count": 2,
-        "radiusMin": 3,
-        "radiusMax": 8,
+        "radiusMin": 15,
+        "radiusMax": 20,
         "vegetationDensity": 0.6
       },
       {
