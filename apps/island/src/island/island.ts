@@ -10,7 +10,7 @@ import {
 import { TILE_BY_ID, TILE_SHEET, TILE_SIZE, TILE_GAP, SHEET_OVERRIDES } from "./tile-registry.js";
 import { buildIslandLayer1, buildVegetationLayer, isPathTileId, isWalkableGround, autotilePathCell, terrainFromLayer1 } from "./autotile.js";
 import type { EntityStats } from "./entity-registry.js";
-import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, SEED_TO_SPROUT, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
+import { HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, DECAY_DEFS, REPAIR_DEFS, BLOCKING_IDS, ENTITY_DEFAULTS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, GROWTH_DEFS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, getResources, applyRandomStats, reloadEntities, CONFIG_PATH_ENTITIES } from "./entity-registry.js";
 import type { SensoryEvent } from "./character-registry.js";
 import { type CharacterStats, type CharacterInstance, type ActiveHallucination, type Point, type EquipmentSlot, getDefaultCharacterStats, defaultEquipment } from "./character-registry.js";
 import { findPath } from "./pathfinder.js";
@@ -2467,9 +2467,10 @@ export class Island extends EventEmitter {
     const character = this.characters.get(id);
     if (!character) throw new Error(`No character named "${id}".`);
 
-    // Map seed → first sprout stage (data-driven from entities.json plantedBy field)
-    const sproutId = SEED_TO_SPROUT[seedItem];
-    if (!sproutId) throw new Error(`"${seedItem}" is not a plantable seed. Valid seeds: ${Object.keys(SEED_TO_SPROUT).join(", ")}.`);
+    // Look up sprout from item definition (plantsAs field in item-defs.json)
+    const itemDef = getItemDef(seedItem);
+    const sproutId = itemDef.plantsAs;
+    if (!sproutId) throw new Error(`"${seedItem}" is not a plantable seed.`);
 
     const inv = character.stats.inventory as { item: string; qty: number }[];
     const slot = inv.find(i => i.item === seedItem);

@@ -8,10 +8,11 @@
     "special": [
       {
         "verb": "smell",
-        "description": "Hold the berries to your nose \u2014 sweet and fruity.",
+        "description": "Hold the berries to your nose — sweet and fruity.",
         "message": "You breathe in the sweet berry scent. It's oddly comforting."
       }
-    ]
+    ],
+    "plantsAs": "berry_sprout"
   },
   "wood": {
     "equippable": false,
@@ -42,7 +43,8 @@
     "wearable": null,
     "eat": {
       "hunger": 10
-    }
+    },
+    "plantsAs": "oak_sprout"
   },
   "stone_axe": {
     "equippable": true,
@@ -102,11 +104,8 @@
   },
   "cotton_seed": {
     "equippable": false,
-    "wearable": null
-  },
-  "flower_blue": {
-    "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "plantsAs": "cotton_sprout"
   },
   "flower_red": {
     "equippable": false,
@@ -120,29 +119,33 @@
     "equippable": false,
     "wearable": null
   },
-  "flower_blue_seed": {
-    "equippable": false,
-    "wearable": null
-  },
   "flower_red_seed": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "plantsAs": "flower_red_sprout"
   },
-  "flower_pink_seed": {
+  "geranium_seed": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "plantsAs": "geranium_sprout"
   },
   "sky_blossom_seed": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "plantsAs": "sky_blossom_sprout"
   },
   "flower_white_seed": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "plantsAs": "flower_white_sprout"
   },
-  "flower_yellow_seed": {
+  "sunflower_seed": {
     "equippable": false,
-    "wearable": null
+    "wearable": null,
+    "eat": {
+      "hunger": 10
+    },
+    "plantsAs": "sunflower_sprout"
   },
   "leather": {
     "equippable": false,
@@ -861,12 +864,27 @@
       "health": -10,
       "message": "You swallow the suspicious mushroom. Your stomach lurches — that was a terrible idea.",
       "nearbyMessage": "Someone just ate a suspicious mushroom and looks like they immediately regret it.",
-      "emotions": [{ "key": "joy", "delta": -15 }, { "key": "fear", "delta": 10 }],
+      "emotions": [
+        {
+          "key": "joy",
+          "delta": -15
+        },
+        {
+          "key": "fear",
+          "delta": 10
+        }
+      ],
       "hallucination": {
         "durationMs": 300000,
         "effects": [
-          { "emotionPole": "anxious", "delta": 30 },
-          { "emotionPole": "happy", "delta": 25 }
+          {
+            "emotionPole": "anxious",
+            "delta": 30
+          },
+          {
+            "emotionPole": "happy",
+            "delta": 25
+          }
         ]
       }
     },
@@ -875,7 +893,7 @@
         "verb": "sniff",
         "description": "Hold it to your nose. Something smells deeply wrong.",
         "message": "You sniff the suspicious mushroom. The smell makes your stomach turn.",
-        "nearbyMessage": "Someone is sniffing a suspicious mushroom nearby. You catch a whiff \u2014 it smells terrible.",
+        "nearbyMessage": "Someone is sniffing a suspicious mushroom nearby. You catch a whiff — it smells terrible.",
         "radius": 2
       }
     ]
@@ -1170,7 +1188,8 @@
         "description": "Hold the fragment up to the light.",
         "message": "The fragment glows faintly at the edges, as if moonlight got trapped in it."
       }
-    ]
+    ],
+    "plantsAs": "moon_blossom_sprout"
   },
   "moon_blossom": {
     "equippable": false,
@@ -1275,7 +1294,7 @@
       }
     ]
   },
-  "flower_pink": {
+  "geranium": {
     "equippable": false,
     "wearable": null,
     "special": [
@@ -1286,14 +1305,14 @@
       }
     ]
   },
-  "flower_yellow": {
+  "sunflower": {
     "equippable": false,
     "wearable": null,
     "special": [
       {
         "verb": "smell",
-        "description": "Lift the yellow flower to your nose.",
-        "message": "The yellow flower smells warm, sweet, and a little wild."
+        "description": "Lift the sunflower to your nose.",
+        "message": "The sunflower smells warm, sweet, and a little wild."
       }
     ]
   },

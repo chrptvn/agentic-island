@@ -62,6 +62,8 @@ export interface ItemDef {
   hideWhenEquipped?: boolean;
   /** Configurable special interactions for this item (e.g. squish, sniff, wave). */
   special?: SpecialItemAction[];
+  /** Entity ID of the sprout placed when this seed is planted. */
+  plantsAs?: string;
 }
 
 const __dirname = dirname(fileURLToPath(import.meta.url));

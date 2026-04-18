@@ -68,8 +68,6 @@ export interface EntityDef {
   interactionEffect?: InteractionEffectDef;
   /** Render scale factor (0–1). Shrinks single-tile entity sprites, keeping them centered in the tile. */
   renderScale?: number;
-  /** Seed item that creates this sprout entity when planted. */
-  plantedBy?: string;
 }
 
 /** Recipe cost to build an entity onto the map from an adjacent cell. */
@@ -309,13 +307,7 @@ function buildDerivedExports(defs: EntityDef[]) {
     if (e.interactionEffect) INTERACTION_EFFECTS.set(anchor.tileId, e.interactionEffect);
   }
 
-  // Seed → sprout mapping derived from entities with plantedBy
-  const SEED_TO_SPROUT: Record<string, string> = {};
-  for (const e of defs) {
-    if (e.plantedBy) SEED_TO_SPROUT[e.plantedBy] = e.id;
-  }
-
-  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, GROWTH_DEFS, RANDOM_STATS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS, SEED_TO_SPROUT };
+  return { ENTITY_DEFAULTS, SINGLE_TILE_IDS, TWO_TILE_TREE_PAIRS, HARVEST_DEFS, BUILD_DEFS, INTERACT_DEFS, SEARCH_TARGET_MAP, BLOCKING_IDS, ENTITY_DEF_BY_ID, ENTITY_DEF_BY_TILE_ID, TILE_OFFSET_BY_TILE_ID, DECAY_DEFS, REPAIR_DEFS, GROWTH_DEFS, RANDOM_STATS, PROXIMITY_TRIGGERS, INTERACTION_EFFECTS };
 }
 
 /** Full entity definitions as loaded from config/entities.json. */
@@ -379,9 +371,6 @@ export let PROXIMITY_TRIGGERS: Map<string, ProximityTriggerDef> = _derived.PROXI
 /** Maps anchor tileId → InteractionEffectDef for entities with interaction sensory/emotion effects. */
 export let INTERACTION_EFFECTS: Map<string, InteractionEffectDef> = _derived.INTERACTION_EFFECTS;
 
-/** Maps seed item name → sprout entity ID, derived from entities with `plantedBy`. */
-export let SEED_TO_SPROUT: Record<string, string> = _derived.SEED_TO_SPROUT;
-
 /** Set of entity tile IDs that are solid obstacles — never walkable, harvest requires adjacency. */
 export let BLOCKING_IDS: Set<string> = _derived.BLOCKING_IDS;
 
@@ -423,7 +412,6 @@ export function reloadEntities(): void {
   RANDOM_STATS      = _derived.RANDOM_STATS;
   PROXIMITY_TRIGGERS    = _derived.PROXIMITY_TRIGGERS;
   INTERACTION_EFFECTS   = _derived.INTERACTION_EFFECTS;
-  SEED_TO_SPROUT        = _derived.SEED_TO_SPROUT;
   validateEntityDefs(defs);
 }
 

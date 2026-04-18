@@ -1729,8 +1729,7 @@
       "growthStages": {
         "nextStage": "oak_sapling",
         "growthMs": 120000
-      },
-      "plantedBy": "acorns"
+      }
     },
     {
       "id": "oak_sapling",
@@ -1764,8 +1763,7 @@
       "growthStages": {
         "nextStage": "berry_bush_sprout",
         "growthMs": 120000
-      },
-      "plantedBy": "berries"
+      }
     },
     {
       "id": "cotton_sprout",
@@ -1782,8 +1780,7 @@
       "growthStages": {
         "nextStage": "cotton_patch",
         "growthMs": 180000
-      },
-      "plantedBy": "cotton_seed"
+      }
     },
     {
       "id": "geranium_sprout",
@@ -1800,8 +1797,7 @@
       "growthStages": {
         "nextStage": "geraniums",
         "growthMs": 180000
-      },
-      "plantedBy": "geranium_seed"
+      }
     },
     {
       "id": "flower_red_sprout",
@@ -1818,8 +1814,7 @@
       "growthStages": {
         "nextStage": "red_flowers",
         "growthMs": 180000
-      },
-      "plantedBy": "flower_red_seed"
+      }
     },
     {
       "id": "sky_blossom_sprout",
@@ -1836,8 +1831,7 @@
       "growthStages": {
         "nextStage": "skyblossoms",
         "growthMs": 180000
-      },
-      "plantedBy": "sky_blossom_seed"
+      }
     },
     {
       "id": "flower_white_sprout",
@@ -1854,8 +1848,7 @@
       "growthStages": {
         "nextStage": "white_flowers_patch",
         "growthMs": 180000
-      },
-      "plantedBy": "flower_white_seed"
+      }
     },
     {
       "id": "sunflower_sprout",
@@ -1872,8 +1865,7 @@
       "growthStages": {
         "nextStage": "sunflowers",
         "growthMs": 180000
-      },
-      "plantedBy": "sunflower_seed"
+      }
     },
     {
       "id": "cotton_patch",
@@ -2037,8 +2029,7 @@
       "growthStages": {
         "nextStage": "moon_blossom",
         "growthMs": 240000
-      },
-      "plantedBy": "moon_fragment"
+      }
     },
     {
       "id": "moon_blossom",
