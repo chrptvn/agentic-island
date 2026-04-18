@@ -35,6 +35,10 @@ export interface BiomeConfig {
   radiusMax: number;
   /** Fraction (0–1) of eligible cells inside this biome that receive vegetation. */
   vegetationDensity: number;
+  /** If true, all unclaimed grass cells are assigned to this biome after BFS
+   *  placement.  At most one biome should have fill=true; count/radius are
+   *  ignored for fill biomes. */
+  fill?: boolean;
 }
 
 export interface MapGenConfig {

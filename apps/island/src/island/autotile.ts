@@ -276,7 +276,7 @@ export function buildIslandLayer1(
   const biomeGrid = new Map<string, string>();
 
   for (const biome of mapGen.biomes) {
-    if (biome.count <= 0) continue;
+    if (biome.fill || biome.count <= 0) continue;
 
     // Collect deep-interior grass cells (all 8 neighbors are grass) that are
     // not already claimed by another biome as center candidates
@@ -319,7 +319,19 @@ export function buildIslandLayer1(
     }
   }
 
-  // ── 8. Generate natural sand patches near water ───────────────────────────
+  // ── 8b. Fill remaining grass with the fill biome ──────────────────────────
+  const fillBiome = mapGen.biomes.find(b => b.fill);
+  if (fillBiome) {
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        if (!grid[y][x]) continue;
+        const key = `${x},${y}`;
+        if (!biomeGrid.has(key)) biomeGrid.set(key, fillBiome.id);
+      }
+    }
+  }
+
+  // ── 9. Generate natural sand patches near water ───────────────────────────
   // Two-pass seeded patch growth:
   //   Phase 1 (seed): ~sandSeedProb of water-adjacent grass cells become sand
   //   Phase 2 (grow): each seeded cell spreads to grass neighbors within sandMaxDepth
