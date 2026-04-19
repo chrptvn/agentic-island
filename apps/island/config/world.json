@@ -69,7 +69,8 @@
         "lake": {
           "probability": 0.1,
           "radiusMin": 8,
-          "radiusMax": 20
+          "radiusMax": 20,
+          "count": 3
         }
       },
       {

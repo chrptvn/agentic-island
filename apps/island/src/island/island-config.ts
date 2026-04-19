@@ -92,10 +92,13 @@ export interface GameplayConfig {
 export interface BiomeLakeConfig {
   /** Probability (0–1) that each zone of this biome gets a lake. */
   probability: number;
-  /** Minimum lake BFS radius (in cells). */
+  /** Minimum lake radius (in cells). */
   radiusMin: number;
-  /** Maximum lake BFS radius (in cells). */
+  /** Maximum lake radius (in cells). */
   radiusMax: number;
+  /** Number of lake attempts for fill biomes (default 1). Ignored for zone biomes
+   *  where each zone center is an independent attempt controlled by probability. */
+  count?: number;
   /** Autotile prefix for border tiles (default: "water_at"). */
   tilePrefix?: string;
   /** Base tile ID for fully interior lake cells (default: "water"). */
