@@ -32,7 +32,7 @@
     "grassThreshold": 5,
     "waterThreshold": 4,
     "gapFillPasses": 10,
-    "lakeProbability": 0.001,
+    "lakeProbability": 0,
     "lakeRadiusMin": 8,
     "lakeRadiusMax": 20,
     "vegetationDensity": 0.1,
@@ -65,7 +65,12 @@
         "count": 0,
         "radiusMin": 0,
         "radiusMax": 0,
-        "vegetationDensity": 0.05
+        "vegetationDensity": 0.05,
+        "lake": {
+          "probability": 0.001,
+          "radiusMin": 8,
+          "radiusMax": 20
+        }
       },
       {
         "id": "sunflower_field",
@@ -80,7 +85,14 @@
         "radiusMin": 15,
         "radiusMax": 25,
         "vegetationDensity": 0.8,
-        "minDistFromWater": 20
+        "minDistFromWater": 20,
+        "lake": {
+          "probability": 1.0,
+          "radiusMin": 5,
+          "radiusMax": 8,
+          "tilePrefix": "marsh_water_at",
+          "baseTile": "marsh_water"
+        }
       }
     ],
     "lilyPadDensity": 0.10

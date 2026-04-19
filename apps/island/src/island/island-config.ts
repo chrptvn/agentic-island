@@ -86,6 +86,22 @@ export interface GameplayConfig {
   animations: Record<string, AnimationConfig>;
 }
 
+/** Per-biome lake configuration.  Each biome zone can optionally carve an
+ *  inner lake after biome placement.  Custom tile prefixes allow different
+ *  visual styles (e.g. cave water for marshes). */
+export interface BiomeLakeConfig {
+  /** Probability (0–1) that each zone of this biome gets a lake. */
+  probability: number;
+  /** Minimum lake BFS radius (in cells). */
+  radiusMin: number;
+  /** Maximum lake BFS radius (in cells). */
+  radiusMax: number;
+  /** Autotile prefix for border tiles (default: "water_at"). */
+  tilePrefix?: string;
+  /** Base tile ID for fully interior lake cells (default: "water"). */
+  baseTile?: string;
+}
+
 /** A named biome zone that is BFS-grown on the island during map generation.
  *  Each biome can override per-entity spawn weights via the entity's `spawn.biomes` map. */
 export interface BiomeConfig {
@@ -107,6 +123,8 @@ export interface BiomeConfig {
    *  candidate cell to be chosen as this biome's BFS seed center.  Use this
    *  to keep biomes that contain inner lakes well away from the coastline. */
   minDistFromWater?: number;
+  /** Optional lake to carve inside each zone of this biome after placement. */
+  lake?: BiomeLakeConfig;
 }
 
 export interface MapGenConfig {
