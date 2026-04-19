@@ -96,6 +96,14 @@
           "baseTile": "marsh_water",
           "lilyPads": true
         }
+      },
+      {
+        "id": "dead_land",
+        "count": 1,
+        "radiusMin": 12,
+        "radiusMax": 20,
+        "vegetationDensity": 0.5,
+        "groundTile": "dead_ground_at"
       }
     ],
     "lilyPadDensity": 0.10
