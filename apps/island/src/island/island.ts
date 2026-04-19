@@ -349,8 +349,13 @@ export class Island extends EventEmitter {
     for (const [key, layers] of this.overrides) {
       const [x, y] = key.split(",").map(Number);
       for (let layer = 0; layer < layers.length; layer++) {
-        const tileId = layers[layer];
+        let tileId = layers[layer];
         if (tileId && tileId !== "") {
+          // Resolve entity IDs to their render tileId for the wire protocol
+          const entityDef = ENTITY_DEF_BY_ID.get(tileId);
+          if (entityDef) {
+            tileId = entityDef.tiles.find(t => t.dx === 0 && t.dy === 0)?.tileId ?? tileId;
+          }
           result.push({ x, y, layer, tileId });
         }
       }

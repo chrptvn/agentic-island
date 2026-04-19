@@ -689,7 +689,10 @@ export function buildVegetationLayer(
 
   function placeEntity(x: number, y: number, c: SpawnCandidate): void {
     for (const t of c.tiles) {
-      tileOverrides.push({ x: x + t.dx, y: y + t.dy, layer: t.layer, tileId: t.tileId });
+      // For the anchor tile (dx=0,dy=0,layer=3), store entity ID so we can
+      // distinguish entities that share the same tileId (e.g. multiple sprouts).
+      const id = (t.dx === 0 && t.dy === 0 && t.layer === 3) ? c.id : t.tileId;
+      tileOverrides.push({ x: x + t.dx, y: y + t.dy, layer: t.layer, tileId: id });
     }
     const stats = { ...ENTITY_DEFAULTS[c.id] } as Record<string, unknown>;
     applyRandomStats(c.id, stats, rng);

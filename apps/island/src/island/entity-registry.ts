@@ -251,9 +251,11 @@ function buildDerivedExports(defs: EntityDef[]) {
   }
 
   // Derive BLOCKING_IDS from tiles array: all tileIds on layer 3 of blocking entities
+  // Also include the entity ID itself, since map-generated overrides store entity IDs.
   const BLOCKING_IDS: Set<string> = new Set<string>();
   for (const e of defs) {
     if (!e.blocks) continue;
+    BLOCKING_IDS.add(e.id);
     for (const t of e.tiles) {
       if (t.layer === 3) BLOCKING_IDS.add(t.tileId);
     }
