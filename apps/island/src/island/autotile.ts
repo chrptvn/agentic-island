@@ -551,21 +551,6 @@ export function buildIslandLayer1(
             result.push({ x, y, layer: 2, tileId: autotileWaterSandCell(x, y, isGroupWater) });
             continue;
           }
-
-          // Biome ground overlay under custom lake water (mirrors sand approach above).
-          // Ground overlay on layer 1, water autotile on layer 2 — no visible grass gap.
-          const waterBiome = biomeGrid.get(cellKey);
-          const waterGroundPrefix = waterBiome ? biomeGroundTile.get(waterBiome) : undefined;
-          if (waterGroundPrefix && isCustomTile) {
-            const isSameGroundOnWater = (nx: number, ny: number): boolean => {
-              if (nx < 0 || nx >= w || ny < 0 || ny >= h) return false;
-              const nb = biomeGrid.get(`${nx},${ny}`);
-              return nb !== undefined && biomeGroundTile.get(nb) === waterGroundPrefix;
-            };
-            result.push({ x, y, layer: 1, tileId: getAutotileId(waterGroundPrefix, x, y, isSameGroundOnWater) });
-            result.push({ x, y, layer: 2, tileId: getAutotileId(group, x, y, isGroupWater) });
-            continue;
-          }
         } else if (isCustomTile && baseTile) {
           // Interior custom-tile lake cell: use the biome's base tile
           result.push({ x, y, layer: 0, tileId: baseTile });
