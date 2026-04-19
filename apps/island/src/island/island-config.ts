@@ -104,6 +104,8 @@ export interface BiomeLakeConfig {
   tilePrefix?: string;
   /** Base tile ID for fully interior lake cells (default: "water"). */
   baseTile?: string;
+  /** Whether lily pads can spawn on this lake's water cells. */
+  lilyPads?: boolean;
 }
 
 /** A named biome zone that is BFS-grown on the island during map generation.

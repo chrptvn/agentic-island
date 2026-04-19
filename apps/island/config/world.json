@@ -93,7 +93,8 @@
           "radiusMin": 5,
           "radiusMax": 8,
           "tilePrefix": "marsh_water_at",
-          "baseTile": "marsh_water"
+          "baseTile": "marsh_water",
+          "lilyPads": true
         }
       }
     ],

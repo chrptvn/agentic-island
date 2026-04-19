@@ -885,7 +885,12 @@ export function buildVegetationLayer(
   const lilyPool   = spawnPool.filter(c => c.lakeOnly || c.lakeInterior);
   const LILY_DENSITY = lilyPool.length > 0 ? getIslandConfig().mapGen.lilyPadDensity : 0;
 
-  if (LILY_DENSITY > 0) {
+  // Pre-compute set of biome IDs whose lakes allow lily pads
+  const lilyBiomes = new Set(
+    getIslandConfig().mapGen.biomes.filter(b => b.lake?.lilyPads).map(b => b.id),
+  );
+
+  if (LILY_DENSITY > 0 && lilyBiomes.size > 0) {
     const lilyWeights = lilyPool.map(c => c.baseWeight);
 
     function pickLilyPad(isBorder: boolean): SpawnCandidate | null {
@@ -905,6 +910,7 @@ export function buildVegetationLayer(
 
     for (const key of lakeGrid) {
       const [x, y] = key.split(",").map(Number);
+      if (!lilyBiomes.has(biomeGrid.get(key) ?? "")) continue;
       if (occupied.has(`${key},3`)) continue;
       if (rng() >= LILY_DENSITY) continue;
       const isBorder = [[1,0],[-1,0],[0,1],[0,-1]].some(([dx, dy]) => isG(x + dx, y + dy) || isSand(x + dx, y + dy));
