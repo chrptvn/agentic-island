@@ -115,8 +115,7 @@
         "biomes": {
           "grass_field": 4,
           "forest": 4,
-          "flower_field": 0,
-          "marsh": 0
+          "marsh": 1
         }
       },
       "stats": {
@@ -196,7 +195,7 @@
           "grass_field": 0.1,
           "forest": 0.1,
           "flower_field": 0,
-          "marsh": 0
+          "marsh": 1
         }
       },
       "stats": {
@@ -272,7 +271,7 @@
           "grass_field": 0.5,
           "forest": 0.5,
           "flower_field": 0,
-          "marsh": 8
+          "marsh": 3
         }
       },
       "stats": {
@@ -331,7 +330,7 @@
           "forest": 0,
           "grass_field": 3,
           "flower_field": 0,
-          "marsh": 0
+          "marsh": 0.5
         }
       },
       "stats": {
@@ -387,8 +386,7 @@
         "biomes": {
           "forest": 0,
           "grass_field": 3,
-          "flower_field": 0,
-          "marsh": 0
+          "marsh": 1
         }
       },
       "stats": {
@@ -445,7 +443,7 @@
           "forest": 0,
           "grass_field": 0.1,
           "flower_field": 0,
-          "marsh": 0
+          "marsh": 0.5
         }
       },
       "stats": {

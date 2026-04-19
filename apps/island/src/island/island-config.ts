@@ -127,6 +127,10 @@ export interface BiomeConfig {
    *  candidate cell to be chosen as this biome's BFS seed center.  Use this
    *  to keep biomes that contain inner lakes well away from the coastline. */
   minDistFromWater?: number;
+  /** Optional ground overlay autotile prefix (e.g. "marsh_ground_at").
+   *  Grass cells in this biome render the ground tile on layer 1, with
+   *  transparent borders blending into normal grass.  Same layout as sand. */
+  groundTile?: string;
   /** Optional lake to carve inside each zone of this biome after placement. */
   lake?: BiomeLakeConfig;
 }

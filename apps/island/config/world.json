@@ -70,7 +70,7 @@
           "probability": 1.0,
           "radiusMin": 8,
           "radiusMax": 20,
-          "count": 2
+          "count": 4
         }
       },
       {
@@ -87,6 +87,7 @@
         "radiusMax": 25,
         "vegetationDensity": 0.8,
         "minDistFromWater": 20,
+        "groundTile": "marsh_ground_at",
         "lake": {
           "probability": 1.0,
           "radiusMin": 5,

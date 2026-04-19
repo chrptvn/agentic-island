@@ -484,9 +484,16 @@ export function buildIslandLayer1(
   // ── 10. Build tile overrides ──────────────────────────────────────────────
   // Layer 0: grass or sand base (sand cells use sand autotile)
   // Layer 1: water autotile on ALL water cells (border tiles transparent)
+  //          OR biome ground overlay on grass cells in biomes with groundTile
   // For biome lakes with custom tile prefixes, autotile only blends cells
   // in the same group (same prefix).  Default-prefix lakes blend with ocean.
   const DEFAULT_WATER_GROUP = "water_at";
+
+  // Build lookup: biome ID → groundTile prefix (for biomes with ground overlays)
+  const biomeGroundTile = new Map<string, string>();
+  for (const b of mapGen.biomes) {
+    if (b.groundTile) biomeGroundTile.set(b.id, b.groundTile);
+  }
 
   // Group-aware water predicate: treats a neighbor as "same water" only if it
   // belongs to the same tile-prefix group, or (for the default group) if it's
@@ -553,6 +560,17 @@ export function buildIslandLayer1(
       } else {
         // Grass cells: override layer 0 to "grass" (base map defaults to "water")
         result.push({ x, y, layer: 0, tileId: "grass" });
+        // Biome ground overlay: render on layer 1 with transparent border blending
+        const cellBiome = biomeGrid.get(`${x},${y}`);
+        const groundPrefix = cellBiome ? biomeGroundTile.get(cellBiome) : undefined;
+        if (groundPrefix) {
+          const isSameGround = (nx: number, ny: number) => {
+            if (nx < 0 || nx >= w || ny < 0 || ny >= h) return false;
+            const nb = biomeGrid.get(`${nx},${ny}`);
+            return nb !== undefined && biomeGroundTile.get(nb) === groundPrefix && terrain[ny][nx] === "grass";
+          };
+          result.push({ x, y, layer: 1, tileId: getAutotileId(groundPrefix, x, y, isSameGround) });
+        }
       }
     }
   }
@@ -625,7 +643,7 @@ export function isPathTileId(tileId: string): boolean {
 export function isWalkableGround(l1: string, l2?: string): boolean {
   if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_") || l2?.startsWith("marsh_water_at_")) return false;
   if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_") || l1.startsWith("marsh_water_at_")) return false;
-  return l1 === "" || l1 === "grass" || l1.startsWith("sand_at_") || PATH_TILE_IDS.has(l1);
+  return l1 === "" || l1 === "grass" || l1.startsWith("sand_at_") || l1.startsWith("marsh_ground_at_") || PATH_TILE_IDS.has(l1);
 }
 
 /**
