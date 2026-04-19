@@ -381,24 +381,29 @@ export function buildIslandLayer1(
         if (!found) continue;
       }
       const lakeRadius = lakeCfg.radiusMin + Math.floor(rng() * (lakeCfg.radiusMax - lakeCfg.radiusMin + 1));
-      const lkQ: [number, number, number][] = [[seedX, seedY, 0]];
-      const lkVis = new Set<string>([`${seedX},${seedY}`]);
-      while (lkQ.length) {
-        const [cx, cy, d] = lkQ.shift()!;
-        const cellKey = `${cx},${cy}`;
-        grid[cy][cx] = false;
-        lakeGrid.add(cellKey);
-        lakeWaterGroup.set(cellKey, prefix);
-        if (d >= lakeRadius) continue;
-        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
-          const nx = cx + dx, ny = cy + dy;
-          const nkey = `${nx},${ny}`;
-          if (lkVis.has(nkey)) continue;
+
+      // Carve a roughly circular lake using Euclidean distance from seed.
+      // Core (< 70% radius) is always carved; edge zone tapers with random falloff.
+      const coreRatio = 0.7;
+      const rSq = lakeRadius * lakeRadius;
+      const coreRSq = (lakeRadius * coreRatio) * (lakeRadius * coreRatio);
+      for (let dy = -lakeRadius; dy <= lakeRadius; dy++) {
+        for (let dx = -lakeRadius; dx <= lakeRadius; dx++) {
+          const nx = seedX + dx, ny = seedY + dy;
           if (nx <= 0 || nx >= w - 1 || ny <= 0 || ny >= h - 1) continue;
           if (!grid[ny][nx]) continue;
+          const nkey = `${nx},${ny}`;
           if (biomeGrid.get(nkey) !== biome.id) continue;
-          lkVis.add(nkey);
-          lkQ.push([nx, ny, d + 1]);
+          const dSq = dx * dx + dy * dy;
+          if (dSq > rSq) continue;
+          if (dSq > coreRSq) {
+            // Edge zone: probability tapers linearly from 1 at coreR to 0 at radius
+            const t = (Math.sqrt(dSq) - lakeRadius * coreRatio) / (lakeRadius * (1 - coreRatio));
+            if (rng() < t) continue;
+          }
+          grid[ny][nx] = false;
+          lakeGrid.add(nkey);
+          lakeWaterGroup.set(nkey, prefix);
         }
       }
     }
