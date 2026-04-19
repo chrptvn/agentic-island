@@ -413,6 +413,60 @@ export function buildIslandLayer1(
     }
   }
 
+  // ── 8d. Smooth lake contours ─────────────────────────────────────────────
+  // Remove isolated 1×1 water peninsulas and fill 1×1 grass holes at lake
+  // edges.  Two iterations produce a cleaner, more natural shoreline.
+  const SMOOTH_ITERS = 2;
+  for (let iter = 0; iter < SMOOTH_ITERS; iter++) {
+    const toGrass: string[] = [];   // water → grass (peninsulas)
+    const toWater: string[] = [];   // grass → water (holes)
+
+    for (const key of lakeGrid) {
+      const [x, y] = key.split(",").map(Number);
+      const group = lakeWaterGroup.get(key)!;
+      let adj = 0;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+        const nk = `${x+dx},${y+dy}`;
+        if (lakeWaterGroup.get(nk) === group) adj++;
+      }
+      if (adj <= 1) toGrass.push(key);
+    }
+
+    // Check grass cells adjacent to lake water for holes
+    const checked = new Set<string>();
+    for (const key of lakeGrid) {
+      const [x, y] = key.split(",").map(Number);
+      const group = lakeWaterGroup.get(key)!;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+        const nx = x + dx, ny = y + dy;
+        const nk = `${nx},${ny}`;
+        if (checked.has(nk) || lakeGrid.has(nk)) continue;
+        if (nx <= 0 || nx >= w - 1 || ny <= 0 || ny >= h - 1) continue;
+        if (!grid[ny][nx]) continue; // not grass
+        checked.add(nk);
+        let wAdj = 0;
+        for (const [ddx, ddy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+          if (lakeWaterGroup.get(`${nx+ddx},${ny+ddy}`) === group) wAdj++;
+        }
+        if (wAdj >= 3) toWater.push(`${nk}|${group}`);
+      }
+    }
+
+    for (const key of toGrass) {
+      const [x, y] = key.split(",").map(Number);
+      grid[y][x] = true;
+      lakeGrid.delete(key);
+      lakeWaterGroup.delete(key);
+    }
+    for (const entry of toWater) {
+      const [key, group] = entry.split("|");
+      const [x, y] = key.split(",").map(Number);
+      grid[y][x] = false;
+      lakeGrid.add(key);
+      lakeWaterGroup.set(key, group);
+    }
+  }
+
   // ── 9. Generate natural sand patches near water ───────────────────────────
   // Two-pass seeded patch growth:
   //   Phase 1 (seed): ~sandSeedProb of water-adjacent grass cells become sand
