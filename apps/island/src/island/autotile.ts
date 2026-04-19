@@ -285,22 +285,25 @@ export function buildIslandLayer1(
 
       centers.push([bx, by]);
 
-      // BFS-grow biome zone, staying within grass cells
-      const bfsQ: [number, number, number][] = [[bx, by, 0]];
-      const bfsVis = new Set<string>([`${bx},${by}`]);
-      while (bfsQ.length) {
-        const [cx, cy, d] = bfsQ.shift()!;
-        const key = `${cx},${cy}`;
-        if (!biomeGrid.has(key)) biomeGrid.set(key, biome.id);
-        if (d >= radius) continue;
-        for (const [ddx, ddy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
-          const nx = cx + ddx, ny = cy + ddy;
-          const nkey = `${nx},${ny}`;
-          if (bfsVis.has(nkey)) continue;
+      // Grow a roughly circular biome zone using Euclidean distance from center.
+      // Core (< 70% radius) always claimed; edge zone tapers with random falloff.
+      const coreRatio = 0.7;
+      const rSq = radius * radius;
+      const coreRSq = (radius * coreRatio) * (radius * coreRatio);
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          const nx = bx + dx, ny = by + dy;
           if (nx < 1 || nx >= w - 1 || ny < 1 || ny >= h - 1) continue;
           if (!grid[ny][nx]) continue;
-          bfsVis.add(nkey);
-          bfsQ.push([nx, ny, d + 1]);
+          const nkey = `${nx},${ny}`;
+          if (biomeGrid.has(nkey)) continue;
+          const dSq = dx * dx + dy * dy;
+          if (dSq > rSq) continue;
+          if (dSq > coreRSq) {
+            const t = (Math.sqrt(dSq) - radius * coreRatio) / (radius * (1 - coreRatio));
+            if (rng() < t) continue;
+          }
+          biomeGrid.set(nkey, biome.id);
         }
       }
     }
