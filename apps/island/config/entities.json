@@ -739,8 +739,7 @@
         "weight": 0.3,
         "biomes": {
           "forest": 0,
-          "flower_field": 0.9,
-          "grass_field": 0.3
+          "grass_field": 0.1
         }
       },
       "stats": {
@@ -768,7 +767,7 @@
     },
     {
       "id": "plant_cluster",
-      "name": "White Flowers",
+      "name": "Daisy",
       "tiles": [
         {
           "dx": 0,
@@ -856,10 +855,10 @@
       ],
       "spawn": {
         "weight": 1.5,
-        "biomes": {
-          "forest": 0,
-          "flower_field": 4.5,
-          "grass_field": 1.5
+        "biomes": {          
+          "flower_field": 0.1,
+          "grass_field": 0.1,
+          "sunflower_field":5
         }
       },
       "stats": {
@@ -897,9 +896,8 @@
       "spawn": {
         "weight": 0.8,
         "biomes": {
-          "grass_field": 0.8,
-          "forest": 0.8,
-          "flower_field": 0.8
+          "grass_field": 0.1,
+          "forest": 0.3
         }
       },
       "stats": {
@@ -1271,9 +1269,8 @@
       "spawn": {
         "weight": 0.1,
         "biomes": {
-          "grass_field": 0.1,
-          "forest": 0.1,
-          "flower_field": 0.1
+          "grass_field": 0.05,
+          "forest": 0.1
         }
       },
       "stats": {
@@ -1295,7 +1292,7 @@
     },
     {
       "id": "purple_mushrooms",
-      "name": "Purple Mushrooms",
+      "name": "Poisonous Mushroom",
       "tiles": [
         {
           "dx": 0,
@@ -1306,18 +1303,16 @@
       ],
       "blocks": false,
       "spawn": {
-        "weight": 1,
         "biomes": {
-          "grass_field": 1,
-          "forest": 1,
-          "flower_field": 1
+          "grass_field": 0.1,
+          "forest": 0.3
         }
       },
       "stats": {
-        "purple_mushroom": 1
+        "poisonous_mushroom": 1
       },
       "randomStats": {
-        "purple_mushroom": {
+        "poisonous_mushroom": {
           "min": 1,
           "max": 3
         }
@@ -1349,10 +1344,10 @@
         }
       },
       "stats": {
-        "suspicious_mushroom": 1
+        "fly_agaric": 1
       },
       "randomStats": {
-        "suspicious_mushroom": {
+        "fly_agaric": {
           "min": 1,
           "max": 2
         }
@@ -1493,12 +1488,9 @@
         }
       ],
       "blocks": false,
-      "spawn": {
-        "weight": 0.8,
+      "spawn": {        
         "biomes": {
-          "forest": 0,
-          "grass_field": 0.8,
-          "flower_field": 0.8
+          "grass_field": 0.3
         }
       },
       "stats": {
@@ -1553,10 +1545,8 @@
       "blocks": false,
       "spawn": {
         "weight": 0.6,
-        "biomes": {
-          "forest": 0,
-          "grass_field": 0.6,
-          "flower_field": 0.6
+        "biomes": {          
+          "grass_field": 0.6
         }
       },
       "stats": {
@@ -1612,9 +1602,7 @@
       "spawn": {
         "weight": 0.6,
         "biomes": {
-          "forest": 0,
-          "grass_field": 0.6,
-          "flower_field": 0.6
+          "grass_field": 0.6
         }
       },
       "stats": {
@@ -1766,23 +1754,6 @@
       }
     },
     {
-      "id": "cotton_sprout",
-      "name": "Cotton Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "sprout"
-        }
-      ],
-      "blocks": false,
-      "growthStages": {
-        "nextStage": "cotton_patch",
-        "growthMs": 180000
-      }
-    },
-    {
       "id": "geranium_sprout",
       "name": "Geranium Sprout",
       "tiles": [
@@ -1798,24 +1769,7 @@
         "nextStage": "geraniums",
         "growthMs": 180000
       }
-    },
-    {
-      "id": "flower_red_sprout",
-      "name": "Red Flower Sprout",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "sprout"
-        }
-      ],
-      "blocks": false,
-      "growthStages": {
-        "nextStage": "red_flowers",
-        "growthMs": 180000
-      }
-    },
+    },   
     {
       "id": "sky_blossom_sprout",
       "name": "Skyblossom Sprout",
@@ -1835,7 +1789,7 @@
     },
     {
       "id": "flower_white_sprout",
-      "name": "White Flower Sprout",
+      "name": "Daisy Sprout",
       "tiles": [
         {
           "dx": 0,
@@ -1865,79 +1819,6 @@
       "growthStages": {
         "nextStage": "sunflowers",
         "growthMs": 180000
-      }
-    },
-    {
-      "id": "cotton_patch",
-      "name": "Cotton Patch",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "cotton_patch"
-        }
-      ],
-      "spawn": {
-        "weight": 0.4,
-        "biomes": {
-          "forest": 0,
-          "flower_field": 1.2,
-          "grass_field": 0.4
-        }
-      },
-      "stats": {
-        "cotton": 2
-      },
-      "randomStats": {
-        "cotton": {
-          "min": 1,
-          "max": 3
-        },
-        "cotton_seed": {
-          "min": 0,
-          "max": 1
-        }
-      },
-      "harvest": {
-        "fullBase": "cotton_patch"
-      }
-    },
-    {
-      "id": "red_flowers",
-      "name": "Red Flowers",
-      "tiles": [
-        {
-          "dx": 0,
-          "dy": 0,
-          "layer": 3,
-          "tileId": "red_flowers"
-        }
-      ],
-      "spawn": {
-        "weight": 0.6,
-        "biomes": {
-          "forest": 0,
-          "flower_field": 1.8,
-          "grass_field": 0.6
-        }
-      },
-      "stats": {
-        "flower_red": 1,
-        "flower_red_seed": 1
-      },
-      "randomStats": {
-        "flower_red": {
-          "min": 1,
-          "max": 3
-        },
-        "flower_red_seed": {
-          "min": 1,
-          "max": 2
-        }
-      },
-      "harvest": {
-        "fullBase": "red_flowers"
       }
     },
     {
@@ -1979,7 +1860,7 @@
     },
     {
       "id": "white_flowers_patch",
-      "name": "White Flowers",
+      "name": "Daisy",
       "tiles": [
         {
           "dx": 0,

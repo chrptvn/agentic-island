@@ -90,12 +90,13 @@ export function buildIslandLayer1(
 ): { overrides: Array<{ x: number; y: number; layer: number; tileId: string }>; grassGrid: boolean[][]; sandGrid: Set<string>; biomeGrid: Map<string, string>; lakeGrid: Set<string> } {
   const rng = mulberry32(seed);
   const mapGen = getIslandConfig().mapGen;
+  const pad = Math.max(1, mapGen.shorePadding);
 
   // ── 1. Random initialisation ──────────────────────────────────────────────
   // grid[y][x]: true = grass, false = water
   const grid: boolean[][] = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) =>
-      x > 0 && x < w - 1 && y > 0 && y < h - 1 && rng() < mapGen.fillProbability
+      x >= pad && x < w - pad && y >= pad && y < h - pad && rng() < mapGen.fillProbability
     )
   );
 
@@ -117,7 +118,7 @@ export function buildIslandLayer1(
     const next: boolean[][] = Array.from({ length: h }, () => Array(w).fill(false));
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        if (x === 0 || x === w - 1 || y === 0 || y === h - 1) continue; // border stays water
+        if (x < pad || x >= w - pad || y < pad || y >= h - pad) continue; // shore stays water
         const n = neighbourGrassCount(x, y);
         if (n >= mapGen.grassThreshold) next[y][x] = true;
         else if (n < mapGen.waterThreshold) next[y][x] = false;
@@ -181,8 +182,8 @@ export function buildIslandLayer1(
   const fillGaps = () => {
     for (let pass = 0; pass < mapGen.gapFillPasses; pass++) {
       let changed = false;
-      for (let y = 1; y < h - 1; y++) {
-        for (let x = 1; x < w - 1; x++) {
+      for (let y = pad; y < h - pad; y++) {
+        for (let x = pad; x < w - pad; x++) {
           if (!grid[y][x] && (cardinalGrassCount(x, y) >= mapGen.gapFillThreshold || hasOppositeDiagGrass(x, y))) {
             grid[y][x] = true;
             changed = true;
@@ -323,8 +324,8 @@ export function buildIslandLayer1(
   // ── 8b. Fill remaining grass with the fill biome ──────────────────────────
   const fillBiome = mapGen.biomes.find(b => b.fill);
   if (fillBiome) {
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
+    for (let y = pad; y < h - pad; y++) {
+      for (let x = pad; x < w - pad; x++) {
         if (!grid[y][x]) continue;
         const key = `${x},${y}`;
         if (!biomeGrid.has(key)) biomeGrid.set(key, fillBiome.id);

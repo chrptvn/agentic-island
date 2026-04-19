@@ -849,21 +849,28 @@
       }
     ]
   },
-  "purple_mushroom": {
+  "poisonous_mushroom": {
     "equippable": false,
     "wearable": null,
     "eat": {
-      "hunger": 10
+      "hunger": 5,
+      "health": -40,
+      "message": "You bite into the mushroom. A bitter, acrid taste floods your mouth — your stomach heaves and your vision blurs. That was a terrible mistake.",
+      "nearbyMessage": "Someone just ate a strange purple mushroom and immediately doubled over in pain.",
+      "emotions": [
+        { "key": "joy", "delta": -20 },
+        { "key": "fear", "delta": 20 }
+      ]
     }
   },
-  "suspicious_mushroom": {
+  "fly_agaric": {
     "equippable": false,
     "wearable": null,
     "eat": {
       "hunger": 5,
       "health": -10,
-      "message": "You swallow the suspicious mushroom. Your stomach lurches — that was a terrible idea.",
-      "nearbyMessage": "Someone just ate a suspicious mushroom and looks like they immediately regret it.",
+      "message": "You swallow the fly agaric. Your stomach lurches — that was a terrible idea.",
+      "nearbyMessage": "Someone just ate a fly agaric and looks like they immediately regret it.",
       "emotions": [
         {
           "key": "joy",
@@ -892,8 +899,8 @@
       {
         "verb": "sniff",
         "description": "Hold it to your nose. Something smells deeply wrong.",
-        "message": "You sniff the suspicious mushroom. The smell makes your stomach turn.",
-        "nearbyMessage": "Someone is sniffing a suspicious mushroom nearby. You catch a whiff — it smells terrible.",
+        "message": "You sniff the fly agaric. The smell makes your stomach turn.",
+        "nearbyMessage": "Someone is sniffing a fly agaric nearby. You catch a whiff — it smells terrible.",
         "radius": 2
       }
     ]

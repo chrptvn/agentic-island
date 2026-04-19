@@ -43,6 +43,7 @@
     "biomeBorderMargin": 2,
     "sandSeedDistance": 1,
     "sandGrowProbWave3": 0.55,
+    "shorePadding": 5,
     "biomes": [
       {
         "id": "forest",
@@ -65,6 +66,13 @@
         "radiusMin": 0,
         "radiusMax": 0,
         "vegetationDensity": 0.05
+      },
+      {
+        "id": "sunflower_field",
+        "count": 2,
+        "radiusMin": 3,
+        "radiusMax": 8,
+        "vegetationDensity": 0.5
       }
     ],
     "lilyPadDensity": 0.10

@@ -83,12 +83,12 @@
     "teal_fabric": {
       "ingredients": {
         "fabric": 1,
-        "flower_blue": 2
+        "sky_blossom": 2
       },
       "output": {
         "teal_fabric": 1
       },
-      "description": "Dye fabric teal with blue flowers"
+      "description": "Dye fabric teal with skyblossoms"
     },
     "purple_fabric": {
       "ingredients": {
@@ -103,13 +103,13 @@
     "green_fabric": {
       "ingredients": {
         "fabric": 1,
-        "flower_blue": 1,
+        "sky_blossom": 1,
         "flower_white": 1
       },
       "output": {
         "green_fabric": 1
       },
-      "description": "Dye fabric green by mixing blue and white flowers"
+      "description": "Dye fabric green by mixing skyblossoms and daisies"
     },
     "cream_fabric": {
       "ingredients": {
@@ -119,7 +119,7 @@
       "output": {
         "cream_fabric": 1
       },
-      "description": "Dye fabric cream with white flowers"
+      "description": "Dye fabric cream with daisies"
     },
     "dark_fabric": {
       "ingredients": {

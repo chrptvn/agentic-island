@@ -9,7 +9,6 @@ All game data lives in JSON files under `apps/island/config/`. Changes are hot-r
 | [tileset.json](#tilesetjson) | Sprite coordinates, sheet mappings, animation |
 | [entities.json](#entitiesjson) | Game objects — trees, campfires, supply caches, items |
 | [item-defs.json](#item-defsjson) | Item capabilities and consumable effects |
-| [items.json](#itemsjson) | Item display emojis |
 | [recipes.json](#recipesjson) | Crafting recipes |
 | [world.json](#worldjson) | Simulation tuning — stats, costs, map generation |
 
@@ -25,8 +24,6 @@ item-defs.json      → What items do (capabilities, food value)
 recipes.json        → How to combine items
      ↕
 world.json          → Simulation parameters (energy costs, hunger drain, map gen)
-     ↕
-items.json          → Display emojis for UI
 ```
 
 ---
@@ -148,25 +145,6 @@ Multiplier scale: `0` = can't use, `1` = optimal
 | `mine` | stone_pickaxe (1.0) | Mining rocks |
 | `cut` | stone_knife (1.0) | Cutting / harvesting |
 | `plow` | plow (1.0) | Tilling soil for paths |
-
----
-
-## items.json
-
-Maps item IDs to display emojis for UI rendering.
-
-```json
-{
-  "berries": "🍒",
-  "wood": "🪵",
-  "rocks": "🪨",
-  "branches": "🌿",
-  "acorns": "🌰",
-  "stone_axe": "🪓",
-  "plow": "⛏️",
-  "_unknown": "📦"
-}
-```
 
 ---
 

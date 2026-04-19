@@ -54,17 +54,18 @@ islandctl context config-path
 
 `ctx` is an alias for `context`.
 
-## Island Commands
+## Commands
 
 ```bash
-islandctl island status                        # Island status (map info, characters)
+islandctl status                        # Island status (map info, characters)
 
-islandctl island map regenerate [options]      # Regenerate map
-islandctl island map reset [options]           # Reset map + respawn character
+islandctl map regenerate [options]      # Regenerate map
 
-islandctl island characters list              # List all characters on map
-islandctl island characters spawn <id>        # Spawn a character
-islandctl island characters despawn <id>      # Remove a character
+islandctl characters list              # List all characters on map
+islandctl characters spawn <id>        # Spawn a character
+islandctl characters despawn <id>      # Remove a character
+
+islandctl entities list                # List all entity definitions
 ```
 
 All island commands use the **active context** URL by default. Override per-command with `--island-url <url>`.

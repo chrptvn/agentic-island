@@ -5036,7 +5036,7 @@
       "layer": 3,
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "decoration",
-      "description": "White Flowers"
+      "description": "Daisy"
     },
     {
       "id": "white_flowers_patch",
@@ -5045,7 +5045,7 @@
       "layer": 3,
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "decoration",
-      "description": "White Flowers Patch"
+      "description": "Daisy Patch"
     },
     {
       "id": "moon_blossom",
@@ -5126,7 +5126,7 @@
       "layer": 3,
       "sheet": "Pipoya RPG Tileset 32x32/[Base]BaseChip_pipo.png",
       "category": "decoration",
-      "description": "Purple Mushrooms"
+      "description": "Poisonous Mushroom"
     },
     {
       "id": "lily_pad_small",

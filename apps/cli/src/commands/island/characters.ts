@@ -60,8 +60,8 @@ export function registerIslandCharactersCommand(program: Command): void {
       "after",
       `
 Examples:
-  $ islandctl island characters spawn bob
-  $ islandctl island characters spawn bob --x 10 --y 5`,
+  $ islandctl characters spawn bob
+  $ islandctl characters spawn bob --x 10 --y 5`,
     )
     .action((id, opts) => {
       const config = resolveIslandConfig(opts);
@@ -83,12 +83,37 @@ Examples:
       "after",
       `
 Examples:
-  $ islandctl island characters despawn bob`,
+  $ islandctl characters despawn bob`,
     )
     .action((id, opts) => {
       const config = resolveIslandConfig(opts);
       islandRequest<{ message: string }>(config, "POST", "/api/despawn", { id }).then((res) => {
         printSuccess(res.message);
+      });
+    });
+
+  chars
+    .command("give")
+    .argument("<id>", "Character ID to give items to")
+    .argument("<item>", "Item ID (e.g. rocks, stick, fly_agaric)")
+    .argument("[qty]", "Quantity to give (default: 1)", parseInt)
+    .description("Give an item directly to a character's inventory")
+    .option("--island-url <url>", "Override the target world URL (e.g. http://localhost:3002)")
+    .addHelpText(
+      "after",
+      `
+Examples:
+  $ islandctl characters give bob rocks
+  $ islandctl characters give bob rocks 10
+  $ islandctl characters give "Afro Cool" moon_fragment 3`,
+    )
+    .action((id, item, qty, opts) => {
+      const config = resolveIslandConfig(opts);
+      islandRequest<{ message: string; inventory_entry: { item: string; qty: number } }>(
+        config, "POST", "/api/give", { id, item, qty: qty ?? 1 }
+      ).then((res) => {
+        printSuccess(res.message);
+        console.log(`  Stack: ${pc.cyan(String(res.inventory_entry.qty))}× ${res.inventory_entry.item}`);
       });
     });
 }

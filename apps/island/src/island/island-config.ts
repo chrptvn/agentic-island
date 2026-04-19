@@ -142,6 +142,9 @@ export interface MapGenConfig {
   sandSeedDistance: number;
   /** Probability multiplier for the third sand-spread wave (relative to sandGrowProb). */
   sandGrowProbWave3: number;
+  /** Number of cells from the map edge that are forced to stay water.
+   *  Prevents the island from filling edge-to-edge on small maps. */
+  shorePadding: number;
 }
 
 export interface IslandConfig {
@@ -205,6 +208,7 @@ const DEFAULT_ISLAND_CONFIG: IslandConfig = {
     biomeBorderMargin: 2,
     sandSeedDistance:   1,
     sandGrowProbWave3: 0.55,
+    shorePadding:      5,
   },
   mapSizes: {
     very_small: { width: 120, height: 80  },

@@ -67,7 +67,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="bg-deep text-text-primary min-h-screen flex flex-col font-sans">
+      <body suppressHydrationWarning className="bg-deep text-text-primary min-h-screen flex flex-col font-sans">
         <Navbar />
         <main className="flex-1 pt-24">{children}</main>
         <Footer />

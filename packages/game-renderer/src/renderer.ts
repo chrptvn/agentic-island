@@ -219,7 +219,6 @@ export class GameRenderer {
     if (!buf) return;
 
     buf.save();
-    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = false;
 
     // Clear the off-screen buffer (visible canvas is untouched)
     buf.clearRect(0, 0, w, h);
@@ -236,7 +235,8 @@ export class GameRenderer {
       entities,
     };
 
-    // Render tile layers 0-3 (terrain, ground cover, paths, entity bases)
+    // Layer 0: base terrain (water/grass/sand) — pixel-perfect
+    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = false;
     renderLayers(
       buf as CanvasRenderingContext2D,
       layerData,
@@ -247,12 +247,25 @@ export class GameRenderer {
       this.animState.frame,
       'water',
       0,
+      0,
+    );
+
+    // Layers 1-3: overrides, paths, entity bases — bilinear smoothing
+    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = true;
+    (buf as CanvasRenderingContext2D).imageSmoothingQuality = "medium";
+    renderLayers(
+      buf as CanvasRenderingContext2D,
+      layerData,
+      tileRegistry,
+      this.sprites,
+      viewport,
+      effectiveTile,
+      this.animState.frame,
+      undefined,
+      1,
       3,
     );
 
-    // Render characters with bilinear smoothing for cleaner LPC sprites
-    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = true;
-    (buf as CanvasRenderingContext2D).imageSmoothingQuality = "medium";
     for (const char of characters) {
       const visual = this.getVisualPositionAt(char.id, now);
       drawCharacter(
@@ -268,8 +281,6 @@ export class GameRenderer {
         now,
       );
     }
-    // Restore pixel-perfect rendering for canopy layer
-    (buf as CanvasRenderingContext2D).imageSmoothingEnabled = false;
 
     // Render layer 4 (canopy) above characters for walk-under effect
     renderLayers(

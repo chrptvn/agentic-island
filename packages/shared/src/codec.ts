@@ -34,6 +34,8 @@ export interface WireEntityInstance {
   i?: { item: string; qty: number }[];
   /** occupants */
   o?: string[];
+  /** renderScale */
+  rs?: number;
 }
 
 export interface WireCharacterState {
@@ -155,6 +157,7 @@ export function encodeEntity(e: EntityInstance, enc: Map<string, number>): WireE
   if (e.name !== undefined) wire.n = e.name;
   if (e.inventory) wire.i = e.inventory;
   if (e.occupants) wire.o = e.occupants;
+  if (e.renderScale != null) wire.rs = e.renderScale;
   return wire;
 }
 
@@ -258,6 +261,7 @@ export function decodeEntity(e: WireEntityInstance, lookup: string[]): EntityIns
   if (e.n !== undefined) decoded.name = e.n;
   if (e.i) decoded.inventory = e.i;
   if (e.o) decoded.occupants = e.o;
+  if (e.rs != null) decoded.renderScale = e.rs;
   return decoded;
 }
 

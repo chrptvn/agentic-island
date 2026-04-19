@@ -11,6 +11,8 @@ export interface EntityInstance {
   inventory?: { item: string; qty: number }[];
   /** Character IDs currently sheltered inside this entity (tents). */
   occupants?: string[];
+  /** Render scale factor (0–1). Shrinks the sprite, keeping it centered in the tile. */
+  renderScale?: number;
 }
 
 export interface TilePlacement {
@@ -27,4 +29,6 @@ export interface EntityDef {
   blocks?: boolean;
   item?: boolean;
   spawn?: { weight: number };
+  /** Render scale factor (0–1). Shrinks single-tile entity sprites, keeping them centered. */
+  renderScale?: number;
 }

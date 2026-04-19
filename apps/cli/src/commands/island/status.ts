@@ -19,7 +19,7 @@ export function registerIslandStatusCommand(program: Command): void {
       "after",
       `
 Examples:
-  $ islandctl island status`,
+  $ islandctl status`,
     )
     .action((opts) => {
       const config = resolveIslandConfig(opts);

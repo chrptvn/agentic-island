@@ -18,6 +18,7 @@ const __dirname2 = dirname(fileURLToPath(import.meta.url));
 const CONFIG_DIR = join(__dirname2, "..", "..", "config");
 const SPRITES_DIR = join(__dirname2, "..", "..", "sprites");
 const SOURCE_JSON = join(CONFIG_DIR, "tileset.json");
+const ENTITIES_JSON = join(CONFIG_DIR, "entities.json");
 
 const ATLAS_TILE_SIZE = 32;
 const ATLAS_TILE_GAP = 0;
@@ -116,6 +117,57 @@ async function extractCell(
   return cell.png().toBuffer();
 }
 
+/**
+ * Scale a 32×32 cell buffer down by `scale` (0–1) and center it on a
+ * transparent 32×32 canvas.
+ */
+async function applyRenderScale(
+  cellBuf: Buffer,
+  scale: number,
+): Promise<Buffer> {
+  const s = Math.round(ATLAS_TILE_SIZE * scale);
+  const offset = Math.round((ATLAS_TILE_SIZE - s) / 2);
+
+  const resized = await sharp(cellBuf)
+    .resize(s, s, { kernel: sharp.kernel.lanczos3 })
+    .png()
+    .toBuffer();
+
+  return sharp({
+    create: {
+      width: ATLAS_TILE_SIZE,
+      height: ATLAS_TILE_SIZE,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([{ input: resized, left: offset, top: offset }])
+    .png()
+    .toBuffer();
+}
+
+/**
+ * Load entities.json and return a map of tileId → renderScale for tiles
+ * that have a custom render scale.
+ */
+function loadRenderScales(): Map<string, number> {
+  const scales = new Map<string, number>();
+  try {
+    const raw = JSON.parse(readFileSync(ENTITIES_JSON, "utf-8"));
+    const entities = Array.isArray(raw) ? raw : raw.entities ?? [];
+    for (const ent of entities) {
+      if (ent.renderScale != null && ent.renderScale > 0 && ent.renderScale < 1) {
+        for (const t of ent.tiles ?? []) {
+          scales.set(t.tileId, ent.renderScale);
+        }
+      }
+    }
+  } catch {
+    // entities.json missing or malformed — no scales applied
+  }
+  return scales;
+}
+
 // ── Main builder ─────────────────────────────────────────────────────────────
 
 /**
@@ -145,6 +197,7 @@ export async function buildAtlas(): Promise<AtlasResult> {
     row: number;
     tileSize: number;
     gap: number;
+    tileId: string;
   }
   const cells: CellRef[] = [];
   const tileMap = new Map<
@@ -161,7 +214,7 @@ export async function buildAtlas(): Promise<AtlasResult> {
       const framePositions: { col: number; row: number }[] = [];
       for (const frame of tile.frames) {
         const idx = cells.length;
-        cells.push({ sheet, col: frame.col, row: frame.row, tileSize, gap });
+        cells.push({ sheet, col: frame.col, row: frame.row, tileSize, gap, tileId: tile.id });
         framePositions.push({
           col: idx % ATLAS_COLS,
           row: Math.floor(idx / ATLAS_COLS),
@@ -170,7 +223,7 @@ export async function buildAtlas(): Promise<AtlasResult> {
       tileMap.set(tile.id, { frames: framePositions });
     } else {
       const idx = cells.length;
-      cells.push({ sheet, col: tile.col, row: tile.row, tileSize, gap });
+      cells.push({ sheet, col: tile.col, row: tile.row, tileSize, gap, tileId: tile.id });
       tileMap.set(tile.id, {
         col: idx % ATLAS_COLS,
         row: Math.floor(idx / ATLAS_COLS),
@@ -183,11 +236,23 @@ export async function buildAtlas(): Promise<AtlasResult> {
   const atlasW = ATLAS_COLS * ATLAS_TILE_SIZE;
   const atlasH = atlasRows * ATLAS_TILE_SIZE;
 
+  // Load entity render scales
+  const renderScales = loadRenderScales();
+
   // Extract all cells in parallel
-  const cellBuffers = await Promise.all(
+  const rawBuffers = await Promise.all(
     cells.map((c) =>
       extractCell(getSheet(c.sheet), c.col, c.row, c.tileSize, c.gap),
     ),
+  );
+
+  // Apply renderScale where configured
+  const cellBuffers = await Promise.all(
+    rawBuffers.map((buf, idx) => {
+      const scale = renderScales.get(cells[idx].tileId);
+      if (scale != null) return applyRenderScale(buf, scale);
+      return buf;
+    }),
   );
 
   // Composite all cells onto the atlas canvas
