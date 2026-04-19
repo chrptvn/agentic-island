@@ -418,6 +418,18 @@ export function buildIslandLayer1(
   //   Phase 1 (seed): ~sandSeedProb of water-adjacent grass cells become sand
   //   Phase 2 (grow): each seeded cell spreads to grass neighbors within sandMaxDepth
   //   Phase 3 (second grow): second wave at lower probability for rounder patches
+
+  // Build lookup: biome ID → groundTile prefix (for biomes with ground overlays).
+  // Cells in biomes with a groundTile skip sand generation entirely.
+  const biomeGroundTile = new Map<string, string>();
+  for (const b of mapGen.biomes) {
+    if (b.groundTile) biomeGroundTile.set(b.id, b.groundTile);
+  }
+  const hasGroundOverlay = (x: number, y: number): boolean => {
+    const bid = biomeGrid.get(`${x},${y}`);
+    return bid !== undefined && biomeGroundTile.has(bid);
+  };
+
   const terrain: TerrainCell[][] = Array.from({ length: h }, (_, y) =>
     Array.from({ length: w }, (_, x) => (grid[y][x] ? "grass" : "water") as TerrainCell)
   );
@@ -450,7 +462,7 @@ export function buildIslandLayer1(
   const wave1: [number, number][] = [];
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      if (terrain[y][x] === "grass" && distToWater[y][x] === mapGen.sandSeedDistance && rng() < sandSeedProb) {
+      if (terrain[y][x] === "grass" && distToWater[y][x] === mapGen.sandSeedDistance && !hasGroundOverlay(x, y) && rng() < sandSeedProb) {
         terrain[y][x] = "sand";
         wave1.push([x, y]);
       }
@@ -463,7 +475,7 @@ export function buildIslandLayer1(
     for (const [dx, dy] of CARDINALS) {
       const nx = cx + dx, ny = cy + dy;
       if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb) {
+      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && !hasGroundOverlay(nx, ny) && rng() < sandGrowProb) {
         terrain[ny][nx] = "sand";
         wave2.push([nx, ny]);
       }
@@ -475,7 +487,7 @@ export function buildIslandLayer1(
     for (const [dx, dy] of CARDINALS) {
       const nx = cx + dx, ny = cy + dy;
       if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
-      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && rng() < sandGrowProb * mapGen.sandGrowProbWave3) {
+      if (terrain[ny][nx] === "grass" && distToWater[ny][nx] <= sandMaxDepth && !hasGroundOverlay(nx, ny) && rng() < sandGrowProb * mapGen.sandGrowProbWave3) {
         terrain[ny][nx] = "sand";
       }
     }
@@ -488,12 +500,6 @@ export function buildIslandLayer1(
   // For biome lakes with custom tile prefixes, autotile only blends cells
   // in the same group (same prefix).  Default-prefix lakes blend with ocean.
   const DEFAULT_WATER_GROUP = "water_at";
-
-  // Build lookup: biome ID → groundTile prefix (for biomes with ground overlays)
-  const biomeGroundTile = new Map<string, string>();
-  for (const b of mapGen.biomes) {
-    if (b.groundTile) biomeGroundTile.set(b.id, b.groundTile);
-  }
 
   // Group-aware water predicate: treats a neighbor as "same water" only if it
   // belongs to the same tile-prefix group, or (for the default group) if it's
