@@ -77,7 +77,7 @@ function computeLayerTiles(
 
 const MAP_STATE_KEY = "map_config";
 
-const TERRAIN_TYPES = new Set(["grass", "water", "sand"]);
+const TERRAIN_TYPES = new Set(["grass", "water", "sand", "marsh_water"]);
 
 /** Read an emotion value with config-driven default, and clamp after mutation. */
 function emotionGet(emotions: Record<string, number> | undefined, key: string): number {

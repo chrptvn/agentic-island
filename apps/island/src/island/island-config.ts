@@ -103,6 +103,10 @@ export interface BiomeConfig {
    *  placement.  At most one biome should have fill=true; count/radius are
    *  ignored for fill biomes. */
   fill?: boolean;
+  /** Minimum distance (in cells) from any ocean/water cell required for a
+   *  candidate cell to be chosen as this biome's BFS seed center.  Use this
+   *  to keep biomes that contain inner lakes well away from the coastline. */
+  minDistFromWater?: number;
 }
 
 export interface MapGenConfig {

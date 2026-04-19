@@ -35,7 +35,8 @@
         "biomes": {
           "grass_field": 4,
           "forest": 4,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -114,7 +115,8 @@
         "biomes": {
           "grass_field": 4,
           "forest": 4,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -193,7 +195,8 @@
         "biomes": {
           "grass_field": 0.1,
           "forest": 0.1,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -268,7 +271,8 @@
         "biomes": {
           "grass_field": 0.5,
           "forest": 0.5,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 8
         }
       },
       "stats": {
@@ -326,7 +330,8 @@
         "biomes": {
           "forest": 0,
           "grass_field": 3,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -382,7 +387,8 @@
         "biomes": {
           "forest": 0,
           "grass_field": 3,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -438,7 +444,8 @@
         "biomes": {
           "forest": 0,
           "grass_field": 0.1,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 0
         }
       },
       "stats": {
@@ -495,7 +502,8 @@
         "biomes": {
           "forest": 0,
           "grass_field": 0.3,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 5
         }
       },
       "stats": {
@@ -552,7 +560,8 @@
         "biomes": {
           "grass_field": 0.3,
           "forest": 0.3,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 2
         }
       },
       "stats": {
@@ -596,7 +605,8 @@
         "biomes": {
           "grass_field": 0.3,
           "forest": 0.3,
-          "flower_field": 0
+          "flower_field": 0,
+          "marsh": 2
         }
       },
       "stats": {
@@ -648,7 +658,8 @@
       "spawn": {
         "weight": 0,
         "biomes": {
-          "forest": 0.1
+          "forest": 0.1,
+          "marsh": 2
         }
       },
       "stats": {
@@ -682,7 +693,7 @@
     },
     {
       "id": "plant",
-      "name": "Plant",
+      "name": "Lush Tuft",
       "tiles": [
         {
           "dx": 0,
@@ -694,9 +705,9 @@
       "spawn": {
         "weight": 1.5,
         "biomes": {
-          "forest": 0,
-          "flower_field": 4.5,
-          "grass_field": 1.5
+          "flower_field": 0.1,
+          "grass_field": 1.5,
+          "marsh": 0
         }
       },
       "stats": {
@@ -739,7 +750,8 @@
         "weight": 0.3,
         "biomes": {
           "forest": 0,
-          "grass_field": 0.1
+          "grass_field": 0.1,
+          "marsh": 1
         }
       },
       "stats": {
@@ -781,7 +793,8 @@
         "biomes": {
           "forest": 0,
           "flower_field": 4.5,
-          "grass_field": 1.5
+          "grass_field": 1.5,
+          "marsh": 0
         }
       },
       "stats": {
@@ -818,7 +831,8 @@
         "biomes": {
           "forest": 0,
           "flower_field": 4.5,
-          "grass_field": 1.5
+          "grass_field": 1.5,
+          "marsh": 0
         }
       },
       "stats": {
@@ -843,22 +857,106 @@
       }
     },
     {
-      "id": "sunflowers",
+      "id": "sunflower_a",
       "name": "Sunflowers",
       "tiles": [
         {
           "dx": 0,
           "dy": 0,
           "layer": 3,
-          "tileId": "yellow_flowers"
+          "tileId": "sunflower_a"
         }
       ],
+      "blocks": true,
       "spawn": {
         "weight": 1.5,
-        "biomes": {          
+        "biomes": {
+          "sunflower_field": 8,
+          "marsh": 0
+        }
+      },
+      "stats": {
+        "sunflower": 1,
+        "sunflower_seed": 1
+      },
+      "randomStats": {
+        "sunflower": {
+          "min": 3,
+          "max": 6
+        },
+        "sunflower_seed": {
+          "min": 4,
+          "max": 10
+        }
+      },
+      "harvest": {
+        "fullBase": "sunflower_a"
+      },
+      "proximityTrigger": {
+        "message": "The air smells faintly of honey and petals."
+      }
+    },
+    {
+      "id": "sunflower_b",
+      "name": "Sunflowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sunflower_b"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1.5,
+        "biomes": {
           "flower_field": 0.1,
           "grass_field": 0.1,
-          "sunflower_field":5
+          "sunflower_field": 3,
+          "marsh": 0
+        }
+      },
+      "stats": {
+        "sunflower": 1,
+        "sunflower_seed": 1
+      },
+      "randomStats": {
+        "sunflower": {
+          "min": 2,
+          "max": 4
+        },
+        "sunflower_seed": {
+          "min": 2,
+          "max": 6
+        }
+      },
+      "harvest": {
+        "fullBase": "sunflower_b"
+      },
+      "proximityTrigger": {
+        "message": "The air smells faintly of honey and petals."
+      }
+    },
+    {
+      "id": "sunflower_c",
+      "name": "Sunflowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "sunflower_c"
+        }
+      ],
+      "blocks": true,
+      "spawn": {
+        "weight": 1.5,
+        "biomes": {
+          "flower_field": 0.1,
+          "grass_field": 0.1,
+          "sunflower_field": 3,
+          "marsh": 0
         }
       },
       "stats": {
@@ -876,7 +974,7 @@
         }
       },
       "harvest": {
-        "fullBase": "yellow_flowers"
+        "fullBase": "sunflower_c"
       },
       "proximityTrigger": {
         "message": "The air smells faintly of honey and petals."
@@ -897,7 +995,8 @@
         "weight": 0.8,
         "biomes": {
           "grass_field": 0.1,
-          "forest": 0.3
+          "forest": 0.3,
+          "marsh": 0
         }
       },
       "stats": {
@@ -937,7 +1036,8 @@
       "spawn": {
         "weight": 0,
         "biomes": {
-          "forest": 0.1
+          "forest": 0.1,
+          "marsh": 2
         }
       },
       "stats": {
@@ -1223,9 +1323,9 @@
       "spawn": {
         "weight": 3,
         "biomes": {
-          "forest": 0,
-          "flower_field": 9,
-          "grass_field": 3
+          "flower_field": 0.1,
+          "grass_field": 4,
+          "marsh": 0
         }
       },
       "stats": {
@@ -1270,7 +1370,8 @@
         "weight": 0.1,
         "biomes": {
           "grass_field": 0.05,
-          "forest": 0.1
+          "forest": 0.1,
+          "marsh": 2
         }
       },
       "stats": {
@@ -1305,7 +1406,8 @@
       "spawn": {
         "biomes": {
           "grass_field": 0.1,
-          "forest": 0.3
+          "forest": 0.3,
+          "marsh": 0
         }
       },
       "stats": {
@@ -1340,7 +1442,8 @@
       "spawn": {
         "weight": 0,
         "biomes": {
-          "forest": 0.3
+          "forest": 0.3,
+          "marsh": 0
         }
       },
       "stats": {
@@ -1488,7 +1591,7 @@
         }
       ],
       "blocks": false,
-      "spawn": {        
+      "spawn": {
         "biomes": {
           "grass_field": 0.3
         }
@@ -1545,7 +1648,7 @@
       "blocks": false,
       "spawn": {
         "weight": 0.6,
-        "biomes": {          
+        "biomes": {
           "grass_field": 0.6
         }
       },
@@ -1769,7 +1872,7 @@
         "nextStage": "geraniums",
         "growthMs": 180000
       }
-    },   
+    },
     {
       "id": "sky_blossom_sprout",
       "name": "Skyblossom Sprout",
@@ -1837,7 +1940,8 @@
         "biomes": {
           "forest": 0,
           "flower_field": 1.2,
-          "grass_field": 0.4
+          "grass_field": 0.4,
+          "marsh": 0
         }
       },
       "stats": {
@@ -1874,7 +1978,8 @@
         "biomes": {
           "forest": 0,
           "flower_field": 2.4,
-          "grass_field": 0.8
+          "grass_field": 0.8,
+          "marsh": 0
         }
       },
       "stats": {
@@ -1944,6 +2049,11 @@
       "proximityTrigger": {
         "message": "A pale lunar shimmer clings to the flower.",
         "radius": 1
+      },
+      "spawn": {
+        "biomes": {
+          "marsh": 0
+        }
       }
     },
     {
@@ -1980,6 +2090,69 @@
         "message": "The key turns with a soft click. The stone answers with a low hum.",
         "nearbyMessage": "A low hum rolls out from a nearby stone.",
         "radius": 4
+      }
+    },
+    {
+      "id": "mixed_flowers_a",
+      "name": "Mixed Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "mixed_flowers_a"
+        }
+      ],
+      "spawn": {
+        "biomes": {
+          "flower_field": 4.5,
+          "marsh": 0
+        }
+      },
+      "harvest": {
+        "fullBase": "mixed_flowers_a"
+      }
+    },
+    {
+      "id": "mixed_flowers_b",
+      "name": "Mixed Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "mixed_flowers_b"
+        }
+      ],
+      "spawn": {
+        "biomes": {
+          "flower_field": 4.5,
+          "marsh": 0
+        }
+      },
+      "harvest": {
+        "fullBase": "mixed_flowers_b"
+      }
+    },
+    {
+      "id": "mixed_flowers_c",
+      "name": "Mixed Flowers",
+      "tiles": [
+        {
+          "dx": 0,
+          "dy": 0,
+          "layer": 3,
+          "tileId": "mixed_flowers_c"
+        }
+      ],
+      "spawn": {
+        "biomes": {
+          "flower_field": 4.5,
+          "marsh": 0
+        }
+      },
+      "harvest": {
+        "fullBase": "mixed_flowers_c"
       }
     },
     {

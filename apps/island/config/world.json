@@ -72,7 +72,15 @@
         "count": 2,
         "radiusMin": 3,
         "radiusMax": 8,
-        "vegetationDensity": 0.5
+        "vegetationDensity": 0.8
+      },
+      {
+        "id": "marsh",
+        "count": 1,
+        "radiusMin": 15,
+        "radiusMax": 25,
+        "vegetationDensity": 0.8,
+        "minDistFromWater": 20
       }
     ],
     "lilyPadDensity": 0.10

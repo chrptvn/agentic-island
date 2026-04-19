@@ -39,6 +39,15 @@ function autotileWaterCell(
   return getAutotileId("water_at", x, y, isWater);
 }
 
+/** Returns the marsh water autotile ID (Water3_Cave1 sheet) for a marsh lake cell at (x, y). */
+function autotileMarshWaterCell(
+  x: number,
+  y: number,
+  isWater: (nx: number, ny: number) => boolean,
+): string {
+  return getAutotileId("marsh_water_at", x, y, isWater);
+}
+
 /** Returns the water/sand border autotile ID (Water7 sheet) for a water cell at (x, y). */
 function autotileWaterSandCell(
   x: number,
@@ -239,8 +248,8 @@ export function buildIslandLayer1(
   // Ocean = water cells reachable from the map border by BFS through water.
   // Lake  = water cells not reachable (enclosed inside the grass island).
   const lakeGrid = new Set<string>();
+  const oceanVis = new Set<string>();
   {
-    const oceanVis = new Set<string>();
     const oceanQ: [number, number][] = [];
     for (let x = 0; x < w; x++) {
       for (const y of [0, h - 1]) {
@@ -271,10 +280,31 @@ export function buildIslandLayer1(
     }
   }
 
+  // ── 7b. Pre-compute distance-from-ocean for biome placement ────────────
+  // BFS from OCEAN cells only (not inland lakes/gaps) so that inland cells
+  // get high distance values.  Used to keep biomes like marsh far from coast.
+  const distFromWater0: number[][] = Array.from({ length: h }, () => new Array(w).fill(Infinity));
+  {
+    const dq: [number, number][] = [];
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        if (oceanVis.has(`${x},${y}`)) { distFromWater0[y][x] = 0; dq.push([x, y]); }
+    for (let qi = 0; qi < dq.length; qi++) {
+      const [cx, cy] = dq[qi];
+      const nd = distFromWater0[cy][cx] + 1;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+        const nx = cx + dx, ny = cy + dy;
+        if (nx < 0 || nx >= w || ny < 0 || ny >= h) continue;
+        if (distFromWater0[ny][nx] > nd) { distFromWater0[ny][nx] = nd; dq.push([nx, ny]); }
+      }
+    }
+  }
+
   // ── 8. Generate biome zones ─────────────────────────────────────────────
   // BFS-grow N roughly-circular biome blobs from random deep-interior grass
   // cells.  Each biome can override per-entity spawn weights and vegetation density.
   const biomeGrid = new Map<string, string>();
+  const marshCenters: [number, number][] = [];
 
   for (const biome of mapGen.biomes) {
     if (biome.fill || biome.count <= 0) continue;
@@ -282,6 +312,7 @@ export function buildIslandLayer1(
     // Collect deep-interior grass cells (all 8 neighbors are grass) that are
     // not already claimed by another biome as center candidates
     const margin = mapGen.biomeBorderMargin;
+    const minDist = biome.minDistFromWater ?? 0;
     const biomeCandidates: [number, number][] = [];
     for (let y = margin; y < h - margin; y++) {
       for (let x = margin; x < w - margin; x++) {
@@ -291,7 +322,7 @@ export function buildIslandLayer1(
         for (let dy = -1; dy <= 1 && deep; dy++)
           for (let dx = -1; dx <= 1 && deep; dx++)
             if (!grid[y + dy]?.[x + dx]) deep = false;
-        if (deep) biomeCandidates.push([x, y]);
+        if (deep && distFromWater0[y][x] >= minDist) biomeCandidates.push([x, y]);
       }
     }
 
@@ -299,6 +330,8 @@ export function buildIslandLayer1(
       const idx = Math.floor(rng() * biomeCandidates.length);
       const [bx, by] = biomeCandidates.splice(idx, 1)[0];
       const radius = biome.radiusMin + Math.floor(rng() * (biome.radiusMax - biome.radiusMin + 1));
+
+      if (biome.id === "marsh") marshCenters.push([bx, by]);
 
       // BFS-grow biome zone, staying within grass cells
       const bfsQ: [number, number, number][] = [[bx, by, 0]];
@@ -329,6 +362,58 @@ export function buildIslandLayer1(
         if (!grid[y][x]) continue;
         const key = `${x},${y}`;
         if (!biomeGrid.has(key)) biomeGrid.set(key, fillBiome.id);
+      }
+    }
+  }
+
+  // ── 8c. Carve mandatory inner lakes for marsh biome zones ────────────────
+  // Each marsh zone gets a small lake BFS-carved from its center.
+  // These cells use cave-style water tiles and are tracked in marshLakeGrid.
+  const marshLakeGrid = new Set<string>();
+  const MARSH_LAKE_RADIUS_MIN = 5;
+  const MARSH_LAKE_RADIUS_MAX = 8;
+
+  for (const [bx, by] of marshCenters) {
+    // Find a valid grass seed cell inside the marsh biome — use the recorded
+    // center if it's still grass, otherwise BFS-search the nearest marsh cell.
+    let seedX = bx, seedY = by;
+    if (!grid[by][bx]) {
+      const fbQ: [number, number][] = [[bx, by]];
+      const fbVis = new Set<string>([`${bx},${by}`]);
+      let found = false;
+      for (let qi = 0; qi < fbQ.length && !found; qi++) {
+        const [cx, cy] = fbQ[qi];
+        for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+          const nx = cx + dx, ny = cy + dy;
+          const nkey = `${nx},${ny}`;
+          if (fbVis.has(nkey)) continue;
+          if (nx <= 0 || nx >= w - 1 || ny <= 0 || ny >= h - 1) continue;
+          if (biomeGrid.get(nkey) !== "marsh") continue;
+          fbVis.add(nkey);
+          if (grid[ny][nx]) { seedX = nx; seedY = ny; found = true; break; }
+          fbQ.push([nx, ny]);
+        }
+      }
+      if (!found) continue; // no grass cell in marsh at all — skip
+    }
+    const mlRadius = MARSH_LAKE_RADIUS_MIN + Math.floor(rng() * (MARSH_LAKE_RADIUS_MAX - MARSH_LAKE_RADIUS_MIN + 1));
+    const mlQ: [number, number, number][] = [[seedX, seedY, 0]];
+    const mlVis = new Set<string>([`${seedX},${seedY}`]);
+    while (mlQ.length) {
+      const [cx, cy, d] = mlQ.shift()!;
+      grid[cy][cx] = false;
+      marshLakeGrid.add(`${cx},${cy}`);
+      lakeGrid.add(`${cx},${cy}`);
+      if (d >= mlRadius) continue;
+      for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]] as [number,number][]) {
+        const nx = cx + dx, ny = cy + dy;
+        const nkey = `${nx},${ny}`;
+        if (mlVis.has(nkey)) continue;
+        if (nx <= 0 || nx >= w - 1 || ny <= 0 || ny >= h - 1) continue;
+        if (!grid[ny][nx]) continue;
+        if (biomeGrid.get(nkey) !== "marsh") continue;
+        mlVis.add(nkey);
+        mlQ.push([nx, ny, d + 1]);
       }
     }
   }
@@ -416,6 +501,8 @@ export function buildIslandLayer1(
     for (let x = 0; x < w; x++) {
       const t = terrain[y][x];
       if (t === "water") {
+        const isMarsh = marshLakeGrid.has(`${x},${y}`);
+
         // Check if this water cell has any land neighbors (border cell)
         const hasLandNeighbor = !isWater(x-1,y) || !isWater(x+1,y) || !isWater(x,y-1) || !isWater(x,y+1)
           || !isWater(x-1,y-1) || !isWater(x+1,y-1) || !isWater(x-1,y+1) || !isWater(x+1,y+1);
@@ -427,20 +514,28 @@ export function buildIslandLayer1(
             terrain[y-1]?.[x-1] === "sand" || terrain[y-1]?.[x+1] === "sand" ||
             terrain[y+1]?.[x-1] === "sand" || terrain[y+1]?.[x+1] === "sand";
 
-          // Always show grass on layer 0 (sand sits on top of grass, never replaces it)
+          // Always show grass on layer 0 — autotile transition tiles have transparent
+          // corners that must show grass underneath (same rule for marsh and regular water)
           result.push({ x, y, layer: 0, tileId: "grass" });
 
-          if (hasSandNeighbor) {
+          if (hasSandNeighbor && !isMarsh) {
             // Sand on layer 1, water/sand border on layer 2 — proper grass → sand → water stack
             result.push({ x, y, layer: 1, tileId: autotileSandCell(x, y, isSandOrWater) });
             result.push({ x, y, layer: 2, tileId: autotileWaterSandCell(x, y, isWater) });
             continue;
           }
+        } else if (isMarsh) {
+          // Interior marsh lake cell: use cave water as base
+          result.push({ x, y, layer: 0, tileId: "marsh_water" });
         }
 
-        // Regular border or interior water: water autotile on layer 1
-        const tileId = autotileWaterCell(x, y, isWater);
-        result.push({ x, y, layer: 1, tileId });
+        // Border or interior water: use appropriate autotile for layer 1
+        if (isMarsh) {
+          result.push({ x, y, layer: 1, tileId: autotileMarshWaterCell(x, y, isWater) });
+        } else {
+          const tileId = autotileWaterCell(x, y, isWater);
+          result.push({ x, y, layer: 1, tileId });
+        }
       } else if (t === "sand") {
         // Sand cells: layer 0 = grass (base), layer 1 = sand autotile on top
         result.push({ x, y, layer: 0, tileId: "grass" });
@@ -518,8 +613,8 @@ export function isPathTileId(tileId: string): boolean {
  * With two-layer rendering, grass cells have no layer-1 override (empty string).
  * Pass l2 when the cell may have a water overlay on layer 2 (sand-adjacent water border). */
 export function isWalkableGround(l1: string, l2?: string): boolean {
-  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_")) return false;
-  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_")) return false;
+  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_") || l2?.startsWith("marsh_water_at_")) return false;
+  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_") || l1.startsWith("marsh_water_at_")) return false;
   return l1 === "" || l1 === "grass" || l1.startsWith("sand_at_") || PATH_TILE_IDS.has(l1);
 }
 
@@ -529,8 +624,8 @@ export function isWalkableGround(l1: string, l2?: string): boolean {
  * have sand_at on layer 1 and water_sand_at on layer 2).
  */
 export function terrainFromLayer1(l1: string, l2?: string): "grass" | "sand" | "water" {
-  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_")) return "water";
-  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_")) return "water";
+  if (l2?.startsWith("water_at_") || l2?.startsWith("water_sand_at_") || l2?.startsWith("marsh_water_at_")) return "water";
+  if (l1.startsWith("water_at_") || l1.startsWith("water_sand_at_") || l1.startsWith("marsh_water_at_")) return "water";
   if (l1.startsWith("sand_at_")) return "sand";
   return "grass";
 }

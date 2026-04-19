@@ -28,6 +28,10 @@
     "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png": {
       "tileSize": 32,
       "tileGap": 0
+    },
+    "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png": {
+      "tileSize": 32,
+      "tileGap": 0
     }
   },
   "tiles": [
@@ -5358,6 +5362,2216 @@
       "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
       "category": "decoration",
       "description": "A bright red-capped mushroom with white spots"
+    },
+    {
+      "id": "sunflower_a",
+      "col": 5,
+      "row": 4,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Sunflower variant A"
+    },
+    {
+      "id": "sunflower_b",
+      "col": 4,
+      "row": 5,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Sunflower variant B"
+    },
+    {
+      "id": "sunflower_c",
+      "col": 4,
+      "row": 6,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Sunflower variant C"
+    },
+    {
+      "id": "mixed_flowers_a",
+      "col": 10,
+      "row": 0,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Mixed Flowers A"
+    },
+    {
+      "id": "mixed_flowers_b",
+      "col": 11,
+      "row": 0,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Mixed Flowers B"
+    },
+    {
+      "id": "mixed_flowers_c",
+      "col": 12,
+      "row": 0,
+      "layer": 3,
+      "sheet": "lpc-flowers-plants-fungi-wood/lpc-flowers-plants-fungi-wood/plants.png",
+      "category": "decoration",
+      "description": "Mixed Flowers C"
+    },
+    {
+      "id": "marsh_water",
+      "col": 6,
+      "row": 1,
+      "layer": 0,
+      "category": "terrain",
+      "description": "Base marsh water terrain \u2014 cave-style water fill used as layer-0 terrain for marsh lakes",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "frames": [
+        {
+          "col": 6,
+          "row": 1
+        },
+        {
+          "col": 14,
+          "row": 1
+        },
+        {
+          "col": 22,
+          "row": 1
+        },
+        {
+          "col": 30,
+          "row": 1
+        },
+        {
+          "col": 38,
+          "row": 1
+        },
+        {
+          "col": 46,
+          "row": 1
+        },
+        {
+          "col": 54,
+          "row": 1
+        },
+        {
+          "col": 62,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,0)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 0
+        },
+        {
+          "col": 8,
+          "row": 0
+        },
+        {
+          "col": 16,
+          "row": 0
+        },
+        {
+          "col": 24,
+          "row": 0
+        },
+        {
+          "col": 32,
+          "row": 0
+        },
+        {
+          "col": 40,
+          "row": 0
+        },
+        {
+          "col": 48,
+          "row": 0
+        },
+        {
+          "col": 56,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,0)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 0
+        },
+        {
+          "col": 9,
+          "row": 0
+        },
+        {
+          "col": 17,
+          "row": 0
+        },
+        {
+          "col": 25,
+          "row": 0
+        },
+        {
+          "col": 33,
+          "row": 0
+        },
+        {
+          "col": 41,
+          "row": 0
+        },
+        {
+          "col": 49,
+          "row": 0
+        },
+        {
+          "col": 57,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,0)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 0
+        },
+        {
+          "col": 10,
+          "row": 0
+        },
+        {
+          "col": 18,
+          "row": 0
+        },
+        {
+          "col": 26,
+          "row": 0
+        },
+        {
+          "col": 34,
+          "row": 0
+        },
+        {
+          "col": 42,
+          "row": 0
+        },
+        {
+          "col": 50,
+          "row": 0
+        },
+        {
+          "col": 58,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,0)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 0
+        },
+        {
+          "col": 11,
+          "row": 0
+        },
+        {
+          "col": 19,
+          "row": 0
+        },
+        {
+          "col": 27,
+          "row": 0
+        },
+        {
+          "col": 35,
+          "row": 0
+        },
+        {
+          "col": 43,
+          "row": 0
+        },
+        {
+          "col": 51,
+          "row": 0
+        },
+        {
+          "col": 59,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,0)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 0
+        },
+        {
+          "col": 12,
+          "row": 0
+        },
+        {
+          "col": 20,
+          "row": 0
+        },
+        {
+          "col": 28,
+          "row": 0
+        },
+        {
+          "col": 36,
+          "row": 0
+        },
+        {
+          "col": 44,
+          "row": 0
+        },
+        {
+          "col": 52,
+          "row": 0
+        },
+        {
+          "col": 60,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,0)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 0
+        },
+        {
+          "col": 13,
+          "row": 0
+        },
+        {
+          "col": 21,
+          "row": 0
+        },
+        {
+          "col": 29,
+          "row": 0
+        },
+        {
+          "col": 37,
+          "row": 0
+        },
+        {
+          "col": 45,
+          "row": 0
+        },
+        {
+          "col": 53,
+          "row": 0
+        },
+        {
+          "col": 61,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,0)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 0
+        },
+        {
+          "col": 14,
+          "row": 0
+        },
+        {
+          "col": 22,
+          "row": 0
+        },
+        {
+          "col": 30,
+          "row": 0
+        },
+        {
+          "col": 38,
+          "row": 0
+        },
+        {
+          "col": 46,
+          "row": 0
+        },
+        {
+          "col": 54,
+          "row": 0
+        },
+        {
+          "col": 62,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_0",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 0,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,0)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 0
+        },
+        {
+          "col": 15,
+          "row": 0
+        },
+        {
+          "col": 23,
+          "row": 0
+        },
+        {
+          "col": 31,
+          "row": 0
+        },
+        {
+          "col": 39,
+          "row": 0
+        },
+        {
+          "col": 47,
+          "row": 0
+        },
+        {
+          "col": 55,
+          "row": 0
+        },
+        {
+          "col": 63,
+          "row": 0
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,1)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 1
+        },
+        {
+          "col": 8,
+          "row": 1
+        },
+        {
+          "col": 16,
+          "row": 1
+        },
+        {
+          "col": 24,
+          "row": 1
+        },
+        {
+          "col": 32,
+          "row": 1
+        },
+        {
+          "col": 40,
+          "row": 1
+        },
+        {
+          "col": 48,
+          "row": 1
+        },
+        {
+          "col": 56,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,1)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 1
+        },
+        {
+          "col": 9,
+          "row": 1
+        },
+        {
+          "col": 17,
+          "row": 1
+        },
+        {
+          "col": 25,
+          "row": 1
+        },
+        {
+          "col": 33,
+          "row": 1
+        },
+        {
+          "col": 41,
+          "row": 1
+        },
+        {
+          "col": 49,
+          "row": 1
+        },
+        {
+          "col": 57,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,1)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 1
+        },
+        {
+          "col": 10,
+          "row": 1
+        },
+        {
+          "col": 18,
+          "row": 1
+        },
+        {
+          "col": 26,
+          "row": 1
+        },
+        {
+          "col": 34,
+          "row": 1
+        },
+        {
+          "col": 42,
+          "row": 1
+        },
+        {
+          "col": 50,
+          "row": 1
+        },
+        {
+          "col": 58,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,1)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 1
+        },
+        {
+          "col": 11,
+          "row": 1
+        },
+        {
+          "col": 19,
+          "row": 1
+        },
+        {
+          "col": 27,
+          "row": 1
+        },
+        {
+          "col": 35,
+          "row": 1
+        },
+        {
+          "col": 43,
+          "row": 1
+        },
+        {
+          "col": 51,
+          "row": 1
+        },
+        {
+          "col": 59,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,1)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 1
+        },
+        {
+          "col": 12,
+          "row": 1
+        },
+        {
+          "col": 20,
+          "row": 1
+        },
+        {
+          "col": 28,
+          "row": 1
+        },
+        {
+          "col": 36,
+          "row": 1
+        },
+        {
+          "col": 44,
+          "row": 1
+        },
+        {
+          "col": 52,
+          "row": 1
+        },
+        {
+          "col": 60,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,1)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 1
+        },
+        {
+          "col": 13,
+          "row": 1
+        },
+        {
+          "col": 21,
+          "row": 1
+        },
+        {
+          "col": 29,
+          "row": 1
+        },
+        {
+          "col": 37,
+          "row": 1
+        },
+        {
+          "col": 45,
+          "row": 1
+        },
+        {
+          "col": 53,
+          "row": 1
+        },
+        {
+          "col": 61,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,1)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 1
+        },
+        {
+          "col": 14,
+          "row": 1
+        },
+        {
+          "col": 22,
+          "row": 1
+        },
+        {
+          "col": 30,
+          "row": 1
+        },
+        {
+          "col": 38,
+          "row": 1
+        },
+        {
+          "col": 46,
+          "row": 1
+        },
+        {
+          "col": 54,
+          "row": 1
+        },
+        {
+          "col": 62,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_1",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 1,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,1)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 1
+        },
+        {
+          "col": 15,
+          "row": 1
+        },
+        {
+          "col": 23,
+          "row": 1
+        },
+        {
+          "col": 31,
+          "row": 1
+        },
+        {
+          "col": 39,
+          "row": 1
+        },
+        {
+          "col": 47,
+          "row": 1
+        },
+        {
+          "col": 55,
+          "row": 1
+        },
+        {
+          "col": 63,
+          "row": 1
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,2)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 2
+        },
+        {
+          "col": 8,
+          "row": 2
+        },
+        {
+          "col": 16,
+          "row": 2
+        },
+        {
+          "col": 24,
+          "row": 2
+        },
+        {
+          "col": 32,
+          "row": 2
+        },
+        {
+          "col": 40,
+          "row": 2
+        },
+        {
+          "col": 48,
+          "row": 2
+        },
+        {
+          "col": 56,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,2)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 2
+        },
+        {
+          "col": 9,
+          "row": 2
+        },
+        {
+          "col": 17,
+          "row": 2
+        },
+        {
+          "col": 25,
+          "row": 2
+        },
+        {
+          "col": 33,
+          "row": 2
+        },
+        {
+          "col": 41,
+          "row": 2
+        },
+        {
+          "col": 49,
+          "row": 2
+        },
+        {
+          "col": 57,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,2)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 2
+        },
+        {
+          "col": 10,
+          "row": 2
+        },
+        {
+          "col": 18,
+          "row": 2
+        },
+        {
+          "col": 26,
+          "row": 2
+        },
+        {
+          "col": 34,
+          "row": 2
+        },
+        {
+          "col": 42,
+          "row": 2
+        },
+        {
+          "col": 50,
+          "row": 2
+        },
+        {
+          "col": 58,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,2)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 2
+        },
+        {
+          "col": 11,
+          "row": 2
+        },
+        {
+          "col": 19,
+          "row": 2
+        },
+        {
+          "col": 27,
+          "row": 2
+        },
+        {
+          "col": 35,
+          "row": 2
+        },
+        {
+          "col": 43,
+          "row": 2
+        },
+        {
+          "col": 51,
+          "row": 2
+        },
+        {
+          "col": 59,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,2)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 2
+        },
+        {
+          "col": 12,
+          "row": 2
+        },
+        {
+          "col": 20,
+          "row": 2
+        },
+        {
+          "col": 28,
+          "row": 2
+        },
+        {
+          "col": 36,
+          "row": 2
+        },
+        {
+          "col": 44,
+          "row": 2
+        },
+        {
+          "col": 52,
+          "row": 2
+        },
+        {
+          "col": 60,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,2)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 2
+        },
+        {
+          "col": 13,
+          "row": 2
+        },
+        {
+          "col": 21,
+          "row": 2
+        },
+        {
+          "col": 29,
+          "row": 2
+        },
+        {
+          "col": 37,
+          "row": 2
+        },
+        {
+          "col": 45,
+          "row": 2
+        },
+        {
+          "col": 53,
+          "row": 2
+        },
+        {
+          "col": 61,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,2)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 2
+        },
+        {
+          "col": 14,
+          "row": 2
+        },
+        {
+          "col": 22,
+          "row": 2
+        },
+        {
+          "col": 30,
+          "row": 2
+        },
+        {
+          "col": 38,
+          "row": 2
+        },
+        {
+          "col": 46,
+          "row": 2
+        },
+        {
+          "col": 54,
+          "row": 2
+        },
+        {
+          "col": 62,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_2",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 2,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,2)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 2
+        },
+        {
+          "col": 15,
+          "row": 2
+        },
+        {
+          "col": 23,
+          "row": 2
+        },
+        {
+          "col": 31,
+          "row": 2
+        },
+        {
+          "col": 39,
+          "row": 2
+        },
+        {
+          "col": 47,
+          "row": 2
+        },
+        {
+          "col": 55,
+          "row": 2
+        },
+        {
+          "col": 63,
+          "row": 2
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,3)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 3
+        },
+        {
+          "col": 8,
+          "row": 3
+        },
+        {
+          "col": 16,
+          "row": 3
+        },
+        {
+          "col": 24,
+          "row": 3
+        },
+        {
+          "col": 32,
+          "row": 3
+        },
+        {
+          "col": 40,
+          "row": 3
+        },
+        {
+          "col": 48,
+          "row": 3
+        },
+        {
+          "col": 56,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,3)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 3
+        },
+        {
+          "col": 9,
+          "row": 3
+        },
+        {
+          "col": 17,
+          "row": 3
+        },
+        {
+          "col": 25,
+          "row": 3
+        },
+        {
+          "col": 33,
+          "row": 3
+        },
+        {
+          "col": 41,
+          "row": 3
+        },
+        {
+          "col": 49,
+          "row": 3
+        },
+        {
+          "col": 57,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,3)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 3
+        },
+        {
+          "col": 10,
+          "row": 3
+        },
+        {
+          "col": 18,
+          "row": 3
+        },
+        {
+          "col": 26,
+          "row": 3
+        },
+        {
+          "col": 34,
+          "row": 3
+        },
+        {
+          "col": 42,
+          "row": 3
+        },
+        {
+          "col": 50,
+          "row": 3
+        },
+        {
+          "col": 58,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,3)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 3
+        },
+        {
+          "col": 11,
+          "row": 3
+        },
+        {
+          "col": 19,
+          "row": 3
+        },
+        {
+          "col": 27,
+          "row": 3
+        },
+        {
+          "col": 35,
+          "row": 3
+        },
+        {
+          "col": 43,
+          "row": 3
+        },
+        {
+          "col": 51,
+          "row": 3
+        },
+        {
+          "col": 59,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,3)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 3
+        },
+        {
+          "col": 12,
+          "row": 3
+        },
+        {
+          "col": 20,
+          "row": 3
+        },
+        {
+          "col": 28,
+          "row": 3
+        },
+        {
+          "col": 36,
+          "row": 3
+        },
+        {
+          "col": 44,
+          "row": 3
+        },
+        {
+          "col": 52,
+          "row": 3
+        },
+        {
+          "col": 60,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,3)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 3
+        },
+        {
+          "col": 13,
+          "row": 3
+        },
+        {
+          "col": 21,
+          "row": 3
+        },
+        {
+          "col": 29,
+          "row": 3
+        },
+        {
+          "col": 37,
+          "row": 3
+        },
+        {
+          "col": 45,
+          "row": 3
+        },
+        {
+          "col": 53,
+          "row": 3
+        },
+        {
+          "col": 61,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,3)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 3
+        },
+        {
+          "col": 14,
+          "row": 3
+        },
+        {
+          "col": 22,
+          "row": 3
+        },
+        {
+          "col": 30,
+          "row": 3
+        },
+        {
+          "col": 38,
+          "row": 3
+        },
+        {
+          "col": 46,
+          "row": 3
+        },
+        {
+          "col": 54,
+          "row": 3
+        },
+        {
+          "col": 62,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_3",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 3,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,3)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 3
+        },
+        {
+          "col": 15,
+          "row": 3
+        },
+        {
+          "col": 23,
+          "row": 3
+        },
+        {
+          "col": 31,
+          "row": 3
+        },
+        {
+          "col": 39,
+          "row": 3
+        },
+        {
+          "col": 47,
+          "row": 3
+        },
+        {
+          "col": 55,
+          "row": 3
+        },
+        {
+          "col": 63,
+          "row": 3
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,4)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 4
+        },
+        {
+          "col": 8,
+          "row": 4
+        },
+        {
+          "col": 16,
+          "row": 4
+        },
+        {
+          "col": 24,
+          "row": 4
+        },
+        {
+          "col": 32,
+          "row": 4
+        },
+        {
+          "col": 40,
+          "row": 4
+        },
+        {
+          "col": 48,
+          "row": 4
+        },
+        {
+          "col": 56,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,4)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 4
+        },
+        {
+          "col": 9,
+          "row": 4
+        },
+        {
+          "col": 17,
+          "row": 4
+        },
+        {
+          "col": 25,
+          "row": 4
+        },
+        {
+          "col": 33,
+          "row": 4
+        },
+        {
+          "col": 41,
+          "row": 4
+        },
+        {
+          "col": 49,
+          "row": 4
+        },
+        {
+          "col": 57,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,4)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 4
+        },
+        {
+          "col": 10,
+          "row": 4
+        },
+        {
+          "col": 18,
+          "row": 4
+        },
+        {
+          "col": 26,
+          "row": 4
+        },
+        {
+          "col": 34,
+          "row": 4
+        },
+        {
+          "col": 42,
+          "row": 4
+        },
+        {
+          "col": 50,
+          "row": 4
+        },
+        {
+          "col": 58,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,4)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 4
+        },
+        {
+          "col": 11,
+          "row": 4
+        },
+        {
+          "col": 19,
+          "row": 4
+        },
+        {
+          "col": 27,
+          "row": 4
+        },
+        {
+          "col": 35,
+          "row": 4
+        },
+        {
+          "col": 43,
+          "row": 4
+        },
+        {
+          "col": 51,
+          "row": 4
+        },
+        {
+          "col": 59,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,4)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 4
+        },
+        {
+          "col": 12,
+          "row": 4
+        },
+        {
+          "col": 20,
+          "row": 4
+        },
+        {
+          "col": 28,
+          "row": 4
+        },
+        {
+          "col": 36,
+          "row": 4
+        },
+        {
+          "col": 44,
+          "row": 4
+        },
+        {
+          "col": 52,
+          "row": 4
+        },
+        {
+          "col": 60,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,4)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 4
+        },
+        {
+          "col": 13,
+          "row": 4
+        },
+        {
+          "col": 21,
+          "row": 4
+        },
+        {
+          "col": 29,
+          "row": 4
+        },
+        {
+          "col": 37,
+          "row": 4
+        },
+        {
+          "col": 45,
+          "row": 4
+        },
+        {
+          "col": 53,
+          "row": 4
+        },
+        {
+          "col": 61,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,4)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 4
+        },
+        {
+          "col": 14,
+          "row": 4
+        },
+        {
+          "col": 22,
+          "row": 4
+        },
+        {
+          "col": 30,
+          "row": 4
+        },
+        {
+          "col": 38,
+          "row": 4
+        },
+        {
+          "col": 46,
+          "row": 4
+        },
+        {
+          "col": 54,
+          "row": 4
+        },
+        {
+          "col": 62,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_4",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 4,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,4)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 4
+        },
+        {
+          "col": 15,
+          "row": 4
+        },
+        {
+          "col": 23,
+          "row": 4
+        },
+        {
+          "col": 31,
+          "row": 4
+        },
+        {
+          "col": 39,
+          "row": 4
+        },
+        {
+          "col": 47,
+          "row": 4
+        },
+        {
+          "col": 55,
+          "row": 4
+        },
+        {
+          "col": 63,
+          "row": 4
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_0_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 0,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (0,5)",
+      "frames": [
+        {
+          "col": 0,
+          "row": 5
+        },
+        {
+          "col": 8,
+          "row": 5
+        },
+        {
+          "col": 16,
+          "row": 5
+        },
+        {
+          "col": 24,
+          "row": 5
+        },
+        {
+          "col": 32,
+          "row": 5
+        },
+        {
+          "col": 40,
+          "row": 5
+        },
+        {
+          "col": 48,
+          "row": 5
+        },
+        {
+          "col": 56,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_1_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 1,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (1,5)",
+      "frames": [
+        {
+          "col": 1,
+          "row": 5
+        },
+        {
+          "col": 9,
+          "row": 5
+        },
+        {
+          "col": 17,
+          "row": 5
+        },
+        {
+          "col": 25,
+          "row": 5
+        },
+        {
+          "col": 33,
+          "row": 5
+        },
+        {
+          "col": 41,
+          "row": 5
+        },
+        {
+          "col": 49,
+          "row": 5
+        },
+        {
+          "col": 57,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_2_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 2,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (2,5)",
+      "frames": [
+        {
+          "col": 2,
+          "row": 5
+        },
+        {
+          "col": 10,
+          "row": 5
+        },
+        {
+          "col": 18,
+          "row": 5
+        },
+        {
+          "col": 26,
+          "row": 5
+        },
+        {
+          "col": 34,
+          "row": 5
+        },
+        {
+          "col": 42,
+          "row": 5
+        },
+        {
+          "col": 50,
+          "row": 5
+        },
+        {
+          "col": 58,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_3_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 3,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (3,5)",
+      "frames": [
+        {
+          "col": 3,
+          "row": 5
+        },
+        {
+          "col": 11,
+          "row": 5
+        },
+        {
+          "col": 19,
+          "row": 5
+        },
+        {
+          "col": 27,
+          "row": 5
+        },
+        {
+          "col": 35,
+          "row": 5
+        },
+        {
+          "col": 43,
+          "row": 5
+        },
+        {
+          "col": 51,
+          "row": 5
+        },
+        {
+          "col": 59,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_4_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 4,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (4,5)",
+      "frames": [
+        {
+          "col": 4,
+          "row": 5
+        },
+        {
+          "col": 12,
+          "row": 5
+        },
+        {
+          "col": 20,
+          "row": 5
+        },
+        {
+          "col": 28,
+          "row": 5
+        },
+        {
+          "col": 36,
+          "row": 5
+        },
+        {
+          "col": 44,
+          "row": 5
+        },
+        {
+          "col": 52,
+          "row": 5
+        },
+        {
+          "col": 60,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_5_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 5,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (5,5)",
+      "frames": [
+        {
+          "col": 5,
+          "row": 5
+        },
+        {
+          "col": 13,
+          "row": 5
+        },
+        {
+          "col": 21,
+          "row": 5
+        },
+        {
+          "col": 29,
+          "row": 5
+        },
+        {
+          "col": 37,
+          "row": 5
+        },
+        {
+          "col": 45,
+          "row": 5
+        },
+        {
+          "col": 53,
+          "row": 5
+        },
+        {
+          "col": 61,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_6_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 6,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (6,5)",
+      "frames": [
+        {
+          "col": 6,
+          "row": 5
+        },
+        {
+          "col": 14,
+          "row": 5
+        },
+        {
+          "col": 22,
+          "row": 5
+        },
+        {
+          "col": 30,
+          "row": 5
+        },
+        {
+          "col": 38,
+          "row": 5
+        },
+        {
+          "col": 46,
+          "row": 5
+        },
+        {
+          "col": 54,
+          "row": 5
+        },
+        {
+          "col": 62,
+          "row": 5
+        }
+      ],
+      "fps": 3
+    },
+    {
+      "id": "marsh_water_at_7_5",
+      "sheet": "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png",
+      "col": 7,
+      "row": 5,
+      "layer": 1,
+      "category": "water_transition",
+      "description": "Marsh water autotile grid position (7,5)",
+      "frames": [
+        {
+          "col": 7,
+          "row": 5
+        },
+        {
+          "col": 15,
+          "row": 5
+        },
+        {
+          "col": 23,
+          "row": 5
+        },
+        {
+          "col": 31,
+          "row": 5
+        },
+        {
+          "col": 39,
+          "row": 5
+        },
+        {
+          "col": 47,
+          "row": 5
+        },
+        {
+          "col": 55,
+          "row": 5
+        },
+        {
+          "col": 63,
+          "row": 5
+        }
+      ],
+      "fps": 3
     }
   ]
 }
