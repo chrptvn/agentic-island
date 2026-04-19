@@ -190,9 +190,10 @@ export function buildIslandLayer1(
 
   // (Global lake removed — lakes are now per-biome, carved after biome zones.)
 
-  // ── 7. Detect lake water cells ────────────────────────────────────────────
+  // ── 7. Fill inland CA remnants & detect ocean ──────────────────────────────
   // Ocean = water cells reachable from the map border by BFS through water.
-  // Lake  = water cells not reachable (enclosed inside the grass island).
+  // Any inland water pockets (CA survivors) are converted to grass so that
+  // only per-biome lake carving (step 8c) creates lakes.
   const lakeGrid = new Set<string>();
   const oceanVis = new Set<string>();
   {
@@ -219,9 +220,11 @@ export function buildIslandLayer1(
         oceanQ.push([nx, ny]);
       }
     }
+    // Fill CA remnant inland water pockets with grass.
+    // Lakes are only created by per-biome lake configs (step 8c).
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        if (!grid[y][x] && !oceanVis.has(`${x},${y}`)) lakeGrid.add(`${x},${y}`);
+        if (!grid[y][x] && !oceanVis.has(`${x},${y}`)) grid[y][x] = true;
       }
     }
   }
