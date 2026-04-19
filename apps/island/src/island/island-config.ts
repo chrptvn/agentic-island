@@ -90,14 +90,15 @@ export interface GameplayConfig {
  *  inner lake after biome placement.  Custom tile prefixes allow different
  *  visual styles (e.g. cave water for marshes). */
 export interface BiomeLakeConfig {
-  /** Probability (0–1) that each zone of this biome gets a lake. */
+  /** Probability (0–1) that each zone gets a lake. Only used for zone biomes;
+   *  fill biomes always carve exactly `count` lakes. */
   probability: number;
   /** Minimum lake radius (in cells). */
   radiusMin: number;
   /** Maximum lake radius (in cells). */
   radiusMax: number;
-  /** Number of lake attempts for fill biomes (default 1). Ignored for zone biomes
-   *  where each zone center is an independent attempt controlled by probability. */
+  /** Number of lakes to carve for fill biomes (default 1). For zone biomes
+   *  this is ignored — each zone center is an independent probability roll. */
   count?: number;
   /** Autotile prefix for border tiles (default: "water_at"). */
   tilePrefix?: string;

@@ -67,10 +67,10 @@
         "radiusMax": 0,
         "vegetationDensity": 0.05,
         "lake": {
-          "probability": 0.1,
+          "probability": 1.0,
           "radiusMin": 8,
           "radiusMax": 20,
-          "count": 3
+          "count": 2
         }
       },
       {

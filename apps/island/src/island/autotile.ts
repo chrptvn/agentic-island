@@ -336,12 +336,10 @@ export function buildIslandLayer1(
     // Determine zone centers for this biome
     let centers: [number, number][];
     if (biome.fill) {
-      // Fill biome has no BFS zones — pick up to `count` random deep-interior
-      // cells as lake centers, each subject to probability.
+      // Fill biome: carve exactly `count` lakes (no probability gate).
       centers = [];
       const lakeCount = lakeCfg.count ?? 1;
       for (let attempt = 0; attempt < lakeCount; attempt++) {
-        if (rng() >= lakeCfg.probability) continue;
         const fillCandidates: [number, number][] = [];
         for (let y = 1; y < h - 1; y++) {
           for (let x = 1; x < w - 1; x++) {
