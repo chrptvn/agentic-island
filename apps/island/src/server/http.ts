@@ -188,7 +188,7 @@ async function handleRequest(
     try {
       const body = await readBody(req) as { id: string; x: number; y: number };
       const island = Island.getInstance();
-      const character = island.spawnCharacter(body.x, body.y, body.id);
+      const character = await island.spawnCharacter(body.x, body.y, body.id);
       jsonOk(res, { message: `Character "${body.id}" spawned at (${character.x}, ${character.y}).`, id: character.id, x: character.x, y: character.y });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);
@@ -200,7 +200,7 @@ async function handleRequest(
     try {
       const body = await readBody(req) as { id: string };
       const island = Island.getInstance();
-      const { character, reconnected } = island.connect(body.id);
+      const { character, reconnected } = await island.connect(body.id);
       const verb = reconnected ? "reconnected" : "spawned";
       jsonOk(res, { message: `Character "${body.id}" ${verb} at (${character.x}, ${character.y}).`, id: character.id, x: character.x, y: character.y, reconnected });
     } catch (err) {
@@ -236,7 +236,7 @@ async function handleRequest(
       const map = island.regenerateMap({ size: body.size });
       const characterId = body.characterId ?? "Carl";
       try { island.disconnect(characterId); } catch { /* not spawned, fine */ }
-      const { character, reconnected } = island.connect(characterId);
+      const { character, reconnected } = await island.connect(characterId);
       jsonOk(res, { message: `Island reset. "${characterId}" spawned at (${character.x}, ${character.y}).`, size: map.size, seed: map.seed, width: map.width, height: map.height, character: { id: characterId, x: character.x, y: character.y }, reconnected });
     } catch (err) {
       jsonErr(res, 400, (err as Error).message);

@@ -103,9 +103,20 @@ export function sendPassportRequest(
 export function handleIslandConnection(ws: WebSocket): void {
   let core: ConnectedIsland | null = null;
 
-  ws.on("message", async (raw) => {
+  // Serialize message processing so async handlers (e.g. sprite_update with
+  // await saveSprites) complete before the next message is handled. This
+  // prevents races where map_init is processed before sprites are saved.
+  let messageQueue: Promise<void> = Promise.resolve();
+
+  ws.on("message", (raw) => {
+    messageQueue = messageQueue.then(() => handleMessage(raw)).catch((err) => {
+      console.error("[island-handler] message error:", err);
+    });
+  });
+
+  async function handleMessage(raw: unknown): Promise<void> {
     try {
-      const msg: IslandToHubMessage = JSON.parse(raw.toString());
+      const msg: IslandToHubMessage = JSON.parse((raw as Buffer).toString());
 
       switch (msg.type) {
         case "handshake": {
@@ -416,7 +427,7 @@ export function handleIslandConnection(ws: WebSocket): void {
     } catch (err) {
       console.error("[island-handler] message error:", err);
     }
-  });
+  }
 
   ws.on("close", () => {
     if (core) {

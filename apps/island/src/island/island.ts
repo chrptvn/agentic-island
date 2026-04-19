@@ -791,7 +791,7 @@ export class Island extends EventEmitter {
     return result;
   }
 
-  spawnCharacter(x: number, y: number, id = "hero", requestedAppearance?: CharacterAppearance): CharacterInstance {
+  async spawnCharacter(x: number, y: number, id = "hero", requestedAppearance?: CharacterAppearance): Promise<CharacterInstance> {
     if (x < 0 || x >= this.map.width || y < 0 || y >= this.map.height) {
       throw new Error(`Position (${x}, ${y}) is outside map bounds (${this.map.width}×${this.map.height}).`);
     }
@@ -816,10 +816,12 @@ export class Island extends EventEmitter {
 
     const character: CharacterInstance = { id, x, y, appearance, facing, stats, path: [], action: "idle", moveTicks: 0, sensoryEvents: [], sensoryProximityCooldowns: new Map(), activeHallucinations: [] };
 
+    // Build and upload sprite BEFORE adding to state so the hub has
+    // the PNG ready by the time viewers learn about this character.
+    await this._emitCharacterSprite(character);
+
     this.characters.set(id, character);
     saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
-    // Build composite sprite for this character (async, non-blocking)
-    void this._emitCharacterSprite(character);
     this.emit("map:updated", this.map);
     return character;
   }
@@ -841,12 +843,12 @@ export class Island extends EventEmitter {
    * - If the character is new, create them at a random spawnable position.
    * - If the character is already active in-memory, just return them.
    */
-  connect(username: string, requestedAppearance?: CharacterAppearance): { character: CharacterInstance; reconnected: boolean } {
+  async connect(username: string, requestedAppearance?: CharacterAppearance): Promise<{ character: CharacterInstance; reconnected: boolean }> {
     const id = username;
     // Already active — just return (re-emit sprite in case hub restarted)
     const existing = this.characters.get(id);
     if (existing) {
-      void this._emitCharacterSprite(existing);
+      await this._emitCharacterSprite(existing);
       this.emit("map:updated", this.map);
       return { character: existing, reconnected: true };
     }
@@ -880,13 +882,13 @@ export class Island extends EventEmitter {
         sensoryEvents: [],
         sensoryProximityCooldowns: new Map(),
         activeHallucinations: [],
-        ...(saved.shelter ? { shelter: saved.shelter } : {}),
       };
+
+      // Build and upload sprite BEFORE adding to state
+      await this._emitCharacterSprite(character);
 
       this.characters.set(id, character);
       saveCharacter(id, x, y, stats, [], "idle", undefined, undefined, undefined, undefined, appearance, facing);
-      // Build composite sprite for this character (async, non-blocking)
-      void this._emitCharacterSprite(character);
       this.emit("map:updated", this.map);
       return { character, reconnected: true };
     }
@@ -895,7 +897,7 @@ export class Island extends EventEmitter {
     const positions = this.getValidSpawnPositions();
     if (positions.length === 0) throw new Error("No valid spawn positions available.");
     const pos = positions[Math.floor(Math.random() * positions.length)];
-    return { character: this.spawnCharacter(pos.x, pos.y, id, requestedAppearance), reconnected: false };
+    return { character: await this.spawnCharacter(pos.x, pos.y, id, requestedAppearance), reconnected: false };
   }
 
   /** Check if a tile is available for spawning (walkable, no entity, no character). */

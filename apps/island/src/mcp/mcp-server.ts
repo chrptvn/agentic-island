@@ -206,11 +206,6 @@ export function makeTunnelSession(transport: Transport, passportKey?: string): M
     lastSurroundingsPushAt: 0,
   };
 
-  // Validate passport and auto-spawn character
-  if (passportKey) {
-    spawnFromPassport(session, passportKey);
-  }
-
   allMcpSessions.add(session);
 
   transport.onclose = () => {
@@ -224,6 +219,14 @@ export function makeTunnelSession(transport: Transport, passportKey?: string): M
 
   initServer(server, session);
   server.connect(transport);
+
+  // Spawn character asynchronously after transport is connected so MCP
+  // handshake can proceed. island.connect() internally awaits the sprite
+  // composite, ensuring sprites are uploaded before state broadcasts.
+  if (passportKey) {
+    void spawnFromPassport(session, passportKey);
+  }
+
   return session;
 }
 
@@ -231,7 +234,7 @@ export function makeTunnelSession(transport: Transport, passportKey?: string): M
  * Validate a passport key and spawn the character into the world.
  * Returns the character ID on success, null on failure.
  */
-export function spawnFromPassport(session: McpSession, passportKey: string): string | null {
+export async function spawnFromPassport(session: McpSession, passportKey: string): Promise<string | null> {
   const passport = validatePassportKey(passportKey);
   if (!passport) {
     console.log("[mcp] Invalid passport key provided");
@@ -256,7 +259,7 @@ export function spawnFromPassport(session: McpSession, passportKey: string): str
 
   // Connect/spawn the character in the island world
   const island = Island.getInstance();
-  island.connect(characterId, passport.appearance);
+  await island.connect(characterId, passport.appearance);
 
   session.characterId = characterId;
   attachWorldListener(session);

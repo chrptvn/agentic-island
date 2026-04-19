@@ -31,24 +31,50 @@ export class SpriteCache {
     const inflight = this.loading.get(name);
     if (inflight) return inflight;
 
-    const promise = new Promise<SpriteSheet>((resolve, reject) => {
+    const promise = this._loadWithRetry(name, url, tileSize, gap);
+    this.loading.set(name, promise);
+    return promise;
+  }
+
+  private async _loadWithRetry(
+    name: string,
+    url: string,
+    tileSize: number,
+    gap: number,
+    maxRetries = 2,
+  ): Promise<SpriteSheet> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        const sheet = await this._loadImage(url, tileSize, gap);
+        this.sheets.set(name, sheet);
+        this.loading.delete(name);
+        return sheet;
+      } catch (err) {
+        if (attempt >= maxRetries) {
+          this.loading.delete(name);
+          throw err;
+        }
+        await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+  }
+
+  private _loadImage(
+    url: string,
+    tileSize: number,
+    gap: number,
+  ): Promise<SpriteSheet> {
+    return new Promise<SpriteSheet>((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = "anonymous";
       img.onload = () => {
-        const sheet: SpriteSheet = { image: img, tileSize, gap };
-        this.sheets.set(name, sheet);
-        this.loading.delete(name);
-        resolve(sheet);
+        resolve({ image: img, tileSize, gap });
       };
       img.onerror = (_e) => {
-        this.loading.delete(name);
-        reject(new Error(`Failed to load sprite sheet "${name}" from ${url}`));
+        reject(new Error(`Failed to load sprite sheet from ${url}`));
       };
       img.src = url;
     });
-
-    this.loading.set(name, promise);
-    return promise;
   }
 
   /** Load a sprite sheet from base64-encoded data (used by Hub viewer). */
