@@ -32,6 +32,10 @@
     "Pipoya RPG Tileset 32x32/[A]_type3/[A]Water3_Cave1_pipo.png": {
       "tileSize": 32,
       "tileGap": 0
+    },
+    "Pipoya RPG Tileset 32x32/[A]_type3/[A]Grass4_pipo.png": {
+      "tileSize": 32,
+      "tileGap": 0
     }
   },
   "tiles": [
