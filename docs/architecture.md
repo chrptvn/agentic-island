@@ -69,28 +69,27 @@ The World is the game engine that simulates the world. It runs on the host's mac
 
 | Module | Path | Responsibility |
 |--------|------|----------------|
-| World engine | `src/world/world.ts` | Game loop (500ms tick), stat drain/regen, entity decay, growth timers |
-| Map generator | `src/world/map.ts` | Cellular automata terrain generation, entity spawning |
-| Pathfinder | `src/world/pathfinder.ts` | BFS pathfinding with walkability rules |
-| Entity registry | `src/world/entity-registry.ts` | Loads entity definitions from `config/entities.json` |
-| Item registry | `src/world/item-registry.ts` | Item properties, capabilities, consumables |
-| Craft registry | `src/world/craft-registry.ts` | Crafting recipes and ingredient validation |
-| Tile registry | `src/world/tile-registry.ts` | Sprite sheet tile mappings |
-| Character registry | `src/world/character-registry.ts` | Character stats, inventory, equipment |
+| World engine | `src/island/island.ts` | Game loop (500ms tick), stat drain/regen, entity decay, growth timers |
+| Map generator | `src/island/map.ts` | Cellular automata terrain generation, entity spawning |
+| Pathfinder | `src/island/pathfinder.ts` | BFS pathfinding with walkability rules |
+| Entity registry | `src/island/entity-registry.ts` | Loads entity definitions from `config/entities.json` |
+| Item registry | `src/island/item-registry.ts` | Item properties, capabilities, consumables |
+| Craft registry | `src/island/craft-registry.ts` | Crafting recipes and ingredient validation |
+| Tile registry | `src/island/tile-registry.ts` | Sprite sheet tile mappings |
+| Character registry | `src/island/character-registry.ts` | Character stats, inventory, equipment |
 | Hub connector | `src/hub-connector/connector.ts` | Outbound WebSocket to Hub with reconnection |
 | Sprite uploader | `src/hub-connector/sprite-uploader.ts` | Base64-encodes and sends sprite sheets to Hub |
 | State streamer | `src/hub-connector/state-streamer.ts` | Periodically sends world state snapshots to Hub |
 | MCP server | `src/mcp/mcp-server.ts` | Passport-authenticated HTTP MCP server for AI agents |
-| Passport module | `src/passport/passport.ts` | Passport key generation, validation, and character catalog |
+| Passport module | `src/passport/index.ts` | Passport key generation, validation, and character catalog |
 | Persistence | `src/persistence/db.ts` | SQLite storage for world state, overrides, characters |
-| HTTP server | `src/server/http.ts` | Express-like HTTP server + local web UI |
 
 **Environment variables:**
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ISLAND_PORT` | `3002` | HTTP server port |
-| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:4000/ws/island`) |
+| `HUB_URL` | — | WebSocket URL to Hub (e.g., `ws://localhost:3001/ws/island`) |
 | `API_KEY` | — | Hub Key for Hub authentication |
 
 ---
@@ -107,21 +106,25 @@ The Hub is the public-facing server. It accepts connections from World instances
 |--------|------|-------------|
 | `GET` | `/api/health` | Health check (`{ status: "ok", uptime }`) |
 | `POST` | `/api/keys` | Generate Hub Key (rate-limited: 5/min/IP) |
-| `GET` | `/api/islands` | List islands (optional `?status=online\|offline`) |
-| `GET` | `/api/islands/:id` | Get world details (also logs a view) |
-| `POST` | `/api/islands/:id/passports` | Create or recover an Island Passport |
+| `GET` | `/api/islands` | List online islands (optional `?filter=with-agents` for islands with active players) |
+| `GET` | `/api/islands/:id` | Get island details (also logs a view) |
+| `GET` | `/api/islands/:id/map` | Serve static map data (no cache) |
+| `GET` | `/api/islands/:id/state` | Serve dynamic initial state (entities, characters, overrides) |
+| `GET` | `/api/islands/:id/agent-prompt` | Get island's agent-prompt.md content |
+| `POST` | `/api/islands/:id/passports` | Create or recover an Island Passport (rate-limited: 5/min/IP) |
 | `PUT` | `/api/islands/:id/passports` | Update passport appearance |
 | `GET` | `/api/islands/:id/passport-catalog` | Get character customization catalog |
 | `GET` | `/api/islands/:id/smtp-status` | Check if SMTP is configured |
-| `POST` | `/islands/:id/mcp` | MCP proxy endpoint (Bearer token required) |
-| `GET` | `/sprites/:islandId/:filename` | Serve cached sprite files (1h cache TTL) |
+| `POST\|GET\|DELETE` | `/islands/:id/mcp` | MCP proxy endpoint (Bearer token required) |
+| `GET` | `/sprites/:islandId/*` | Serve cached sprite files (1 year immutable cache) |
 
 **WebSocket endpoints:**
 
 | Path | Purpose |
 |------|---------|
 | `/ws/island` | Island game engines connect here |
-| `/ws/viewer` | Browser viewer clients connect here |
+| `/ws/island/:id` | Browser viewer clients subscribe to a specific island |
+| `/ws/lobby` | Lobby channel (online island list and live updates) |
 
 **Environment variables:**
 
@@ -130,6 +133,8 @@ The Hub is the public-facing server. It accepts connections from World instances
 | `HUB_PORT` | `3001` | HTTP/WS server port |
 | `HUB_DB_PATH` | `hub.db` | SQLite database file path |
 | `SPRITE_CACHE_DIR` | `sprite-cache` | Sprite file cache directory |
+| `HUB_PUBLIC_URL` | — | Public base URL for the hub (used in passport emails) |
+| `CORS_ORIGINS` | `*` | Comma-separated allowed origins for API CORS (defaults to all origins) |
 
 ---
 
@@ -157,7 +162,7 @@ Next.js single-page application for browsing and watching live islands.
 **Hooks:**
 
 - `useWorlds(status)` — Fetches world list from `/api/islands`
-- `useIslandStream(islandId)` — Opens WebSocket to `/ws/viewer`, subscribes to island updates
+- `useIslandStream(islandId)` — Opens WebSocket to `/ws/island/:id`, receives map init + state deltas
 
 **Dev server:** Next.js on port 3000, proxies `/api`, `/sprites`, and `/ws` to Hub API at `localhost:3001`.
 
@@ -282,25 +287,30 @@ Island                              Hub
   │          ...repeats...           │
 ```
 
-### Hub ↔ Viewer
+### Hub ↔ Viewer (island-scoped: `/ws/island/:id`)
 
-Viewers connect via WebSocket and subscribe to a specific world.
-
-**Viewer → Hub messages:**
-
-| Type | Payload |
-|------|---------|
-| `subscribe` | `islandId` |
-| `unsubscribe` | `islandId` |
+Each connection is scoped to one island — no `subscribe` message needed.
 
 **Hub → Viewer messages:**
 
 | Type | When | Payload |
 |------|------|---------|
-| `island_state` | On each World state_update | `islandId`, `state` (WorldState), `spriteBaseUrl` |
-| `island_offline` | World disconnects | `islandId` |
-| `world_list` | On request | `islands[]` (IslandMeta array) |
+| `map_init` | On connect (once) | `islandName`, `map`, `tileRegistry`, `tileLookup`, `spriteBaseUrl`, `spriteVersion` |
+| `state_delta` | On each state_update | Compressed delta: entity/character/override changes only |
+| `island_offline` | Island disconnects | _(none)_ |
+| `map_changed` | Map regenerated | _(none — client re-fetches map via HTTP)_ |
+| `sprite_version` | Sprite sheet changed | `spriteVersion` hash |
 | `error` | On failure | `code`, `message` |
+
+### Hub ↔ Lobby (`/ws/lobby`)
+
+**Hub → Client messages:**
+
+| Type | When | Payload |
+|------|------|---------|
+| `island_list` | On connect | `islands[]` (IslandMeta array) |
+| `island_meta_update` | Island status/meta changes | `island` (IslandMeta) |
+| `island_removed` | Island goes offline | `islandId` |
 
 ## Data Flow
 
@@ -314,7 +324,7 @@ End-to-end flow from World startup to a viewer rendering the world:
    └─► Opens MCP server on HTTP
 
 2. World connects to Hub
-   └─► WebSocket to /ws/world
+   └─► WebSocket to /ws/island
    └─► Sends "handshake" with API key, world metadata, base64 sprites
    └─► Hub validates API key (SHA-256 hash lookup in SQLite)
    └─► Hub upserts world record (status: "online")
@@ -328,17 +338,18 @@ End-to-end flow from World startup to a viewer rendering the world:
 
 4. Viewer opens Hub Web
    └─► Browser loads React SPA from Hub Web
-   └─► Home page fetches GET /api/islands?status=online
+   └─► Home page fetches GET /api/islands (optional ?filter=with-agents)
    └─► User clicks a world card
 
-5. Viewer subscribes to world
-   └─► WebSocket to /ws/viewer
-   └─► Sends "subscribe" with islandId
-   └─► Hub adds viewer to worldViewers set
+5. Viewer connects to island
+   └─► HTTP GET /api/islands/:id/map   → static map + tileRegistry (cached)
+   └─► HTTP GET /api/islands/:id/state → current entities, characters, overrides, tick
+   └─► WebSocket to /ws/island/:id
+   └─► Hub sends "map_init" (once), then live "state_delta" messages
 
-6. Hub relays state to viewer
-   └─► On next "state_update" from World, Hub broadcasts
-       { type: "island_state", state, spriteBaseUrl } to all subscribed viewers
+6. Hub relays state deltas to viewer
+   └─► On each "state_update" from World, Hub computes delta and broadcasts
+       { type: "state_delta", delta } to all viewers subscribed to that island
 
 7. Viewer renders
    └─► GameViewer component receives WorldState
@@ -366,7 +377,7 @@ Stores hashed API keys for World authentication.
 CREATE TABLE api_keys (
   id           TEXT PRIMARY KEY,              -- UUID
   key_hash     TEXT NOT NULL UNIQUE,          -- SHA-256 hash of raw key
-  label        TEXT,                          -- optional user label
+  email        TEXT NOT NULL UNIQUE,          -- email associated with this key
   created_at   TEXT DEFAULT (datetime('now')),
   last_seen_at TEXT                           -- updated on each handshake
 );
@@ -383,7 +394,10 @@ CREATE TABLE islands (
   name              TEXT NOT NULL,
   description       TEXT,
   config_snapshot   TEXT,                                  -- JSON world config
+  thumbnail_path    TEXT,                                  -- path to cached thumbnail
   player_count      INTEGER DEFAULT 0,
+  secured           INTEGER DEFAULT 0,                     -- 1 = access-key protected
+  access_key_hash   TEXT,                                  -- SHA-256 hash of access key
   status            TEXT DEFAULT 'offline',                -- 'online' | 'offline'
   last_heartbeat_at TEXT,
   created_at        TEXT DEFAULT (datetime('now')),
@@ -408,16 +422,19 @@ CREATE TABLE island_views (
 World uses a separate SQLite database (`agentic-island.db`) for local game state persistence.
 
 ```sql
-CREATE TABLE island_state    (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE world_state     (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE tile_overrides  (x INT, y INT, layer INT DEFAULT 0, tile_id TEXT, PRIMARY KEY (x, y, layer));
 CREATE TABLE entity_stats    (x INT, y INT, stats TEXT NOT NULL, PRIMARY KEY (x, y));
-CREATE TABLE characters      (id TEXT PRIMARY KEY, x INT, y INT, stats TEXT, path TEXT DEFAULT '[]', action TEXT DEFAULT 'idle');
+CREATE TABLE characters      (id TEXT PRIMARY KEY, x INT NOT NULL, y INT NOT NULL, stats TEXT NOT NULL,
+                               path TEXT DEFAULT '[]', action TEXT DEFAULT 'idle',
+                               tile_id TEXT DEFAULT 'human', hair_tile_id TEXT, beard_tile_id TEXT,
+                               shelter TEXT, appearance TEXT, facing TEXT DEFAULT 's');
 CREATE TABLE journal         (id INTEGER PRIMARY KEY AUTOINCREMENT, character_id TEXT, content TEXT, created_at TEXT);
 CREATE TABLE passports       (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, key_hash TEXT NOT NULL UNIQUE,
                               name TEXT NOT NULL, appearance TEXT NOT NULL, created_at TEXT, updated_at TEXT);
 ```
 
-The `passports` table stores per-island passport keys. The `island_state` table holds the island-specific salt under the key `"passport_salt"`.
+The `passports` table stores per-island passport keys. The `world_state` table holds the island-specific salt under the key `"passport_salt"`.
 
 ## Customization
 
@@ -455,7 +472,11 @@ Define what exists in the world — trees, rocks, structures:
 ```json
 {
   "id": "young_tree",
-  "tileType": "single",
+  "name": "Young Tree",
+  "tiles": [
+    { "dx": 0, "dy": 0, "layer": 3, "tileId": "bush_light" },
+    { "dx": 0, "dy": -1, "layer": 4, "tileId": "tree_light0" }
+  ],
   "blocks": true,
   "stats": { "health": 40, "maxHealth": 40, "branches": 2, "acorns": 3 },
   "harvest": {
@@ -500,12 +521,19 @@ Define crafting recipes:
 
 #### 5. Sprite Sheets (`tileset.json`)
 
-Map tile IDs to sprite sheet positions (supports the DawnLike sprite format):
+Map tile IDs to sprite sheet positions using a top-level `tiles` array:
 
 ```json
 {
-  "grass": { "sheet": "Objects/Floor.png", "col": 1, "row": 0, "layer": 0 },
-  "young_tree": { "sheet": "Objects/Tree0.png", "col": 0, "row": 2, "layer": 3 }
+  "tileSize": 16,
+  "tileGap": 1,
+  "sheets": {
+    "pipoya/terrain-grass.png": { "tileSize": 32, "tileGap": 0 }
+  },
+  "tiles": [
+    { "id": "grass",      "sheet": "pipoya/terrain-grass.png", "col": 0, "row": 0, "layer": 0 },
+    { "id": "bush_light", "sheet": "Objects/Tree0.png",        "col": 1, "row": 0, "layer": 3 }
+  ]
 }
 ```
 
@@ -547,25 +575,22 @@ Passport-authenticated MCP server providing character control and world manageme
 6. Server sends alerts when character's energy or hunger is low
 7. On transport close, character is despawned
 
-**Available tools (40+):**
+**Available tools:**
 
 | Category | Tools |
 |----------|-------|
-| Character | `get_status`, `list_characters` |
-| Movement | `move_to` (target filter), `walk` (relative steps) |
-| Gathering | `harvest` (resources from entities) |
-| Crafting | `list_craftable`, `craft_item` |
-| Consuming | `eat` (food from inventory) |
-| Equipment | `equip`, `unequip` |
-| Building | `build_structure`, `interact_with`, `plow_tile` |
+| Status | `check_self` (stats, inventory, equipment, current action) |
+| Perception | `look_around` (surroundings, nearby entities, sensory events) |
+| Movement | `walk` (relative directional steps), `face` (turn without moving) |
+| Gathering | `harvest` (collect resources / deal damage to entity in front) |
+| Items | `use` (use item from inventory), `eat` (consume food) |
+| Crafting | `list_recipes`, `examine_item`, `list_craftable`, `craft_item` |
+| Building | `build_structure`, `interact_with`, `feed_entity` |
 | Storage | `container_inspect`, `container_put`, `container_take` |
 | Farming | `plant_seed` |
-| Social | `say` (speech bubble) |
+| Social | `say` (speech bubble, max 280 chars) |
 | Knowledge | `write_journal`, `read_journal` |
 | Markers | `set_marker`, `get_markers`, `delete_marker` |
-| World info | `get_map`, `get_tile`, `list_tiles`, `list_target_filters` |
-| World editing | `set_tile`, `set_tiles`, `clear_tile`, `set_path`, `regenerate_map` |
-| Entities | `list_spawnable_tiles`, `list_spawn_positions`, `feed_entity` |
 
 > **Note:** The `connect`/`disconnect` tools have been removed. Characters spawn automatically when a valid passport connects, and despawn when the transport closes.
 
@@ -589,14 +614,16 @@ Passport-authenticated MCP server providing character control and world manageme
 ### Rate Limiting
 
 - `POST /api/keys` is rate-limited to **5 requests per minute per IP**
+- `POST /api/islands/:id/passports` is rate-limited to **5 requests per minute per IP**
 - IP detection: `x-forwarded-for` → `x-real-ip` → fallback
 - Returns `429 Too Many Requests` when exceeded
 
 ### CORS
 
-- Hub API allows all origins (`origin: "*"`)
-- Methods restricted to `GET`, `POST`, `OPTIONS`
-- Headers restricted to `Content-Type`
+- Hub API allows all origins by default (`origin: "*"`)
+- Configurable via `CORS_ORIGINS` environment variable (comma-separated list)
+- Methods restricted to `GET`, `POST`, `DELETE`, `OPTIONS`
+- Headers restricted to `Content-Type`, `Authorization`
 
 ### Sprite Upload Limits
 

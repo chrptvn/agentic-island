@@ -6,11 +6,17 @@ All game data lives in `apps/island/config/`. The island process **hot-reloads**
 |---|---|
 | `entities.json` | Every world object (trees, rocks, campfire, supply cache, etc.) |
 | `item-defs.json` | Item behaviour (equippable, capabilities, eat effects, specials) |
-| `items.json` | Item display emoji in the UI |
 | `recipes.json` | Crafting recipes |
 | `world.json` | Core game rules (hunger, energy, map generation) |
+| `hallucinations.json` | Random sensory messages injected into character perception |
 
-> **Tip:** `items.json` is NOT hot-reloaded. You need to restart the island process after editing it.
+The following files also live in `config/` but are **not** hot-reloaded — restart the island process after editing them:
+
+| File | What it controls |
+|---|---|
+| `tileset.json` | Sprite sheet tile coordinates and animation frames |
+| `character-catalog.json` | Character sprite sheet layout and available appearance options |
+| `agent-prompt.md` | System prompt injected into every MCP session |
 
 ---
 
@@ -40,11 +46,18 @@ All game data lives in `apps/island/config/`. The island process **hot-reloads**
   },
   "mapGen": {
     "vegetationDensity": 0.1,       // General vegetation density (0–1)
-    "forestCount": 2,               // Number of forest zones
-    "forestVegetationDensity": 1,   // Vegetation density inside forests
-    "lakeProbability": 0.01,        // Chance per cell of being a lake seed
-    "lilyPadDensity": 0.10          // Density of lily pads on water
-    // ... more map gen params
+    "lilyPadDensity": 0.10,         // Density of lily pads on water cells
+    "biomes": [                     // Named biome zones (BFS-grown)
+      {
+        "id": "forest",             // Biome ID (referenced by entity spawn.biomes)
+        "count": 2,                 // Number of zones to generate
+        "radiusMin": 15,            // Min BFS radius in cells
+        "radiusMax": 30,
+        "vegetationDensity": 1.0    // Override vegetation density inside this biome
+      }
+      // ... more biomes
+    ]
+    // ... more map gen params (fillProbability, smoothingPasses, etc.)
   }
 }
 ```
@@ -87,8 +100,9 @@ The top-level structure is `{ "entities": [ ... ] }`. Each entry is an entity de
 | `tiles` | array | Visual tiles that compose this entity (see **Tiles** below). |
 | `blocks` | boolean | If `true`, characters cannot walk through this entity. |
 | `spawn.weight` | number | Relative spawn probability during world generation. Higher = more common. |
-| `spawn.forestOnly` | boolean | Only spawns inside forest zones. |
-| `spawn.noForest` | boolean | Never spawns inside forest zones. |
+| `spawn.biomes` | object | Per-biome weight overrides: `{ "forest": 2, "meadow": 0 }`. Key = biome ID, value = weight inside that biome. Set to `0` to prevent spawning in a specific biome. If a biome isn't listed, the base `weight` is used. |
+| `spawn.forestOnly` | boolean | **Deprecated.** Use `spawn.biomes: { "forest": <weight> }` with base weight `0`. |
+| `spawn.noForest` | boolean | **Deprecated.** Use `spawn.biomes: { "forest": 0 }` instead. |
 | `spawn.lakeOnly` | boolean | Only spawns on lake-border water cells. |
 | `spawn.lakeInterior` | boolean | Only spawns on deep lake water cells. |
 | `stats` | object | Default resource amounts (also used as starting inventory when entity spawns). |
@@ -316,21 +330,7 @@ Emotions are bipolar sliders. Positive delta pushes toward the high pole:
 
 ---
 
-## 4. `items.json` — Item Display Emoji
-
-Maps item ID → emoji shown in the UI. Add a new item ID here to give it an icon:
-
-```json
-{
-  "my_item": "🧪"
-}
-```
-
-> Fallback is `📦` (`_unknown`). This file requires **server restart** to take effect.
-
----
-
-## 5. `recipes.json` — Crafting Recipes
+## 4. `recipes.json` — Crafting Recipes
 
 Structure: `{ "recipes": { "<output_item>": { ... } } }`
 
@@ -351,14 +351,36 @@ Structure: `{ "recipes": { "<output_item>": { ... } } }`
 
 ---
 
+## 5. `hallucinations.json` — Random Sensory Messages
+
+Defines pools of random messages injected into character perception at a set interval, adding atmosphere and personality to the world.
+
+```json
+{
+  "intervalMs": 30000,    // How often a hallucination fires (per character)
+  "pools": {
+    "enraged": [          // Pool name (tied to emotion state)
+      "A surge of inexplicable rage floods through you.",
+      "Your teeth clench. Someone moved something."
+    ],
+    "glad": [
+      "You feel a sudden, inexplicable lightness.",
+      "A warm glow spreads through your chest."
+    ]
+    // ... more pools mapped to emotion states
+  }
+}
+```
+
+---
+
 ## Workflow: Adding a New Entity
 
 1. **Pick or reuse a tile ID** from the available tile IDs table above.
 2. **Add the entity** to `entities.json` inside the `"entities"` array.
 3. **Add item behaviour** (if it drops a new item) in `item-defs.json`.
-4. **Add item emoji** in `items.json`.
-5. **Add a recipe** in `recipes.json` if it should be craftable.
-6. **Save** — `entities.json`, `item-defs.json`, and `recipes.json` hot-reload automatically. Restart the island service after `items.json` changes.
+4. **Add a recipe** in `recipes.json` if it should be craftable.
+5. **Save** — `entities.json`, `item-defs.json`, and `recipes.json` hot-reload automatically.
 
 ### Example: A new buildable well
 
@@ -391,9 +413,6 @@ Structure: `{ "recipes": { "<output_item>": { ... } } }`
   "wearable": null,
   "eat": { "hunger": 40, "message": "Warm and filling." }
 }
-
-// items.json — add emoji:
-"mushroom_stew": "🍲"
 
 // recipes.json — add recipe:
 "mushroom_stew": {
