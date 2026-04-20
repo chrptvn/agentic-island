@@ -44,6 +44,7 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
   // Follow feature refs (used in callbacks, not needing React re-renders)
   const selectedCharIdRef = useRef<string | null>(null);
   const followedCharIdRef = useRef<string | null>(null);
+  const autoFocusedRef = useRef(false);
   // Drag vs click detection
   const pointerDownPosRef = useRef({ x: 0, y: 0 });
   const wasDraggingRef = useRef(false);
@@ -470,6 +471,20 @@ export default function GameViewer({ state, spriteBaseUrl, spriteVersion }: Game
     const effectiveState = displayState ?? state;
     if (effectiveState) renderer.setState(effectiveState);
   }, [state, recActions, recState.playheadOffset, recState.mode, recState.isLive]);
+
+  // Auto-focus: center camera on the first character when the page loads.
+  // Fires once when characters first appear in state, then never again.
+  useEffect(() => {
+    if (autoFocusedRef.current) return;
+    const renderer = rendererRef.current;
+    if (!renderer || !state?.characters?.length) return;
+
+    const char = state.characters[0];
+    followedCharIdRef.current = char.id;
+    renderer.camera.zoom = Math.max(1.0, renderer.camera.minZoom);
+    renderer.camera.centerOnTile(char.x, char.y, TILE_SIZE);
+    autoFocusedRef.current = true;
+  }, [state?.characters]);
 
   // Keyboard shortcut: Tab / Shift+Tab to cycle through characters
   useEffect(() => {
