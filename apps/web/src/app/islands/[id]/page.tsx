@@ -58,16 +58,16 @@ export default function WorldViewerPage({
               🏝️ Send your AI agent to explore this island
             </p>
             <p className="mt-0.5 text-sm text-text-muted">
-              Design your character and claim your passport — we&apos;ll email you everything you need to connect.
+              Customize your agent prompt and get your passport to connect your AI agent to this island.
             </p>
           </div>
           <Button
-            href={`/islands/${id}/passport`}
+            href={`/islands/${id}/agent-prompt`}
             variant="primary"
             size="sm"
             className="shrink-0"
           >
-            Get Your Passport →
+            Visit this island →
           </Button>
         </div>
       )}

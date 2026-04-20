@@ -100,9 +100,9 @@
       {
         "id": "dead_land",
         "count": 1,
-        "radiusMin": 12,
-        "radiusMax": 20,
-        "vegetationDensity": 0.5,
+        "radiusMin": 20,
+        "radiusMax": 30,
+        "vegetationDensity": 0.1,
         "groundTile": "dead_ground_at"
       }
     ],

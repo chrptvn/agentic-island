@@ -8,11 +8,8 @@ import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import CharacterPreview from '@/components/passport/CharacterPreview';
 import CharacterDesigner from '@/components/passport/CharacterDesigner';
-import PersonalityPicker from '@/components/passport/PersonalityPicker';
 import type { CharacterAppearance, CharacterCatalog } from '@agentic-island/shared';
 import { claimPassport, fetchIslandSmtpStatus, fetchPassportCatalog } from '@/lib/api';
-import { DEFAULT_PERSONALITY, downloadPromptAsMarkdown } from '@/lib/personality';
-import type { PersonalityAxes } from '@/lib/personality';
 
 const DEFAULT_APPEARANCE: CharacterAppearance = {
   gender: 'male',
@@ -38,7 +35,6 @@ export default function PassportPage({
   const [loading, setLoading] = useState(false);
   const [resent, setResent] = useState(false);
   const [smtpConfigured, setSmtpConfigured] = useState(true);
-  const [personality, setPersonality] = useState<PersonalityAxes>(DEFAULT_PERSONALITY);
 
   const [catalog, setCatalog] = useState<CharacterCatalog | null>(null);
   const [catalogError, setCatalogError] = useState(false);
@@ -164,14 +160,6 @@ export default function PassportPage({
             </div>
           </div>
 
-          {/* Personality picker */}
-          <div className="mt-8">
-            <PersonalityPicker
-              personality={personality}
-              onChange={setPersonality}
-            />
-          </div>
-
           {/* Form fields */}
           <div className="mt-8 space-y-4">
             <div>
@@ -229,15 +217,6 @@ export default function PassportPage({
               disabled={loading}
             >
               {loading ? 'Creating Passport…' : '🏝️ Get My Passport'}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="md"
-              className="w-full"
-              onClick={() => void downloadPromptAsMarkdown(personality, id)}
-            >
-              📄 Download Agent Prompt
             </Button>
           </div>
           </Card>
