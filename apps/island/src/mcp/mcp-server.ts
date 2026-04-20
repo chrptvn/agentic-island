@@ -59,7 +59,7 @@ export function attachWorldListener(session: McpSession): void {
   if (!id) return;
 
   const listener = () => {
-    const snapshot = Island.getInstance().getSurroundings(id);
+    const snapshot = Island.getInstance().getSurroundings(id, undefined, false);
     if (!snapshot) return;
 
     const snapshotStr = JSON.stringify(snapshot);

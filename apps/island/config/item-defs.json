@@ -873,12 +873,12 @@
       "nearbyMessage": "Someone just ate a fly agaric and looks like they immediately regret it.",
       "emotions": [
         {
-          "key": "joy",
+          "key": "sad_happy",
           "delta": -15
         },
         {
-          "key": "fear",
-          "delta": 10
+          "key": "anxious_confident",
+          "delta": -10
         }
       ],
       "hallucination": {

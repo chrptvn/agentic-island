@@ -372,7 +372,7 @@ export class Island extends EventEmitter {
    * Includes terrain type, path tiles, and entity IDs for nearby cells.
    * Nearby cells use relative direction + steps instead of absolute coordinates.
    */
-  getSurroundings(characterId: string, radius?: number): object | null {
+  getSurroundings(characterId: string, radius?: number, drain = true): object | null {
     const character = this.characters.get(characterId);
     if (!character) return null;
     const r = radius ?? getIslandConfig().gameplay.surroundingsRadius;
@@ -455,12 +455,20 @@ export class Island extends EventEmitter {
       ...(() => {
         const now = Date.now();
         const cfg = getIslandConfig();
-        // Prune expired events, then drain all remaining ones
+        // Prune expired events
         character.sensoryEvents = character.sensoryEvents.filter(
           (e) => now - e.createdAt < cfg.sensoryBufferTimeoutMs
         );
-        const events = character.sensoryEvents.splice(0);
-        return events.length > 0 ? { sensoryEvents: events } : {};
+        if (drain) {
+          // Drain: consume events so they aren't returned again
+          const events = character.sensoryEvents.splice(0);
+          return events.length > 0 ? { sensoryEvents: events } : {};
+        } else {
+          // Peek: return a snapshot without consuming events
+          return character.sensoryEvents.length > 0
+            ? { sensoryEvents: [...character.sensoryEvents] }
+            : {};
+        }
       })(),
     };
   }
@@ -2043,6 +2051,7 @@ export class Island extends EventEmitter {
     }
 
     saveCharacter(id, character.x, character.y, character.stats, character.path, character.action, undefined, undefined, undefined, character.shelter, character.appearance, character.facing);
+    this.emit("map:updated", this.map);
     return {
       eaten: item,
       effects: {
