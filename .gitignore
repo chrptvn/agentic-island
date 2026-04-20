@@ -5,6 +5,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 .next/
+next-env.d.ts
 
 # Database
 *.db
