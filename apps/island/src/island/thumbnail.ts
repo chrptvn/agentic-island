@@ -33,14 +33,6 @@ function isVegetationTile(tileId: string): boolean {
   );
 }
 
-function isShoreTile(tileId: string): boolean {
-  return tileId.startsWith("water_at_");
-}
-
-function isSandTile(tileId: string): boolean {
-  return tileId.startsWith("sand_at_");
-}
-
 /**
  * Generate a pixel-art thumbnail PNG from terrain and entity data.
  *
@@ -69,25 +61,24 @@ export function generateThumbnail(
       let color: [number, number, number];
 
       if (isGrass) {
-        // Check layer 1 for sand (sand cells converted from grass at shoreline)
-        const l1 = layers?.[1] ?? "";
-        if (isSandTile(l1)) {
-          color = COLOR_SAND;
-        } else {
-          // Check for vegetation on entity layers (3+)
-          const hasVegetation =
-            layers &&
-            layers.some(
-              (tileId, i) => i >= 3 && tileId && isVegetationTile(tileId),
-            );
-          color = hasVegetation ? COLOR_VEGETATION : COLOR_GRASS;
-        }
-      } else {
-        // Check for shore autotile on layer 1
-        const hasShore =
+        // Check for vegetation on entity layers (3+)
+        const hasVegetation =
           layers &&
-          layers.some((tileId, i) => i >= 1 && tileId && isShoreTile(tileId));
-        color = hasShore ? COLOR_SAND : COLOR_WATER;
+          layers.some(
+            (tileId, i) => i >= 3 && tileId && isVegetationTile(tileId),
+          );
+        color = hasVegetation ? COLOR_VEGETATION : COLOR_GRASS;
+      } else {
+        // Non-grass: sand cells have sand_at_ on layer 1 with no water overlay on layer 2.
+        // All water variants (water_at_, water_sand_at_, marsh_water_at_) render as water.
+        const l1 = layers?.[1] ?? "";
+        const l2 = layers?.[2] ?? "";
+        const isSandCell =
+          l1.startsWith("sand_at_") &&
+          !l2.startsWith("water_at_") &&
+          !l2.startsWith("water_sand_at_") &&
+          !l2.startsWith("marsh_water_at_");
+        color = isSandCell ? COLOR_SAND : COLOR_WATER;
       }
 
       // Fill SCALE×SCALE block
