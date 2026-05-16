@@ -6,15 +6,15 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
 import { Island } from "../../island/island.js";
 import { allItemDefs, getItemDef } from "../../island/item-registry.js";
-import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, REPAIR_DEFS, INTERACT_DEFS, GROWTH_DEFS } from "../../island/entity-registry.js";
+import { ENTITY_DEFS, BUILD_DEFS, DECAY_DEFS, REPAIR_DEFS, INTERACT_DEFS, GROWTH_DEFS, ENTITY_DEF_BY_TILE_ID } from "../../island/entity-registry.js";
 import { RECIPES } from "../../island/craft-registry.js";
 // Character sprites are now catalog-driven; no per-field enums needed at connect time
 // Character appearance is now randomized by the catalog system
 import {
-  humanizeSurroundings, humanizeMoveResult, humanizeHarvestResult,
+  humanizeMoveResult, humanizeHarvestResult,
   humanizeEatResult, humanizeFeedResult,
 } from "../humanize.js";
-import { upsertMarker, listMarkers, deleteMarkerByLocation } from "../../persistence/db.js";
+import { wrapActionResponse } from "./status-helper.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const AGENT_PROMPT_PATH = join(__dirname, "../../../config/agent-prompt.md");
@@ -132,36 +132,20 @@ export function buildGameRules(): object {
     },
     actions: {
       walk: "Move in cardinal directions (n/s/e/w). Steps are combined so 'n,n,e' walks 2 north and 1 east. You'll automatically find a path around obstacles.",
-      harvest: "Gather resources or deal damage to what you're facing. Trees have health (healthy→scratched→damaged→battered→critical→destroyed). On tree death, a log pile may appear. Returns condition and previousCondition for health-based entities.",
-      swing: "Use an item on the facing cell with the `use` action.",
-      use: "Use any item from your inventory. If the item can plow (e.g. 'plow'), it digs the current tile. Otherwise it acts on the facing cell — tools like 'stone_axe' chop, 'hammer' builds — and any item with special effects triggers them. A bare thrust animation plays if the item has no other capability.",
-      build_structure: "Build things on an empty adjacent tile using materials from your inventory.",
-      interact_with: "Interact with nearby things — light or extinguish a campfire, for example.",
-      feed_entity: "Feed fuel (like wood) into a campfire to keep it burning.",
-      craft_item: "Craft tools and items from materials in your inventory. Use list_craftable to see what you can make.",
-      eat: "Try to eat any item from your inventory. Edible items (berries, acorns) restore hunger. Eating non-food items will hurt you.",
-      plant_seed: "Plant a seed where you're standing. It grows over time into a tree, bush, flower patch, cotton patch, or moon blossom depending on the seed.",
-      plow: "Use the `use` action with a plow or digging tool from your inventory to dig the ground where you're standing.",
+      use_on: "Universal action tool. Pass an item to eat food (self tile), plant a seed (self tile), plow ground (self tile, plow item), feed fuel into an adjacent entity, or swing a tool at a cardinal adjacent tile. Pass an entity_id (e.g. 'campfire_extinct') as item to build it on an adjacent tile. Omit item entirely (bare hands) to strike/pick an entity or interact with it (light/extinguish a campfire).",
+      craft_item: "Craft tools and items from materials in your inventory. Use crafting_info to see what you can make.",
+      crafting_info: "List all recipes and buildable structures. Pass check_inventory=true to see what you can craft with your current inventory.",
       say: "Speak aloud — appears as a speech bubble above your head, visible to anyone watching (max 280 characters).",
-      container_inspect: "Look inside an adjacent container (supply cache, log pile).",
-      container_put: "Put items into an adjacent container.",
-      container_take: "Take items from an adjacent container.",
-      write_journal: "Record useful knowledge for later — crafting tips, discoveries, survival tricks.",
-      read_journal: "Read your saved knowledge entries.",
-      check_self: "Check how you feel (health, hunger, energy as sensations), what you're carrying, and what you're doing.",
-      look_around: "See the tiles around you — what's adjacent, nearby, and in the distance — plus your position and facing direction.",
-      set_marker: "Place a marker at your current position with a description. Use markers to remember locations — resource spots, your base camp, or anything worth revisiting. Each location (x, y) can have one marker.",
-      get_markers: "Retrieve all your placed markers with their (x, y) coordinates and descriptions. Use this to navigate back to places you've marked.",
-      delete_marker: "Remove a marker at a specific (x, y) location you no longer need.",
+      container: "Interact with an adjacent container. op='inspect' to see contents, op='put' to store items, op='take' to retrieve items.",
+      equip: "Equip or unequip a wearable item or held tool. Slots: hands, head, body, legs, feet.",
     },
     world: {
       terrain: "The island has grass and sandy beaches surrounded by water. You can walk on grass and sand. Dirt paths make walking easier.",
-      coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate and remember locations.",
-      vision: "You can see the 8 tiles around you in detail, notice things a couple of steps away, and sense terrain changes in the distance.",
-      adjacency: "To harvest, build, interact, or use containers, you must be standing next to the target (N/S/E/W).",
-      planting: "To plant or plow, you must be standing ON the tile. Use `use` with a plow item to plow.",
+      coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate.",
+      vision: "Every action result includes your current surroundings — the 8 adjacent tiles, your facing direction, and any sensory events.",
+      adjacency: "To swing, build, interact, or use containers, you must be standing next to the target (N/S/E/W — cardinal only for swinging/building).",
+      self_actions: "To eat, plant, or plow, target your own tile with use_on. To plant food-seeds (acorns, berries), pass mode='plant' to use_on.",
       blocking: "Trees, rocks, campfires, supply caches, and sprouts block movement — walk around them.",
-      exploration: "Use markers to remember important locations. When you find resources or build a camp, set a marker so you can navigate back using the coordinates.",
     },
     edible_items: edibleList,
     energy_recovery: regenSources.length
@@ -171,87 +155,11 @@ export function buildGameRules(): object {
     buildable_structures: buildable,
     interactable_things: interactable,
     growing_things: growth,
-    push_notifications: "Subscribe to the surroundings resource to receive updates whenever the world changes around you — you'll sense changes in your environment automatically.",
   };
 }
 
-export function registerFeedEntityTools(server: McpServer, session: McpSession): void {
-  server.tool(
-    "feed_entity",
-    "Feed fuel items from your inventory into an adjacent entity (e.g. wood into a lit campfire) to keep it going. You must be next to it.",
-    {
-      direction: z.string().describe("Direction to the entity: n/s/e/w/ne/nw/se/sw."),
-      qty:       z.number().int().min(1).optional().describe("Number of fuel units to feed (default: 1)"),
-    },
-    async ({ direction, qty }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const id = check;
-      try {
-        const pos = resolveTarget(id, direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/feed", { id, x: pos.x, y: pos.y, qty: qty ?? 1 });
-        return { content: [{ type: "text", text: JSON.stringify(humanizeFeedResult(result as Record<string, unknown>), null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-}
 
 export function registerGenericPersonaTools(server: McpServer, session: McpSession): void {
-
-  // ── check_self tool ──────────────────────────────────────────────────────
-
-  server.tool(
-    "check_self",
-    "Returns how the character feels (health, hunger, energy as sensations), what they are carrying, their equipment, and what they are currently doing.",
-    {},
-    async () => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      const snapshot = Island.getInstance().getSurroundings(character_id);
-      if (!snapshot) return { content: [{ type: "text", text: `Character "${character_id}" not found on the map.` }], isError: true };
-      const h = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]) as Record<string, unknown>;
-      const result = {
-        character: h.character,
-        feeling: h.feeling,
-        carrying: h.carrying,
-        equipment: h.equipment,
-        doing: h.doing,
-      };
-      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
-  );
-
-  // ── look_around tool ─────────────────────────────────────────────────────
-
-  server.tool(
-    "look_around",
-    "Returns a description of the tiles immediately surrounding the character — what's adjacent, nearby, and in the distance — plus position, facing direction, and any sensory events.",
-    {},
-    async () => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      const snapshot = Island.getInstance().getSurroundings(character_id);
-      if (!snapshot) return { content: [{ type: "text", text: `Character "${character_id}" not found on the map.` }], isError: true };
-      const h = humanizeSurroundings(snapshot as Parameters<typeof humanizeSurroundings>[0]) as Record<string, unknown>;
-      const result: Record<string, unknown> = {
-        character: h.character,
-        position: h.position,
-        standing: h.standing,
-        facing: h.facing,
-        ...(h.facing_tile !== undefined ? { facing_tile: h.facing_tile } : {}),
-        surroundings: h.surroundings,
-        ...(h.nearby !== undefined ? { nearby: h.nearby } : {}),
-        ...(h.far_away !== undefined ? { far_away: h.far_away } : {}),
-        ...(h.sensations !== undefined ? { sensations: h.sensations } : {}),
-      };
-      return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-    }
-  );
 
   // Direction aliases → (dx, dy)
   const DIR_MAP: Record<string, [number, number]> = {
@@ -295,7 +203,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
       try {
         const result = await apiPost("/api/command", { id: character_id, command: { type: "move_to", x: targetX, y: targetY } });
-        return { content: [{ type: "text", text: JSON.stringify(humanizeMoveResult(result as Record<string, unknown>), null, 2) }] };
+        return { content: [{ type: "text", text: wrapActionResponse(humanizeMoveResult(result as Record<string, unknown>), character_id) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -303,103 +211,145 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "use",
-    "Use an item from your inventory. Items with a plow capability (e.g. 'plow') dig the current tile. All other items act on the facing cell — tools like 'stone_axe' chop trees, 'hammer' hits entities. Items with special effects (e.g. rubber_duck) also trigger those. If the item has no special capability a thrust animation plays. Returns mode 'plow' or 'swing', and if swing: hit:true with entity condition and harvested items, or hit:false if nothing was there.",
+    "use_on",
+    "Universal action tool. Use an item on a target, or use bare hands on a target. " +
+    "Pass an item from inventory to eat (self tile), plant a seed (self tile), plow ground (self tile), " +
+    "feed fuel into an entity, or swing a tool at a cardinal adjacent tile. " +
+    "Pass an entity_id (e.g. 'campfire_extinct') as item to build that structure on an adjacent tile. " +
+    "Omit item entirely (bare hands) to strike/pick an entity or interact with it (light/extinguish a campfire). " +
+    "Coordinates appear in the surroundings block after every action.",
     {
-      item: z.string().min(1).describe("Item from your inventory to use (e.g. 'stone_axe', 'plow', 'rubber_duck')."),
+      item:     z.string().optional().describe(
+        "Item from inventory (e.g. 'berries', 'stone_axe', 'wood', 'cotton_seed') or an entity_id to build (e.g. 'campfire_extinct'). " +
+        "Omit to use bare hands (pick/interact)."
+      ),
+      target_x: z.number().int().describe("X coordinate of the target tile. Use your own position for self-actions (eat, plant, plow)."),
+      target_y: z.number().int().describe("Y coordinate of the target tile. Use your own position for self-actions (eat, plant, plow)."),
+      qty:      z.number().int().min(1).optional().describe("Quantity of fuel to feed when fuelling an entity (default: 1)."),
+      mode:     z.enum(["plant"]).optional().describe("Force 'plant' mode for items that are both food and seeds (acorns, berries). By default, eating takes priority."),
     },
-    async ({ item }) => {
+    async ({ item, target_x, target_y, qty, mode }) => {
       const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
-        const result = await apiPost("/api/use", { id: character_id, item });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        const char = Island.getInstance().characters.get(character_id);
+        if (!char) throw new Error("Character not found.");
+
+        const signedDx = target_x - char.x;
+        const signedDy = target_y - char.y;
+        const dist = Math.max(Math.abs(signedDx), Math.abs(signedDy)); // Chebyshev
+
+        const cardinalFacing: Record<string, string> = {
+          "0,-1": "n", "0,1": "s", "1,0": "e", "-1,0": "w",
+        };
+
+        // ── Bare-hands actions ─────────────────────────────────────────────────
+        if (!item) {
+          if (dist === 0) throw new Error("Cannot use bare hands on yourself. Target an adjacent tile.");
+          if (dist > 1) throw new Error(`Target (${target_x}, ${target_y}) is too far. You are at (${char.x}, ${char.y}). Move closer.`);
+
+          // Check if the entity at target is interactable
+          const entityAtTarget = Island.getInstance().getEntities().find(e => e.x === target_x && e.y === target_y);
+          if (entityAtTarget) {
+            const entityId = ENTITY_DEF_BY_TILE_ID.get(entityAtTarget.tileId)?.id ?? entityAtTarget.tileId;
+            if (INTERACT_DEFS[entityId]) {
+              const result = await apiPost("/api/interact", { id: character_id, target_x, target_y });
+              return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+            }
+          }
+
+          // Bare-hands strike (pick) — requires cardinal adjacency for auto-facing
+          const facingDir = cardinalFacing[`${signedDx},${signedDy}`];
+          if (!facingDir) throw new Error(`To pick/strike, stand N/S/E/W of the target. Target (${target_x}, ${target_y}) is diagonal. Move to a cardinal side.`);
+          await apiPost("/api/command", { id: character_id, command: { type: "face", direction: facingDir } });
+          const result = await apiPost("/api/command", { id: character_id, command: { type: "pick" } });
+          return { content: [{ type: "text", text: wrapActionResponse(humanizeHarvestResult(result as Record<string, unknown>), character_id) }] };
+        }
+
+        // ── Build dispatch (item is an entity_id) ─────────────────────────────
+        if (item in BUILD_DEFS) {
+          if (dist === 0) throw new Error("Cannot build on your own tile. Target an adjacent tile.");
+          if (dist > 1) throw new Error(`Target (${target_x}, ${target_y}) is too far. Move closer to build.`);
+          if (!cardinalFacing[`${signedDx},${signedDy}`]) throw new Error(`Building requires cardinal adjacency (N/S/E/W). Target (${target_x}, ${target_y}) is diagonal.`);
+          const result = await apiPost("/api/build", { id: character_id, target_x, target_y, entity_id: item });
+          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        }
+
+        // ── Item-based dispatch ────────────────────────────────────────────────
+        const itemDef = getItemDef(item);
+
+        if (dist === 0) {
+          if (itemDef.eat && mode !== "plant") {
+            const result = await apiPost("/api/eat", { id: character_id, item });
+            return { content: [{ type: "text", text: wrapActionResponse(humanizeEatResult(result as Record<string, unknown>), character_id) }] };
+          }
+          if (itemDef.plantsAs) {
+            const res = await fetch(`${BASE_URL}/api/plant`, {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: character_id, seed_item: item }),
+            });
+            const data = await res.json() as { message?: string; error?: string; planted?: string };
+            if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+            return { content: [{ type: "text", text: wrapActionResponse(data.message ?? `Planted ${data.planted ?? item}.`, character_id) }] };
+          }
+          if (itemDef.capabilities?.plow) {
+            const result = await apiPost("/api/use", { id: character_id, item });
+            return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          }
+          throw new Error(
+            `Cannot use "${item}" on your own tile. ` +
+            `To eat food, target self with an edible item. To plant a seed, target self with a seed item. ` +
+            `To plow, target self with a plow item. To swing or build, target an adjacent tile.`
+          );
+        }
+
+        if (dist <= 1) {
+          const isFuel = Object.values(DECAY_DEFS).some(d => d.fuelItem === item)
+                      || Object.values(REPAIR_DEFS).some(d => d.fuelItem === item);
+          if (isFuel) {
+            const result = await apiPost("/api/feed", { id: character_id, x: target_x, y: target_y, qty: qty ?? 1 });
+            return { content: [{ type: "text", text: wrapActionResponse(humanizeFeedResult(result as Record<string, unknown>), character_id) }] };
+          }
+
+          const facingDir = cardinalFacing[`${signedDx},${signedDy}`];
+          if (!facingDir) throw new Error(`To swing at a tile, stand N/S/E/W of it (cardinal only). Target (${target_x}, ${target_y}) is diagonal. Move to a cardinal side.`);
+          await apiPost("/api/command", { id: character_id, command: { type: "face", direction: facingDir } });
+          const result = await apiPost("/api/use", { id: character_id, item });
+          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        }
+
+        throw new Error(`Target (${target_x}, ${target_y}) is too far. You are at (${char.x}, ${char.y}). Move closer first.`);
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
     }
   );
 
-  // Direction aliases → canonical facing
-  const FACING_MAP: Record<string, string> = {
-    n: "n", north: "n", up: "n", top: "n",
-    s: "s", south: "s", down: "s", bottom: "s",
-    w: "w", west: "w", left: "w",
-    e: "e", east: "e", right: "e",
-  };
-
   server.tool(
-    "face",
-    "Turn to face a cardinal direction without moving. Useful when idle to look at something nearby or to change which adjacent tile you'll interact with (harvest, swing, build, etc.).",
+    "crafting_info",
+    "Returns crafting recipes and buildable structures. Without check_inventory, returns all recipes and building costs. With check_inventory: true, shows which recipes you can craft now and what ingredients are missing for the rest.",
     {
-      direction: z.string().describe("Direction to face: n/s/e/w (or north/south/east/west, up/down, left/right)."),
+      check_inventory: z.boolean().optional().describe("If true, filter by your current inventory — shows craftable recipes and missing ingredients. If false or omitted, returns all recipes and building costs."),
     },
-    async ({ direction }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-
-      const canonical = FACING_MAP[direction.toLowerCase()];
-      if (!canonical) {
-        return { content: [{ type: "text", text: `Unknown direction "${direction}". Use n/s/e/w, north/south/east/west, up/down, or left/right.` }], isError: true };
+    async ({ check_inventory }) => {
+      if (check_inventory) {
+        const check = requireCharacter(session);
+        if (typeof check !== "string") return check;
+        const character_id = check;
+        try {
+          const result = Island.getInstance().listCraftable(character_id);
+          return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        } catch (err) {
+          return { content: [{ type: "text", text: (err as Error).message }], isError: true };
+        }
+      } else {
+        const buildable: Record<string, { costs: Record<string, number> }> = {};
+        for (const [id, def] of Object.entries(BUILD_DEFS)) {
+          buildable[id] = { costs: def.costs };
+        }
+        return { content: [{ type: "text", text: JSON.stringify({ crafting: RECIPES, building: buildable }, null, 2) }] };
       }
-
-      try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "face", direction: canonical } });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "harvest",
-    "Collect resources or deal damage to the entity in front of you (your facing tile). For entities with health (trees, etc.), returns condition (e.g. 'healthy', 'scratched', 'damaged', 'battered', 'critical', 'destroyed') and previousCondition. On tree death, a log pile container may appear — use harvest again to pick up wood from it.",
-    {},
-    async ({}) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/command", { id: character_id, command: { type: "harvest" } });
-        return { content: [{ type: "text", text: JSON.stringify(humanizeHarvestResult(result as Record<string, unknown>), null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "eat",
-    "Try to eat any item from your inventory. Edible items (berries, acorns) are consumed and restore hunger. Eating non-food items (e.g. an axe) will deal damage to you but not consume the item — don't do it unless you have to.",
-    {
-      item: z.string().min(1).describe("Name of the item to eat (e.g. 'berries', 'acorns')"),
-    },
-    async ({ item }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = await apiPost("/api/eat", { id: character_id, item });
-        return { content: [{ type: "text", text: JSON.stringify(humanizeEatResult(result as Record<string, unknown>), null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "list_recipes",
-    "Returns every crafting recipe and every buildable structure with their material costs. Does not require a character — useful for planning what to gather.",
-    {},
-    async () => {
-      const buildable: Record<string, { costs: Record<string, number> }> = {};
-      for (const [id, def] of Object.entries(BUILD_DEFS)) {
-        buildable[id] = { costs: def.costs };
-      }
-      return { content: [{ type: "text", text: JSON.stringify({ crafting: RECIPES, building: buildable }, null, 2) }] };
     }
   );
 
@@ -426,7 +376,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
       // eat
       if (def.eat) {
-        const eatInfo: Record<string, unknown> = { action: "eat", item };
+        const eatInfo: Record<string, unknown> = { action: "use_on (self tile)", item };
         if (def.eat.hunger) eatInfo.hunger = def.eat.hunger;
         if (def.eat.health) eatInfo.health = def.eat.health;
         if (def.eat.energy) eatInfo.energy = def.eat.energy;
@@ -449,26 +399,28 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
           actions.push({ action: "craft_item", recipe, produces: r.output, needs: r.ingredients });
         }
       }
-      // plant_seed
-      const PLANTABLE = new Set(["acorns", "berries", "cotton_seed", "flower_pink_seed", "flower_blue_seed", "flower_red_seed", "sky_blossom_seed", "flower_white_seed", "flower_yellow_seed", "moon_fragment"]);
-      if (PLANTABLE.has(item)) {
-        actions.push({ action: "plant_seed", item });
+      // plant — use_on with self tile (or mode="plant" for food+seed items)
+      if (def.plantsAs) {
+        const hint = def.eat
+          ? `use_on(item="${item}", self tile, mode="plant") — use_on defaults to eating; mode="plant" forces planting`
+          : `use_on(item="${item}", self tile)`;
+        actions.push({ action: "plant", hint });
       }
-      // feed_entity
+      // fuel — use_on on adjacent entity
       if (fuelToEntities[item]) {
-        actions.push({ action: "feed_entity", entities: fuelToEntities[item] });
+        actions.push({ action: "use_on (adjacent entity)", entities: fuelToEntities[item], description: "Feed as fuel to keep these entities going" });
       }
-      // build_structure — structures that require this item in their costs
+      // build — use_on with entity_id as item on adjacent tile
       const buildable: string[] = [];
       for (const [entityId, buildDef] of Object.entries(BUILD_DEFS)) {
         if (item in buildDef.costs) buildable.push(entityId);
       }
       if (buildable.length) {
-        actions.push({ action: "build_structure", entities: buildable });
+        actions.push({ action: "use_on (adjacent tile, entity_id as item)", entities: buildable, description: "Required ingredient to build these structures" });
       }
       // special actions
       for (const special of def.special ?? []) {
-        actions.push({ action: "use", item, description: special.description });
+        actions.push({ action: "use_on (self or adjacent tile)", item, description: special.description });
       }
       // fallback — always something to do
       if (actions.length === 0) {
@@ -480,26 +432,8 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "list_craftable",
-    "Returns all recipes split into craftable and not-craftable for a character, based on their current inventory. Craftable entries show available ingredients. Not-craftable entries show how many of each ingredient is still missing.",
-    {
-    },
-    async ({}) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const result = Island.getInstance().listCraftable(character_id);
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
     "craft_item",
-    "Craft an item using a recipe. Consumes the required ingredients from the character's inventory and adds the output items. Use list_craftable first to confirm the character has the required ingredients.",
+    "Craft an item using a recipe. Consumes the required ingredients from the character's inventory and adds the output items. Use crafting_info first to confirm the character has the required ingredients.",
     {
       recipe: z.string().min(1).describe("Recipe name to craft (e.g. 'stone_axe')"),
     },
@@ -509,7 +443,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
       const character_id = check;
       try {
         const result = await apiPost("/api/command", { id: character_id, command: { type: "craft", recipe } });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+        return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -517,156 +451,30 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "container_inspect",
-    "View the contents of an adjacent container (supply cache, log pile, etc.). You must be next to it.",
+    "container",
+    "Interact with an adjacent container (supply cache, log pile, etc.). Use op 'inspect' to view contents, 'put' to store items, 'take' to retrieve items. You must be next to it.",
     {
-      direction:        z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
+      op:        z.enum(["inspect", "put", "take"]).describe("Operation: 'inspect' to view contents, 'put' to store items, 'take' to retrieve items."),
+      direction: z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
+      item:      z.string().optional().describe("Item name — required for put/take (e.g. 'wood')."),
+      qty:       z.number().int().positive().optional().describe("Quantity — required for put/take."),
     },
-    async ({ direction }) => {
+    async ({ op, direction, item, qty }) => {
       const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
         const pos = resolveTarget(character_id, direction);
         if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/container/inspect", { id: character_id, x: pos.x, y: pos.y });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "container_put",
-    "Move items from your inventory into an adjacent container (supply cache, etc.).",
-    {
-      direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
-      item:         z.string().min(1).describe("Item name to store (e.g. 'wood')"),
-      qty:          z.number().int().positive().describe("How many to store"),
-    },
-    async ({ direction, item, qty }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const pos = resolveTarget(character_id, direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/container/put", { id: character_id, x: pos.x, y: pos.y, item, qty });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "container_take",
-    "Take items from an adjacent container (supply cache, etc.) into your inventory.",
-    {
-      direction:    z.string().describe("Direction to the container: n/s/e/w/ne/nw/se/sw."),
-      item:         z.string().min(1).describe("Item name to take (e.g. 'wood')"),
-      qty:          z.number().int().positive().describe("How many to take"),
-    },
-    async ({ direction, item, qty }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const pos = resolveTarget(character_id, direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/container/take", { id: character_id, x: pos.x, y: pos.y, item, qty });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "build_structure",
-    "Build a structure on an adjacent empty tile by consuming items from your inventory. You must be next to the target tile (N/S/E/W).",
-    {
-      target_direction: z.string().describe("Direction to the build target: n/s/e/w."),
-      entity_id:        z.string().min(1).describe("Entity ID to build (e.g. 'campfire_extinct')"),
-    },
-    async ({ target_direction, entity_id }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const pos = resolveTarget(character_id, target_direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/build", { id: character_id, target_x: pos.x, target_y: pos.y, entity_id });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "interact_with",
-    "Interact with an entity on an adjacent tile (e.g. light a campfire, extinguish it). You must be next to the target (N/S/E/W).",
-    {
-      target_direction: z.string().describe("Direction to the target entity: n/s/e/w/ne/nw/se/sw."),
-    },
-    async ({ target_direction }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const pos = resolveTarget(character_id, target_direction);
-        if (!pos) throw new Error("Provide a direction.");
-        const result = await apiPost("/api/interact", { id: character_id, target_x: pos.x, target_y: pos.y });
-        return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  // ── Marker tools ────────────────────────────────────────────────────────────
-
-  server.tool(
-    "set_marker",
-    "Place a marker at your current position with a description. Use markers to remember locations you want to return to — resource spots, your base camp, points of interest. If a marker already exists at this location, its description is updated.",
-    {
-      description: z.string().min(1).max(200).describe("A note describing this location (e.g. 'Berry bush near water', 'Base camp with campfire and supply cache')"),
-    },
-    async ({ description }) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const character = Island.getInstance().getCharacter(character_id);
-        if (!character) return { content: [{ type: "text", text: `Character "${character_id}" not found.` }], isError: true };
-        const marker = upsertMarker(character_id, character.x, character.y, description);
-        return { content: [{ type: "text", text: JSON.stringify({ message: `Marker placed at (${marker.x}, ${marker.y}).`, marker: { x: marker.x, y: marker.y, description: marker.description } }, null, 2) }] };
-      } catch (err) {
-        return { content: [{ type: "text", text: (err as Error).message }], isError: true };
-      }
-    }
-  );
-
-  server.tool(
-    "get_markers",
-    "Retrieve all your placed markers with their coordinates and descriptions. Use this to navigate back to places you've marked.",
-    {
-    },
-    async ({}) => {
-      const check = requireCharacter(session);
-      if (typeof check !== "string") return check;
-      const character_id = check;
-      try {
-        const character = Island.getInstance().getCharacter(character_id);
-        if (!character) return { content: [{ type: "text", text: `Character "${character_id}" not found.` }], isError: true };
-        const markers = listMarkers(character_id);
-        if (markers.length === 0) {
-          return { content: [{ type: "text", text: JSON.stringify({ message: "You have no markers placed. Use set_marker to remember a location." }, null, 2) }] };
+        if (op === "inspect") {
+          const result = await apiPost("/api/container/inspect", { id: character_id, x: pos.x, y: pos.y });
+          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
         }
-        const result = markers.map(m => ({ x: m.x, y: m.y, description: m.description }));
-        return { content: [{ type: "text", text: JSON.stringify({ markers: result }, null, 2) }] };
+        if (!item) throw new Error(`"item" is required for op="${op}".`);
+        if (!qty) throw new Error(`"qty" is required for op="${op}".`);
+        const endpoint = op === "put" ? "/api/container/put" : "/api/container/take";
+        const result = await apiPost(endpoint, { id: character_id, x: pos.x, y: pos.y, item, qty });
+        return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -674,20 +482,26 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
   );
 
   server.tool(
-    "delete_marker",
-    "Remove a marker at a specific location. Use this to clean up markers you no longer need.",
+    "equip",
+    "Equip or unequip an item. Use 'equip' to put on a wearable (armor, clothes) or hold a tool. Use 'unequip' to remove it. Valid slots: hands, head, body, legs, feet.",
     {
-      x: z.number().int().describe("X coordinate of the marker to delete"),
-      y: z.number().int().describe("Y coordinate of the marker to delete"),
+      op:   z.enum(["equip", "unequip"]).describe("'equip' to put on an item, 'unequip' to remove it."),
+      item: z.string().optional().describe("Item name to equip — required for op='equip'."),
+      slot: z.string().describe("Equipment slot: hands, head, body, legs, feet."),
     },
-    async ({ x, y }) => {
+    async ({ op, item, slot }) => {
       const check = requireCharacter(session);
       if (typeof check !== "string") return check;
       const character_id = check;
       try {
-        const deleted = deleteMarkerByLocation(character_id, x, y);
-        if (!deleted) return { content: [{ type: "text", text: `No marker found at (${x}, ${y}).` }], isError: true };
-        return { content: [{ type: "text", text: JSON.stringify({ message: `Marker at (${x}, ${y}) deleted.` }, null, 2) }] };
+        if (op === "equip") {
+          if (!item) return { content: [{ type: "text", text: `"item" is required for op="equip".` }], isError: true };
+          const result = await apiPost("/api/equip", { id: character_id, item, slot });
+          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        } else {
+          const result = await apiPost("/api/unequip", { id: character_id, slot });
+          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        }
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }

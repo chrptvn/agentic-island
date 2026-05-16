@@ -3,10 +3,8 @@ import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mc
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
 import type { IncomingMessage, ServerResponse } from "http";
-import { registerGenericPersonaTools, registerFeedEntityTools } from "./tools/character-tools.js";
-import { registerJournalTools } from "./tools/journal-tools.js";
+import { registerGenericPersonaTools } from "./tools/character-tools.js";
 import { registerSayTools } from "./tools/say-tools.js";
-import { registerPlantTools } from "./tools/plant-tools.js";
 import { humanizeSurroundings } from "./humanize.js";
 import { Island } from "../island/island.js";
 import { validatePassportKey } from "../passport/index.js";
@@ -147,10 +145,7 @@ function initServer(server: McpServer, session: McpSession): void {
 
   // ── Player tools (character actions, inventory, crafting) ────────────────────
   registerGenericPersonaTools(server, session);
-  registerFeedEntityTools(server, session);
-  registerJournalTools(server, session);
   registerSayTools(server, session);
-  registerPlantTools(server, session);
 }
 
 /** Create a local HTTP-backed MCP session (original behaviour). */

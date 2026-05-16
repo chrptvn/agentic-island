@@ -249,11 +249,11 @@ async function handleRequest(
       const body = await readBody(req) as { id: string; command: { type: string; x?: number; y?: number; target_filter?: string[] } };
       const island = Island.getInstance();
 
-      if (body.command.type === "harvest") {
+      if (body.command.type === "pick") {
         const { item, target_x, target_y, tool } = body.command as { item?: string; target_x?: number; target_y?: number; tool?: string };
         const result = island.harvest(body.id, item, target_x, target_y, tool);
         const pos = target_x !== undefined ? `(${target_x},${target_y})` : "current position";
-        jsonOk(res, { message: `Harvested at ${pos}.`, ...result });
+        jsonOk(res, { message: `Picked at ${pos}.`, ...result });
         return;
       }
 
@@ -286,7 +286,7 @@ async function handleRequest(
       }
 
       if (body.command.type !== "move_to") {
-        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, harvest, swing, face, craft.`);
+        jsonErr(res, 400, `Unknown command type "${body.command.type}". Valid types: move_to, pick, swing, face, craft.`);
         return;
       }
 
