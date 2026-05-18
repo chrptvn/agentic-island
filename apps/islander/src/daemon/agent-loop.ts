@@ -65,11 +65,13 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
 
   const toolList = await mcpClient.listTools();
   const allTools = mcpToolsToOpenAI(toolList.tools);
+  // Exclude meta-tools from the act phase so the LLM can't use say/get_status as "actions"
+  const actTools = allTools.filter((t) => !["say", "get_status"].includes(t.function.name));
 
   // ── Cleanup ───────────────────────────────────────────────────────────────
   const cleanup = async () => {
     // Say farewell before disconnecting (non-fatal)
-    try { await callMcp(mcpClient, "say", { message: "Leaving the island for now…" }); } catch { /* ignore */ }
+    try { await callMcp(mcpClient, "say", { text: "Leaving the island for now…" }); } catch { /* ignore */ }
     // Explicitly terminate session so the server triggers island.disconnect()
     try { await transport.terminateSession(); } catch { /* ignore */ }
     try { await mcpClient.close(); } catch { /* ignore */ }
@@ -165,7 +167,7 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
         // Announce the new goal aloud in the game world
         try {
           const sayText = goalText.length <= 280 ? goalText : goalText.slice(0, 277) + "…";
-          await callMcp(mcpClient, "say", { message: sayText });
+          await callMcp(mcpClient, "say", { text: sayText });
         } catch { /* non-fatal */ }
 
         state = "act";
@@ -185,7 +187,7 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
           content: `Your current goal: "${currentGoal}"\n\nTake ONE action toward your goal.`,
         };
 
-        const msg = await chat([actionPrompt], allTools, "required");
+        const msg = await chat([actionPrompt], actTools, "required");
 
         if (msg.tool_calls && msg.tool_calls.length > 0) {
           await executeToolCalls(msg);
@@ -224,7 +226,7 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
           try {
             const achievement = `I did it! ${currentGoal}`;
             const sayText = achievement.length <= 280 ? achievement : achievement.slice(0, 277) + "…";
-            await callMcp(mcpClient, "say", { message: sayText });
+            await callMcp(mcpClient, "say", { text: sayText });
           } catch { /* non-fatal */ }
 
           state = "define_goal";
