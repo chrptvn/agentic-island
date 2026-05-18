@@ -13,6 +13,22 @@ const MAX_RETRIES = 5;
 const MAX_ACTIONS_PER_GOAL = 15; // safety cap before forcing a new goal
 const ACTION_DELAY_MS = 1500;    // brief pause after each action cycle
 
+// Appended to every agent's system prompt to encourage natural, in-character speech
+const SPEECH_COACHING = `\
+## How to Speak
+When you communicate out loud in the game world (via say), speak as your character genuinely would:
+- Be expressive, emotional, and caricatural — let your personality shine through.
+- Never recite dry goal text; react to the moment like a real castaway would.
+- If you're hungry, groan about it. If you found something, gasp or cheer. If you're determined, mutter it under your breath.
+- Keep spoken lines punchy: 1–2 short sentences, under 280 characters.
+- Use exclamations, sighs, muttering, self-talk, whatever fits your character.`;
+
+/** Extract a labelled line (e.g. "GOAL: ...") from LLM output, with a fallback. */
+function extractLine(text: string, label: string, fallback: string): string {
+  const match = new RegExp(`^${label}:\\s*(.+)`, "im").exec(text);
+  return match ? match[1].trim() : fallback;
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -41,9 +57,10 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
   const entry = config.islanders[islanderId];
   if (!entry) throw new Error(`Islander "${islanderId}" not found in config`);
 
-  const soul = existsSync(soulPath(islanderId))
+  const soulRaw = existsSync(soulPath(islanderId))
     ? readFileSync(soulPath(islanderId), "utf-8")
     : `You are ${islanderId}, a castaway surviving on an island. Explore, gather resources, and survive.`;
+  const soul = `${soulRaw.trimEnd()}\n\n${SPEECH_COACHING}`;
 
   const llm = new OpenAI({
     baseURL: config.llm.baseURL,
@@ -155,18 +172,21 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
           role: "user",
           content:
             `Current status:\n${statusText}\n\n` +
-            `You have no active goal. Based on your current state and surroundings, ` +
-            `decide on ONE clear, achievable goal. State it in a single sentence starting with "My goal is".`,
+            `You have no active goal. Based on your current state and surroundings, decide on ONE clear, achievable goal.\n\n` +
+            `Reply with exactly two lines:\n` +
+            `GOAL: <one concise goal sentence>\n` +
+            `SPEECH: <what your character actually blurts out loud about this — emotional, in-character, ≤280 chars>`,
         };
 
         const msg = await chat([goalPrompt]);
-        const goalText = (msg.content ?? "").trim();
-        currentGoal = goalText;
-        log("goal", `New goal: ${goalText}`);
+        const rawReply = (msg.content ?? "").trim();
+        currentGoal = extractLine(rawReply, "GOAL", rawReply.split("\n")[0] ?? rawReply);
+        const speechText = extractLine(rawReply, "SPEECH", currentGoal);
+        log("goal", `New goal: ${currentGoal}`);
 
         // Announce the new goal aloud in the game world
         try {
-          const sayText = goalText.length <= 280 ? goalText : goalText.slice(0, 277) + "…";
+          const sayText = speechText.length <= 280 ? speechText : speechText.slice(0, 277) + "…";
           await callMcp(mcpClient, "say", { text: sayText });
         } catch { /* non-fatal */ }
 
@@ -210,8 +230,9 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
           role: "user",
           content:
             `Action completed.\n` +
-            `Is your goal "${currentGoal}" now achieved? ` +
-            `Reply with YES or NO on the first line, then briefly explain why.`,
+            `Is your goal "${currentGoal}" now achieved? Reply YES or NO on the first line.\n` +
+            `If YES, add a second line:\n` +
+            `SPEECH: <how your character celebrates — emotional, in-character, ≤280 chars>`,
         };
 
         const msg = await chat([evalPrompt]);
@@ -222,10 +243,10 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
         if (achieved) {
           log("goal", `Goal achieved: ${currentGoal}`);
 
-          // Announce goal completion aloud
+          // Announce goal completion aloud — use SPEECH line or fallback
           try {
-            const achievement = `I did it! ${currentGoal}`;
-            const sayText = achievement.length <= 280 ? achievement : achievement.slice(0, 277) + "…";
+            const celebration = extractLine(reply, "SPEECH", `I did it! ${currentGoal}`);
+            const sayText = celebration.length <= 280 ? celebration : celebration.slice(0, 277) + "…";
             await callMcp(mcpClient, "say", { text: sayText });
           } catch { /* non-fatal */ }
 
