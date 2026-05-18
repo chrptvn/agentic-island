@@ -1,7 +1,9 @@
 /**
  * Character and entity animation helpers.
  *
- * Characters animate with 2 frames at ~250 ms per frame (4 fps default).
+ * Each tile animates at its own fps declared in the tile registry (e.g. walk
+ * at 12 fps, idle at 4 fps). The wall clock is used directly so animation
+ * speed is independent of the render loop frequency.
  * Action animations (slash/thrust) use a per-character clock that resets to
  * frame 0 when the action starts, advancing at the action's own fps (12fps).
  * This is purely visual — no game logic is tied to animation frames.
@@ -199,9 +201,10 @@ export function drawCharacter(
       if (tid && registry[tid]) {
         const def = registry[tid];
         const maxFrames = def.frames?.length ?? 1;
+        const tileFps = def.fps ?? DEFAULT_CHARACTER_FPS;
         const frame = actionState
           ? Math.min(actionState.frame, maxFrames - 1)
-          : animFrame;
+          : Math.floor((renderNow / 1000) * tileFps) % maxFrames;
         const defTileSize = def.tileSize ?? 64;
         if (defTileSize > 64) {
           // Oversized tile (e.g. 128px): draw at native ratio, centered
