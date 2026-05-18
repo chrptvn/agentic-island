@@ -157,6 +157,13 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
         const goalText = (msg.content ?? "").trim();
         currentGoal = goalText;
         log("goal", `New goal: ${goalText}`);
+
+        // Announce the new goal aloud in the game world
+        try {
+          const sayText = goalText.length <= 280 ? goalText : goalText.slice(0, 277) + "…";
+          await callMcp(mcpClient, "say", { message: sayText });
+        } catch { /* non-fatal */ }
+
         state = "act";
         continue;
       }
@@ -208,6 +215,14 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
         const achieved = reply.toUpperCase().startsWith("YES");
         if (achieved) {
           log("goal", `Goal achieved: ${currentGoal}`);
+
+          // Announce goal completion aloud
+          try {
+            const achievement = `I did it! ${currentGoal}`;
+            const sayText = achievement.length <= 280 ? achievement : achievement.slice(0, 277) + "…";
+            await callMcp(mcpClient, "say", { message: sayText });
+          } catch { /* non-fatal */ }
+
           state = "define_goal";
         } else {
           state = "act";
