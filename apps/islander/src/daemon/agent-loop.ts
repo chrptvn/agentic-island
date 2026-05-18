@@ -68,6 +68,10 @@ export async function runAgentLoop(islanderId: string, config: IslanderConfig): 
 
   // ── Cleanup ───────────────────────────────────────────────────────────────
   const cleanup = async () => {
+    // Say farewell before disconnecting (non-fatal)
+    try { await callMcp(mcpClient, "say", { message: "Leaving the island for now…" }); } catch { /* ignore */ }
+    // Explicitly terminate session so the server triggers island.disconnect()
+    try { await transport.terminateSession(); } catch { /* ignore */ }
     try { await mcpClient.close(); } catch { /* ignore */ }
     updateStatus(islanderId, "stopped");
   };
