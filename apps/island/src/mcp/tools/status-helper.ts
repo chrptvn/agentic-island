@@ -1,6 +1,6 @@
 /**
- * Shared helper that builds a Markdown status block from the character's
- * current world snapshot and wraps an action result with it.
+ * Builds a Markdown status block for the given character and provides
+ * helpers to format action results.
  */
 
 import { Island } from "../../island/island.js";
@@ -91,14 +91,4 @@ export function buildStatusMarkdown(characterId: string): string {
   }
 
   return lines.join("\n");
-}
-
-/**
- * Combines an action result (text or object) with the character's current
- * status into a single Markdown string ready to return as MCP tool content.
- */
-export function wrapActionResponse(result: unknown, characterId: string): string {
-  const actionText = resultToMarkdown(result);
-  const status = buildStatusMarkdown(characterId);
-  return `${actionText}\n\n---\n\n${status}`;
 }

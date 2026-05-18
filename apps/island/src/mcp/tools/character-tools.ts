@@ -14,7 +14,7 @@ import {
   humanizeMoveResult, humanizeHarvestResult,
   humanizeEatResult, humanizeFeedResult,
 } from "../humanize.js";
-import { wrapActionResponse } from "./status-helper.js";
+import { buildStatusMarkdown, resultToMarkdown } from "./status-helper.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const AGENT_PROMPT_PATH = join(__dirname, "../../../config/agent-prompt.md");
@@ -142,7 +142,7 @@ export function buildGameRules(): object {
     world: {
       terrain: "The island has grass and sandy beaches surrounded by water. You can walk on grass and sand. Dirt paths make walking easier.",
       coordinates: "Your position and surroundings are given as (x, y) coordinates. Use these to navigate.",
-      vision: "Every action result includes your current surroundings — the 8 adjacent tiles, your facing direction, and any sensory events.",
+      vision: "Use get_status at any time to see your current state, surroundings, and what you're carrying. Action results describe only what happened.",
       adjacency: "To swing, build, interact, or use containers, you must be standing next to the target (N/S/E/W — cardinal only for swinging/building).",
       self_actions: "To eat, plant, or plow, target your own tile with use_on. To plant food-seeds (acorns, berries), pass mode='plant' to use_on.",
       blocking: "Trees, rocks, campfires, supply caches, and sprouts block movement — walk around them.",
@@ -168,6 +168,17 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
     w: [-1, 0], west: [-1,  0], left: [-1,  0],
     e: [1,  0], east: [1,   0], right: [1,   0],
   };
+
+  server.tool(
+    "get_status",
+    "Check your current physical state, feelings, and immediate surroundings. Call this whenever you need to know how you feel, what you're carrying, or what's around you.",
+    {},
+    async () => {
+      const check = requireCharacter(session);
+      if (typeof check !== "string") return check;
+      return { content: [{ type: "text", text: buildStatusMarkdown(check) }] };
+    }
+  );
 
   server.tool(
     "walk",
@@ -203,7 +214,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
 
       try {
         const result = await apiPost("/api/command", { id: character_id, command: { type: "move_to", x: targetX, y: targetY } });
-        return { content: [{ type: "text", text: wrapActionResponse(humanizeMoveResult(result as Record<string, unknown>), character_id) }] };
+        return { content: [{ type: "text", text: resultToMarkdown(humanizeMoveResult(result as Record<string, unknown>)) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -255,7 +266,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
             const entityId = ENTITY_DEF_BY_TILE_ID.get(entityAtTarget.tileId)?.id ?? entityAtTarget.tileId;
             if (INTERACT_DEFS[entityId]) {
               const result = await apiPost("/api/interact", { id: character_id, target_x, target_y });
-              return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+              return { content: [{ type: "text", text: resultToMarkdown(result) }] };
             }
           }
 
@@ -264,7 +275,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
           if (!facingDir) throw new Error(`To pick/strike, stand N/S/E/W of the target. Target (${target_x}, ${target_y}) is diagonal. Move to a cardinal side.`);
           await apiPost("/api/command", { id: character_id, command: { type: "face", direction: facingDir } });
           const result = await apiPost("/api/command", { id: character_id, command: { type: "pick" } });
-          return { content: [{ type: "text", text: wrapActionResponse(humanizeHarvestResult(result as Record<string, unknown>), character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(humanizeHarvestResult(result as Record<string, unknown>)) }] };
         }
 
         // ── Build dispatch (item is an entity_id) ─────────────────────────────
@@ -273,7 +284,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
           if (dist > 1) throw new Error(`Target (${target_x}, ${target_y}) is too far. Move closer to build.`);
           if (!cardinalFacing[`${signedDx},${signedDy}`]) throw new Error(`Building requires cardinal adjacency (N/S/E/W). Target (${target_x}, ${target_y}) is diagonal.`);
           const result = await apiPost("/api/build", { id: character_id, target_x, target_y, entity_id: item });
-          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(result) }] };
         }
 
         // ── Item-based dispatch ────────────────────────────────────────────────
@@ -282,7 +293,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         if (dist === 0) {
           if (itemDef.eat && mode !== "plant") {
             const result = await apiPost("/api/eat", { id: character_id, item });
-            return { content: [{ type: "text", text: wrapActionResponse(humanizeEatResult(result as Record<string, unknown>), character_id) }] };
+            return { content: [{ type: "text", text: resultToMarkdown(humanizeEatResult(result as Record<string, unknown>)) }] };
           }
           if (itemDef.plantsAs) {
             const res = await fetch(`${BASE_URL}/api/plant`, {
@@ -291,11 +302,11 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
             });
             const data = await res.json() as { message?: string; error?: string; planted?: string };
             if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
-            return { content: [{ type: "text", text: wrapActionResponse(data.message ?? `Planted ${data.planted ?? item}.`, character_id) }] };
+            return { content: [{ type: "text", text: resultToMarkdown(data.message ?? `Planted ${data.planted ?? item}.`) }] };
           }
           if (itemDef.capabilities?.plow) {
             const result = await apiPost("/api/use", { id: character_id, item });
-            return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+            return { content: [{ type: "text", text: resultToMarkdown(result) }] };
           }
           throw new Error(
             `Cannot use "${item}" on your own tile. ` +
@@ -309,14 +320,14 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
                       || Object.values(REPAIR_DEFS).some(d => d.fuelItem === item);
           if (isFuel) {
             const result = await apiPost("/api/feed", { id: character_id, x: target_x, y: target_y, qty: qty ?? 1 });
-            return { content: [{ type: "text", text: wrapActionResponse(humanizeFeedResult(result as Record<string, unknown>), character_id) }] };
+            return { content: [{ type: "text", text: resultToMarkdown(humanizeFeedResult(result as Record<string, unknown>)) }] };
           }
 
           const facingDir = cardinalFacing[`${signedDx},${signedDy}`];
           if (!facingDir) throw new Error(`To swing at a tile, stand N/S/E/W of it (cardinal only). Target (${target_x}, ${target_y}) is diagonal. Move to a cardinal side.`);
           await apiPost("/api/command", { id: character_id, command: { type: "face", direction: facingDir } });
           const result = await apiPost("/api/use", { id: character_id, item });
-          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(result) }] };
         }
 
         throw new Error(`Target (${target_x}, ${target_y}) is too far. You are at (${char.x}, ${char.y}). Move closer first.`);
@@ -443,7 +454,7 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
       const character_id = check;
       try {
         const result = await apiPost("/api/command", { id: character_id, command: { type: "craft", recipe } });
-        return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        return { content: [{ type: "text", text: resultToMarkdown(result) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -468,13 +479,13 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         if (!pos) throw new Error("Provide a direction.");
         if (op === "inspect") {
           const result = await apiPost("/api/container/inspect", { id: character_id, x: pos.x, y: pos.y });
-          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(result) }] };
         }
         if (!item) throw new Error(`"item" is required for op="${op}".`);
         if (!qty) throw new Error(`"qty" is required for op="${op}".`);
         const endpoint = op === "put" ? "/api/container/put" : "/api/container/take";
         const result = await apiPost(endpoint, { id: character_id, x: pos.x, y: pos.y, item, qty });
-        return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+        return { content: [{ type: "text", text: resultToMarkdown(result) }] };
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };
       }
@@ -497,10 +508,10 @@ export function registerGenericPersonaTools(server: McpServer, session: McpSessi
         if (op === "equip") {
           if (!item) return { content: [{ type: "text", text: `"item" is required for op="equip".` }], isError: true };
           const result = await apiPost("/api/equip", { id: character_id, item, slot });
-          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(result) }] };
         } else {
           const result = await apiPost("/api/unequip", { id: character_id, slot });
-          return { content: [{ type: "text", text: wrapActionResponse(result, character_id) }] };
+          return { content: [{ type: "text", text: resultToMarkdown(result) }] };
         }
       } catch (err) {
         return { content: [{ type: "text", text: (err as Error).message }], isError: true };

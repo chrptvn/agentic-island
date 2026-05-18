@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { McpSession } from "../mcp-server.js";
 import { requireCharacter } from "./character-tools.js";
-import { wrapActionResponse } from "./status-helper.js";
+import { resultToMarkdown } from "./status-helper.js";
 
 const BASE_URL = `http://localhost:${process.env.ISLAND_PORT ?? 3002}`;
 
@@ -27,7 +27,7 @@ export function registerSayTools(server: McpServer, session: McpSession): void {
         if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
         const msg = data.message ?? `${character_id} says: ${text}`;
         return {
-          content: [{ type: "text", text: wrapActionResponse(msg, character_id) }],
+          content: [{ type: "text", text: resultToMarkdown(msg) }],
         };
       } catch (err) {
         return {
