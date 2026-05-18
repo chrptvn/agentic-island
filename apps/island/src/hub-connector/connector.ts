@@ -102,11 +102,11 @@ export class HubConnector {
     this.ws.send(JSON.stringify(msg));
   }
 
-  sendSpriteUpdate(sprites: SpriteAsset[]): void {
-    if (!this.connected || !this.ws || sprites.length === 0) {
+  sendSpriteUpdate(sprites: SpriteAsset[], thumbnail?: SpriteAsset): void {
+    if (!this.connected || !this.ws || (sprites.length === 0 && !thumbnail)) {
       return;
     }
-    const msg: IslandToHubMessage = { type: "sprite_update", sprites };
+    const msg: IslandToHubMessage = { type: "sprite_update", sprites, ...(thumbnail ? { thumbnail } : {}) };
     this.ws.send(JSON.stringify(msg));
   }
 

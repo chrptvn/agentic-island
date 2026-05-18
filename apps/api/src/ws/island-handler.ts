@@ -421,6 +421,15 @@ export function handleIslandConnection(ws: WebSocket): void {
               }
             }
           }
+
+          // Handle thumbnail update (e.g. after island regeneration)
+          if (msg.thumbnail) {
+            const thumbnailPath = await saveThumbnail(core.islandId, msg.thumbnail);
+            db.prepare(
+              "UPDATE islands SET thumbnail_path = ? WHERE id = ?",
+            ).run(thumbnailPath, core.islandId);
+            broadcastIslandUpdate(core.islandId);
+          }
           break;
         }
       }

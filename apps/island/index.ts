@@ -140,6 +140,20 @@ if (!isPrimary) {
     streamer.handleIslandUpdate(island);
   });
 
+  // Listen for full map regenerations (different size/seed)
+  island.on("map:regenerated", () => {
+    // Send fresh map_init (new dimensions) + full initial_state so the hub
+    // sends map_changed to all viewers and they re-fetch the new map cleanly.
+    streamer.sendFullSnapshot(island);
+    // Regenerate and push the updated thumbnail to the hub.
+    const updatedThumbnail = {
+      filename: "thumbnail.png",
+      mimeType: "image/png",
+      data: island.getThumbnailBase64(),
+    };
+    connector.sendSpriteUpdate([], updatedThumbnail);
+  });
+
   // Listen for dynamic sprite updates (character composites)
   island.on("sprites:update", (sprites: SpritePayload[]) => {
     connector.sendSpriteUpdate(sprites);

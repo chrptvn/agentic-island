@@ -104,6 +104,7 @@ export interface IslandMcpTunnelSessionClosed {
 export interface IslandSpriteUpdateMessage {
   type: "sprite_update";
   sprites: SpriteAsset[];
+  thumbnail?: SpriteAsset;
 }
 
 export interface IslandStateDeltaMessage {

@@ -505,7 +505,7 @@ export class Island extends EventEmitter {
     this.applyIslandOverrides();
     this.overridesVersion = loadOverridesVersion();
     saveState(MAP_STATE_KEY, this.mapConfig());
-    this.emit("map:updated", this.map);
+    this.emit("map:regenerated", this.map);
     return this.map;
   }
 
